@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<StyledLayerDescriptor version="1.0.0">
+<NamedLayer>
+<Name>collections</Name>
+<UserStyle>
+<Title>User Specific Collection Records</Title>
+<FeatureTypeStyle>
+<Rule>
+<Filter>
+<PropertyIsEqualTo>
+<PropertyName>uid</PropertyName>
+<Literal>6A3CECD7933E1BF50A3E53969E328E3F1124124198687</Literal>
+</PropertyIsEqualTo>
+</Filter>
+<PointSymbolizer>
+<Geometry>
+<PropertyName>locatedAt</PropertyName>
+</Geometry>
+<Graphic>
+<Mark>
+<WellKnownName>star</WellKnownName>
+<Fill>
+<CssParameter name="fill">#ff0000</CssParameter>
+</Fill>
+</Mark>
+<Size>10.0</Size>
+</Graphic>
+</PointSymbolizer>
+</Rule>
+</FeatureTypeStyle>
+</UserStyle>
+</NamedLayer>
+</StyledLayerDescriptor>

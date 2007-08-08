@@ -1,0 +1,7 @@
+<deployment xmlns="http://xml.apache.org/axis/wsdd/"
+    xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+  <service name="BGService" provider="java:RPC">
+    <parameter name="className" value="edu.yale.ws.BGService"/>
+    <parameter name="allowedMethods" value="georeference"/>
+  </service>
+</deployment>

@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+  xmlns:gaz="http://standard.report.parse.colorado.greg.biogeomancer.edu"
+  xmlns:gml="http://www.opengis.net/gml"
+  xmlns:xlink="http://www.w3.org/1999/xlink"
+  targetNamespace="http://standard.report.parse.colorado.greg.biogeomancer.edu"
+  elementFormDefault="qualified">
+
+<import namespace="http://www.opengis.net/gml" schemaLocation="geometry-greg.xsd"/>
+
+<import namespace="http://www.w3.org/1999/xlink" schemaLocation="xlinks.xsd"/>
+
+<attributeGroup name="qualifiers">
+  <attribute name="primary" type="boolean" default="false"/>
+  <attribute name="status" type="string" default="current"/>
+</attributeGroup>
+
+<element name="gazetteer-standard-report">
+  <complexType>
+    <sequence>
+
+      <element name="identifier" type="string"/>
+
+      <element name="codes" minOccurs="0">
+        <complexType>
+          <sequence>
+            <element name="code" minOccurs="0" maxOccurs="unbounded">
+              <complexType>
+                <simpleContent>
+                  <extension base="string">
+                    <attribute name="scheme" type="string" use="required"/>
+                  </extension>
+                </simpleContent>
+              </complexType>
+            </element>
+          </sequence>
+        </complexType>
+      </element>
+
+      <element name="place-status" type="string"/>
+
+      <element name="display-name" type="string"/>
+
+      <element name="names">
+        <complexType>
+          <sequence>
+            <element name="name" maxOccurs="unbounded">
+              <complexType>
+                <simpleContent>
+                  <extension base="string">
+                    <attributeGroup ref="gaz:qualifiers"/>
+                  </extension>
+                </simpleContent>
+              </complexType>
+            </element>
+          </sequence>
+        </complexType>
+      </element>
+
+      <element name="bounding-box" type="gml:BoxType"/>
+
+      <element name="footprints">
+        <complexType>
+          <choice maxOccurs="unbounded">
+            <element name="footprint">
+              <complexType>
+                <choice>
+                  <element ref="gml:_Geometry"/>
+                  <element ref="gml:Box"/>
+                  <element name="other-footprint">
+                    <complexType>
+                      <sequence>
+                        <any processContents="lax"/>
+                      </sequence>
+                    </complexType>
+                  </element>
+                </choice>
+                <attributeGroup ref="gaz:qualifiers"/>
+              </complexType>
+            </element>
+            <element name="footprint-reference">
+              <complexType>
+                <attributeGroup ref="xlink:locatorLink"/>
+                <attribute name="geometry-type">
+                  <simpleType>
+                    <restriction base="string">
+                      <enumeration value="Box"/>
+                      <enumeration value="Point"/>
+                      <enumeration value="LineString"/>
+                      <enumeration value="Polygon"/>
+                      <enumeration value="MultiPoint"/>
+                      <enumeration value="MultiLineString"/>
+                      <enumeration value="MultiPolygon"/>
+                      <enumeration value="other"/>
+                    </restriction>
+                  </simpleType>
+                </attribute>
+                <attribute name="num-points"
+                  type="positiveInteger"/>
+                <attributeGroup ref="gaz:qualifiers"/>
+              </complexType>
+            </element>
+          </choice>
+        </complexType>
+      </element>
+
+      <element name="glasses" minOccurs="0">
+        <complexType>
+          <sequence>
+            <element name="glass" minOccurs="0" maxOccurs="unbounded">
+              <complexType>
+                <simpleContent>
+                  <extension base="string">
+                    <attribute name="thesaurus" type="string" use="required"/>
+                    <attributeGroup ref="gaz:qualifiers"/>
+                  </extension>
+                </simpleContent>
+              </complexType>
+            </element>
+          </sequence>
+        </complexType>
+      </element>
+
+      <element name="relationships" minOccurs="0">
+        <complexType>
+          <sequence>
+            <element name="relationship" minOccurs="0"  maxOccurs="unbounded">
+              <complexType>
+                <attribute name="relation" type="string" use="required"/>
+                <attribute name="target-name" type="string" use="required"/>
+                <attribute name="target-identifier" type="string"/>
+              </complexType>
+            </element>
+          </sequence>
+        </complexType>
+      </element>
+      
+      <element name="error" minOccurs="0">
+        <complexType>
+          <sequence>
+            <element name="code"/>
+            <element name="description"/>
+          </sequence>
+        </complexType>
+      </element>
+
+    </sequence>
+  </complexType>
+</element>
+
+</schema>

@@ -1,0 +1,51 @@
+# bg.conf template
+
+# Data files
+# ----------
+# This should be an absolute system path to the data set
+# Example:
+datafile=/home/asteele/bgrepos/trunk/data/MaNISLocTypes1-500.txt
+delineator=\t
+
+# Configuration files
+# -------------------
+# This should be an absolute system path to your gm.conf file
+# Example:
+gm.config=/home/asteele/bgrepos/java/config/gm.conf
+
+# Logs
+# ----
+# This should be an absolute system path to your log files
+# Example:
+bg.log=/home/asteele/bgrepos/java/logs/bg.log
+GeorefDictionary.log=/home/asteele/bgrepos/java/logs/GeorefDictionary.log
+
+# GeorefEngine parameters
+# -----------------------
+GeorefEngine.enabled = true
+GeorefEngine.corePoolSize = 5
+GeorefEngine.maxPoolSize = 10
+GeorefEngine.keepAliveTime = 20
+GeorefEngine.timeUnit = SECONDS
+GeorefEngine.initQueueCapacity = 100
+GeorefEngine.debug = true
+
+# Validation parameters
+# ---------------------
+# Single property to enable or disable all validation tests specified below
+Validation.enabled = false
+# Options for target: OriginalRecords or Interpretations
+Validation.target = OriginalRecords
+Validation.detectGeographicErrors = true
+Validation.detectElevationErrors = true
+Validation.detectGeographicOutliers = true
+Validation.detectItineraryOutliers = true
+Validation.detectEnvironmentalOutliers = false
+# The variables below will be used to detect environmental outliers.
+# Note: make sure that sal.properties contains the same variables as attribute names!
+Validation.environmentalVariables = temperature,precipitation
+# The following property indicates the number of failures in the environmental 
+# outlier test for a record be considered an outlier.
+# Note: this number must not exceed the number of variables specified in the last property.
+Validation.environmentalOutlierThreshold = 1
+Validation.detectEcologicalOutliers = false

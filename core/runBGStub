@@ -1,0 +1,8 @@
+#!/usr/bin/python2.3
+
+import os, sys
+configfile = sys.argv[1]
+os.system('ant clean')
+os.system('ant')
+os.chdir('build/WEB-INF/classes')
+os.system('java bg/BGStub %s' % os.path.expanduser(configfile))

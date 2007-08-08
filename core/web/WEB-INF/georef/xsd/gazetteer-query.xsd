@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+  xmlns:gaz="http://www.alexandria.ucsb.edu/gazetteer"
+  xmlns:gml="http://www.opengis.net/gml"
+  targetNamespace="http://www.alexandria.ucsb.edu/gazetteer"
+  elementFormDefault="qualified">
+
+<annotation>
+  <appinfo>
+    <header xmlns="">$Header: /export/home/gjanee/gazetteer/RCS/gazetteer-query.xsd,v 1.4 2003/10/07 21:39:26 gjanee Exp $</header>
+    <log xmlns="">
+      $Log: gazetteer-query.xsd,v $
+      Revision 1.4  2003/10/07 21:39:26  gjanee
+      Added subelement &lt;code-query&gt;.
+
+      Revision 1.3  2003/09/17 20:45:11  gjanee
+      Minor change to accommodate a rename.
+
+      Revision 1.2  2003/09/17 08:00:59  gjanee
+      Added subelement &lt;place-status-query&gt;.  In subelement
+      &lt;relationship-query&gt;, renamed attributes 'relationship'
+      and 'identifier' to 'relation' and 'target-identifier',
+      respectively.
+
+      Revision 1.1  2001/06/21 20:37:16  gjanee
+      Initial revision
+
+    </log>
+  </appinfo>
+  <documentation>
+    <author xmlns="">
+      <name>Greg Jan&#x00E9;e</name>
+      <affiliation>Alexandria Digital Library Project</affiliation>
+      <email-address>gjanee@alexandria.ucsb.edu</email-address>
+    </author>
+  </documentation>
+</annotation>
+
+<include schemaLocation="gazetteer-types.xsd"/>
+
+<import namespace="http://www.opengis.net/gml"
+  schemaLocation="geometry.xsd"/>
+
+<element name="gazetteer-query">
+  <complexType>
+    <sequence>
+      <group ref="gaz:query"/>
+    </sequence>
+  </complexType>
+</element>
+
+<group name="query">
+  <choice>
+    <element ref="gaz:identifier-query"/>
+    <element ref="gaz:code-query"/>
+    <element ref="gaz:place-status-query"/>
+    <element ref="gaz:name-query"/>
+    <element ref="gaz:footprint-query"/>
+    <element ref="gaz:class-query"/>
+    <element ref="gaz:relationship-query"/>
+    <element ref="gaz:and"/>
+    <element ref="gaz:or"/>
+    <element ref="gaz:and-not"/>
+  </choice>
+</group>
+
+<element name="identifier-query">
+  <complexType>
+    <attribute name="identifier" type="string"
+      use="required"/>
+  </complexType>
+</element>
+
+<element name="code-query">
+  <complexType>
+    <attribute name="scheme" type="string"/>
+    <attribute name="code" type="string" use="required"/>
+  </complexType>
+</element>
+
+<element name="place-status-query">
+  <complexType>
+    <attribute name="status" type="gaz:status-type"
+      use="required"/>
+  </complexType>
+</element>
+
+<element name="name-query">
+  <complexType>
+    <attribute name="operator" use="required">
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="contains-all-words"/>
+          <enumeration value="contains-any-words"/>
+          <enumeration value="contains-phrase"/>
+          <enumeration value="equals"/>
+          <enumeration value="matches-pattern"/>
+        </restriction>
+      </simpleType>
+    </attribute>
+    <attribute name="text" type="string" use="required"/>
+  </complexType>
+</element>
+
+<element name="footprint-query">
+  <complexType>
+    <choice>
+      <element ref="gml:Box"/>
+      <element ref="gml:Polygon"/>
+      <element name="identifier" type="string"/>
+      <element name="other-region">
+        <complexType>
+          <sequence>
+            <any processContents="lax"/>
+          </sequence>
+        </complexType>
+      </element>
+    </choice>
+    <attribute name="operator" use="required">
+      <simpleType>
+        <restriction base="string">
+          <enumeration value="contains"/>
+          <enumeration value="overlaps"/>
+          <enumeration value="within"/>
+        </restriction>
+      </simpleType>
+    </attribute>
+  </complexType>
+</element>
+
+<element name="class-query">
+  <complexType>
+    <attribute name="thesaurus" type="string"
+      use="required"/>
+    <attribute name="term" type="string" use="required"/>
+  </complexType>
+</element>
+
+<element name="relationship-query">
+  <complexType>
+    <attribute name="relation" type="string"
+      use="required"/>
+    <attribute name="target-identifier" type="string"
+      use="required"/>
+  </complexType>
+</element>
+
+<element name="and">
+  <complexType>
+    <sequence>
+      <group ref="gaz:query" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+</element>
+
+<element name="or">
+  <complexType>
+    <sequence>
+      <group ref="gaz:query" maxOccurs="unbounded"/>
+    </sequence>
+  </complexType>
+</element>
+
+<element name="and-not">
+  <complexType>
+    <sequence>
+      <group ref="gaz:query" minOccurs="2" maxOccurs="2"/>
+    </sequence>
+  </complexType>
+</element>
+
+</schema>

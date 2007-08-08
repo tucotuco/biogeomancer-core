@@ -1,0 +1,24 @@
+characters:
+   dictnum: 
+	0 heading
+	1 unit
+	2 path
+	3 feature
+   nlen = 1, 2:
+	4 firstuppercase
+	5 others (all uppercase, all lowercase)
+   nlen >= 3:
+	6 firstuppercase
+	7 others (all uppercase, all lowercase)
+number:
+	8
+mix:
+	9
+delimter:
+	10 ,
+	11 ;
+	12 :
+	13 .
+	14 '
+	15 "
+	16 others 
