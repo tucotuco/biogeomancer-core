@@ -1,350 +1,50 @@
-<?xml version="1.0" ?>
-<!-- ===================================================================
-  -  Ant build file for building biogeomancer workbench.
-  -  @author Aaron Steele
-  -  =================================================================== -->
-<project name="BioGeomancer-Core" default="run_stub" basedir=".">
+<?xml version="1.0" encoding="utf-8" ?>
+<project name="BioGeomancer Core" default="all" basedir=".">
+	<description>
+    BioGeomancer Core build file. This is used to package up the project as a jar,
+    if you want to distribute it. 
+  </description>
+
+	<property name="version" value="1.0" />
 	
-	<!-- Edit these properties to reflect your environment. -->
-	
-    <property name="build.dir" value="${basedir}/build"/>
-    <property name="build-jar.dir" value="${basedir}/build-jar"/>
-    <property name="web.dir" value="${basedir}/web"/>
-    <property name="doc.dir" value="${basedir}/${build.dir}/doc"/>
-    <property name="src.dir" value="${basedir}/src"/>
-    <property name="lib.dir" value="${basedir}/web/WEB-INF/lib"/>
-    <property name="class.dir" value="${build.dir}/WEB-INF/classes"/>
-    <property name="etc.dir" value="${basedir}/etc"/>
-    
-	<property name="tomcat.home" value="/opt/tomcat"/>
-    <property name="manager.url" value="http://localhost:8080/manager"/>
-    <property name="manager.password" value="tomcat"/>
-    <property name="manager.username" value="manager"/>
-    <property name="app.path" value="/soap"/>
-    <property name="dist.war" value="BGCore.war"/>
-    <property name="dist.jar" value="BGCore.jar"/>
-    <property name="dist.dir" value="${basedir}/dist"/>
-    <property name="dist-jar.dir" value="${basedir}/dist-jar"/>
+	<!-- set classpath -->
+	<path id="project.class.path">
+		<pathelement path="${java.class.path}/" />
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
 
-	<property name="axis.dir" value="${basedir}/axis"/>
-	<property name="axis.service.wsdl.name" value="BioGeomancer.wsdl"/>
-	<property name="axis.service.classname" value="org.biogeomancer.ws.BioGeomancer"/>
-	<property name="axis.service.namespace" value="urn:bg"/>
-	<property name="axis.service.host" value="localhost"/>
-	<property name="axis.service.port" value="8080"/>
-	<property name="axis.service.name" value="BioGeomancer"/>
-	<property name="axis.home" value="/opt/axis"/>
-	<property name="axis.client.package" value="org.biogeomancer.ws"/>
-	<property name="axis.wsdd.classpath" value="${class.dir}/org/biogeomancer/ws"/>
-	
-	<property name="bgstub.props" value="${basedir}/bgstub.properties"/>
-
-	<taskdef name="deploy"   classname="org.apache.catalina.ant.DeployTask"/>
-    <taskdef name="list"     classname="org.apache.catalina.ant.ListTask"/>
-    <taskdef name="reload"   classname="org.apache.catalina.ant.ReloadTask"/>
-    <taskdef name="undeploy" classname="org.apache.catalina.ant.UndeployTask"/>
-
-    <!-- ===================================================================
-      -  init - create the build directory
-      -  =================================================================== -->
-    <target name="init" depends="clean">
-        <mkdir dir="${build.dir}"/>
-        <mkdir dir="${build-jar.dir}"/>
-        <mkdir dir="${dist-jar.dir}"/>
-        <mkdir dir="${dist.dir}"/>
-        <mkdir dir="${build.dir}/WEB-INF"/>
-        <mkdir dir="${build.dir}/WEB-INF/lib"/>
-        <mkdir dir="${build.dir}/WEB-INF/classes"/>
-        <mkdir dir="${build.dir}/WEB-INF/classes/UIUCLocInterpData"/>
-        <mkdir dir="${build.dir}/${doc.dir}"/>
-        <mkdir dir="${axis.dir}"/>
-
-        <path id="axis.classpath">
-          <fileset dir="${axis.home}/lib">
-            <include name="**/*.jar"/>
-          </fileset>
-          <dirset dir="${build.dir}">
-            <include name="WEB-INF/classes"/>
-          </dirset>
-        </path>
-        <taskdef resource="axis-tasks.properties" classpathref="axis.classpath"/>
-
-        <path id="lib.path">
-            <fileset dir="${lib.dir}">
-                <include name="*.jar"/>
-            </fileset>
-        </path>
-        <copy todir="${build.dir}/WEB-INF/lib">
-            <fileset dir="${lib.dir}">
-                <include name="*.jar"/>
-            </fileset>
-        </copy>
-        <copy todir="${build.dir}/WEB-INF">
-            <fileset dir="${basedir}">
-                <include name="web.xml"/>
-            </fileset>
-        </copy>
-    </target>
-
-    <!-- ===================================================================
-      -  clean - clear the build artifacts
-      -  =================================================================== -->
-    <target name="clean">
-        <delete dir="${build.dir}"/>
-        <delete dir="${dist.dir}"/>
-    </target>
-
-    <!-- ===================================================================
-      -  build - compile the source files
-      -  =================================================================== -->
-    <target name="build" depends="init">
-        <javac deprecation="off"
-               includeAntRuntime="yes"
-               debug="on"
-               srcdir="${src.dir}"
-               destdir="${build.dir}/WEB-INF/classes">
-            <include name="**/*.java"/>
-            <classpath refid="lib.path"/>
-        </javac>
-        <copy todir="${build.dir}/WEB-INF/classes">
-            <fileset dir="${src.dir}">
-                <include name="**/*.properties"/>
-                <include name="**/*.cfg"/>
-            </fileset>
-        </copy>
-        <copy todir="${build.dir}/WEB-INF/classes/UIUCLocInterpData">
-            <fileset dir="${src.dir}/UIUCLocInterpData">
-                <include name="**/*"/>
-            </fileset> 
-        </copy>
-        <copy todir="${build.dir}/WEB-INF/">
-            <fileset dir="${web.dir}/WEB-INF">
-                <include name="web.xml"/>
-            </fileset>
-        </copy>
-        <copy todir="${axis.wsdd.classpath}">
-            <fileset dir="${src.dir}/org/biogeomancer/ws">
-               <include name="**/*.wsdd"/>
-            </fileset>
-        </copy>
-    </target>
-
-
-	<!-- ===================================================================
-	   -  build - compile the source files
-	   -  =================================================================== -->
-	<target name="build-jar" depends="init">
-	    <javac deprecation="off"
-	           includeAntRuntime="yes"
-	           debug="on"
-	           srcdir="${src.dir}"
-	           destdir="${build-jar.dir}">
-	        <include name="**/*.java"/>
-	        <classpath refid="lib.path"/>
-	    </javac>
-	    <copy todir="${build-jar.dir}">
-	         <fileset dir="${src.dir}">
-	             <include name="**/*.properties"/>
-	             <include name="**/*.cfg"/>
-	         </fileset>
-	    	<fileset dir="${lib.dir}">
-                <include name="**/*.jar" />
-	    	</fileset>
-
-	    	<!-- Get everything; source, modules, html files -->
-            <fileset dir="${src.dir}">
-                    <include name="**" />
-            </fileset>
-	    </copy>
+	<target name="compile" description="Compile src to bin">
+		<mkdir dir="bin" />
+		<javac srcdir="src:test" destdir="bin" includes="**" debug="on" debuglevel="lines,vars,source" source="1.5">
+			<classpath refid="project.class.path" />
+		</javac>
 	</target>
 
-    <!-- ===================================================================
-      -  native - native compile the source files
-      -  =================================================================== -->
-    <target name="native" depends="init">
-        <javac deprecation="off"
-               compiler="gcj"
-               includeAntRuntime="yes"
-               debug="on"
-               srcdir="${src.dir}"
-               destdir="${classes.dir}">
-            <include name="**/*.java"/>
-            <classpath refid="lib.path"/>
-        </javac>
-    </target>
+	<target name="package" depends="compile" description="Package up the project as a jar">
+		<jar destfile="biogeomancer-core-${version}.jar">
+			<fileset dir="bin">
+				<include name="**/*.class" />
+			</fileset>
+			<!-- Get everything; source, modules, html files -->
+			<fileset dir="src">
+				<include name="**" />
+			</fileset>
+			<fileset dir="test">
+				<include name="**" />
+			</fileset>
+		</jar>
+	</target>
 
-    <!-- ===================================================================
-      -  javadoc - build javadoc
-      -  =================================================================== -->
-    <target name="javadoc" depends="init">
+	<target name="clean">
+		<!-- Delete the bin directory tree -->
+		<delete file="biogeomancer-core-${version}.jar" />
+		<delete>
+			<fileset dir="bin" includes="**/*.class" />
+		</delete>
+	</target>
 
-        <javadoc destdir="${doc.dir}"
-                 access="private"
-                 use="true"
-                 notree="false"
-                 nonavbar="false"
-                 noindex="false"
-                 splitindex="true"
-                 author="true"
-                 version="true"
-                 nodeprecatedlist="false"
-                 nodeprecated="false"
-                 packagenames="*"
-                 sourcepath="${src.dir}"
-                 doctitle="${project.name}">
-            <classpath refid="lib.path"/>
-        </javadoc>
-
-    </target>
-
-    <!-- ===================================================================
-      -  dist - create distribution jar
-      -  =================================================================== -->
-    <target name="dist" depends="build">
-        <jar jarfile="${dist.dir}/${dist.war}">
-            <fileset dir="${build.dir}"/>
-            <fileset dir="${src.dir}">
-                <include name="**/*.properties"/>
-                <include name="**/*.cfg"/>
-            </fileset>
-        </jar>
-    </target>
-
-
-    <!-- ===================================================================
-      -  dist - create distribution jar
-      -  =================================================================== -->
-    <target name="dist-jar" depends="clean, build-jar">
-        <jar jarfile="${dist-jar.dir}/${dist.jar}">
-            <fileset dir="${build-jar.dir}"/>
-            <fileset dir="${src.dir}">
-                <include name="**/*.properties"/>
-                <include name="**/*.cfg"/>
-            </fileset>
-        </jar>
-    </target>
-
-    <!-- ===================================================================
-      -  install - install to tomcat servlet container
-      -  =================================================================== -->
-    <target name="install" depends="dist"
-            description="Install application to tomcat servlet container">
-        <deploy url="${manager.url}"
-                username="${manager.username}"
-                password="${manager.password}"
-                path="${app.path}"
-                localWar="file://${dist.dir}/${dist.war}"/>
-    </target>
-
-    <!-- ===================================================================
-      -  reload - reload tomcat
-      -  =================================================================== -->
-    <target name="reload" depends="clean, dist"
-            description="Reload application on servlet container">
-        <reload url="${manager.url}"
-                username="${manager.username}"
-                password="${manager.password}"
-                path="${app.path}"/>
-        </target>
-
-    <!-- ===================================================================
-      -  remove - remove app from tomcat
-      -  =================================================================== -->
-    <target name="remove"
-            description="Remove application on servlet container">
-        <undeploy url="${manager.url}"
-                  username="${manager.username}"
-                  password="${manager.password}"
-                  path="${app.path}"/>
-        </target>
-
-    <!-- ===================================================================
-      -  generate-wsdl - generate the wsdl file
-      -  =================================================================== -->
-        <target name="generate-wsdl" depends="install">
-	        	<echo message="${axis.wsdd.classpath}"/>
-                <axis-java2wsdl classname="${axis.service.classname}"
-                            style="wrapped"
-                            namespace="${axis.service.namespace}"
-                            location="http://${axis.service.host}:${axis.service.port}${app.path}/services/${axis.service.name}"
-                            output="${axis.dir}/${axis.service.wsdl.name}">
-                <classpath refid="axis.classpath"/>
-            </axis-java2wsdl>
-        </target>
-
-    <!-- ===================================================================
-      -  generate-wsdd - generate the wsdd file
-      -  =================================================================== -->
-        <target name="generate-wsdd" depends="generate-wsdl">
-                <axis-wsdl2java output="${axis.dir}"
-                            verbose="false"
-                            url="${axis.dir}/${axis.service.wsdl.name}"
-                            serverside="true"
-                            debug="false">
-                            <mapping namespace="${axis.service.namespace}"
-                                             package="${axis.client.package}"/>
-            </axis-wsdl2java>
-        </target>
-
-    <!-- ===================================================================
-      -  deploy-ws - deploy the web service
-      -  =================================================================== -->
-        <target name="deploy-ws" depends="remove,generate-wsdl">
-                <axis-admin port="${axis.service.port}"
-                                hostname="${axis.service.host}"
-                                failonerror="true"
-                                servletpath="${app.path}/services/AdminService"
-                                debug="true"
-                                xmlfile="${build.dir}/WEB-INF/classes/org/biogeomancer/ws/BioGeomancer.wsdd"/>
-        </target>
-	
-	<!-- ===================================================================
-	  -  run_ShapeManager - run the ShapeManager
-	  -  =================================================================== -->
-		<target name="run_ShapeManager" depends="build">
-			<path id="run.path">
-			    <fileset dir="${lib.dir}">
-			          <include name="*.jar"/>
-			    </fileset>
-				<dirset dir="${build.dir}">
-				       <include name="WEB-INF/classes"/>
-				</dirset>
-			</path>
-			
-			<java classpathref="run.path"
-		          classname="org.biogeomancer.managers.ShapeManager"
-		          fork="true"
-		          failonerror="true">
-					<arg line="34.0"/>
-					<arg line="-121.0"/>
-					<arg line="100"/>
-					<arg line="WGS84"/>
-					<arg line=".0001"/>
-					<arg line="F"/>
-					<arg line="Missoula"/>
-		    </java>
-		</target>
-
-	<!-- ===================================================================
-	  -  run_stub - run the stub
-	  -  =================================================================== -->
-		<target name="run_stub" depends="build">
-			<echo message="bgstub.props = ${bgstub.props}"/>
-			<path id="run.path">
-			    <fileset dir="${lib.dir}">
-			          <include name="*.jar"/>
-			    </fileset>
-				<dirset dir="${build.dir}">
-				       <include name="WEB-INF/classes"/>
-				</dirset>
-			</path>
-			
-			<java classpathref="run.path"
-		          classname="org.biogeomancer.BGStub"
-		          fork="true"
-		          failonerror="true">
-					<arg line="${bgstub.props}"/>
-		    </java>
-		</target>
+	<target name="all" depends="clean, package" />
 
 </project>
