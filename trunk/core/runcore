@@ -1,0 +1,17 @@
+#!/usr/bin/python
+
+import sys, os
+os.system('ant clean');
+os.system('ant -propertyfile mybuild.properties');
+os.chdir('build/WEB-INF/classes')
+os.system('java -cp $CLASSPATH:$AXISCLASSPATH:../lib/log4j-1.2.12.jar:../lib/gbh_parse.jar:../lib/gbh_records.jar:../lib/gbh_util.jar bg/BGStub ../../../config/bg.config')
+os.chdir('../../../')
+os.system('rm -r \$\{build\}/')
+os.system('rm *~')
+
+
+
+
+
+
+

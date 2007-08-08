@@ -1,0 +1,80 @@
+/*
+ * RecordInsert.java
+ * Created on January 11th, 2005
+ * BioGeomancer Project
+ */
+
+package bg.edu.berkeley;
+
+import java.util.*;
+
+import bg.components.*;
+import bg.managers.*;
+import bg.records.*;
+import bg.utils.*;
+
+public class RecordInsert {
+
+    public DBState dbs;
+     
+    public void save(RecSet recset){
+		Sys sys = new Sys();
+
+		String l_strSQLRecSet="";
+		String l_strSQLRec="";
+		String l_strSQLClauseSet="";
+		String l_strSQLClauseClause="";
+		String l_strSQLFeatureInfo="";
+	
+		//l_strSQL = "INSERT INTO Rec ^i
+        ArrayList<Rec> recs = recset.recs;
+
+		l_strSQLRecSet = "INSERT INTO recset (bgsid,language,ufilename,numrecs) VALUES (";
+		l_strSQLRecSet += recset.session+","+recset.language+","+recset.uFilename+","+recset.numrecs;
+		l_strSQLRecSet += ")";
+
+		sys.print("*****************************");
+		sys.print("JBDTest recset table Insert:"+l_strSQLRecSet);		
+		sys.print("*****************************");
+
+		// HACK -- need to obtain recsid internal id here
+		// 		what is a good function to kick this back?  (should i just get max rsid?)
+
+		// Loop Record within RecordSet
+		for (Rec rec:recs) {
+			l_strSQLRec = "INSERT INTO rec (rsid,velevation,vlocality,vgeography,vdate,vcoordsys,vcoordinates,collectorname,adm0,adm1,adm2,adm3) VALUES (";
+			// HACK -- need to escape double quotes in statements below
+			// cases. 
+			// HACK -- need to insert proper rsid here (when i obtain it from above)
+			// HACK -- should make safeinsert function...
+			l_strSQLRec += "1";
+			l_strSQLRec += "\""+rec.vElevation+"\",";
+			l_strSQLRec += "\""+rec.vGeography+"\",";
+			l_strSQLRec += "\""+rec.vDate+"\",";
+			l_strSQLRec += "\""+rec.vCoordSystem+"\",";
+			l_strSQLRec += "\""+rec.vCoordinates+"\",";
+			l_strSQLRec += "\""+rec.vCollector+"\",";
+			l_strSQLRec += "\""+rec.adm0+"\",";
+			l_strSQLRec += "\""+rec.adm1+"\",";
+			l_strSQLRec += "\""+rec.adm2+"\",";
+			l_strSQLRec += "\""+rec.adm3+"\"";
+			l_strSQLRec += ")";
+
+			sys.print("*****************************");
+			sys.print("JBDTest rec table Insert:"+l_strSQLRec);		
+			sys.print("*****************************");
+
+        	ArrayList<ClauseSet> clausesets=rec.clauseSets;
+			for (ClauseSet clauseset:clausesets) {
+				// insert featureinfo here
+        		ArrayList<Clause> clauses=clauseset.clauses;
+				for (Clause clause:clauses) {
+				}
+			}	
+		}
+    }
+    
+    public static void main(String[] args) {
+    }
+}
+

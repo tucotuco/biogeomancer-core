@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema xmlns="http://www.w3.org/2001/XMLSchema"
+  xmlns:gaz="http://www.alexandria.ucsb.edu/gazetteer"
+  targetNamespace="http://www.alexandria.ucsb.edu/gazetteer"
+  elementFormDefault="qualified">
+
+<annotation>
+  <appinfo>
+    <header xmlns="">$Header: /export/home/gjanee/gazetteer/RCS/gazetteer-service.xsd,v 1.3 2003/09/17 20:48:30 gjanee Exp $</header>
+    <log xmlns="">
+      $Log: gazetteer-service.xsd,v $
+      Revision 1.3  2003/09/17 20:48:30  gjanee
+      Minor change to accommodate a rename.  Also, slightly recoded to
+      take advantage of the new 'report-format-type' element type.
+
+      Revision 1.2  2003/09/17 08:16:46  gjanee
+      Removed all references to the defunct 'add-entry',
+      'relate-entries', and 'remove-entry' services.  Changed how
+      success and failure are indicated.  The &lt;error&gt; element is
+      no longer required but nillable; instead, it is now optional and
+      its presence or absence indicates failure or success.
+
+      Revision 1.1  2001/07/08 04:39:56  gjanee
+      Initial revision
+
+    </log>
+
+  </appinfo>
+  <documentation>
+    <author xmlns="">
+      <name>Greg Jan&#x00E9;e</name>
+      <affiliation>Alexandria Digital Library Project</affiliation>
+      <email-address>gjanee@alexandria.ucsb.edu</email-address>
+    </author>
+
+  </documentation>
+</annotation>
+
+<include schemaLocation="gazetteer-capabilities.xsd"/>
+<include schemaLocation="gazetteer-query.xsd"/>
+<include schemaLocation="gazetteer-standard-report.xsd"/>
+<include schemaLocation="gazetteer-types.xsd"/>
+
+<element name="gazetteer-service">
+  <complexType>
+    <choice>
+      <element ref="gaz:get-capabilities-request"/>
+      <element ref="gaz:get-capabilities-response"/>
+
+      <element ref="gaz:query-request"/>
+      <element ref="gaz:query-response"/>
+      <element ref="gaz:download-request"/>
+      <element ref="gaz:download-response"/>
+    </choice>
+    <attribute name="version" type="string" use="required"/>
+  </complexType>
+</element>
+
+<element name="get-capabilities-request">
+
+  <complexType/>
+</element>
+
+<element name="get-capabilities-response">
+  <complexType>
+    <sequence>
+      <element ref="gaz:gazetteer-capabilities"
+        minOccurs="0"/>
+      <element ref="gaz:error" minOccurs="0"/>
+    </sequence>
+  </complexType>
+
+</element>
+
+<element name="query-request">
+  <complexType>
+    <sequence>
+      <element ref="gaz:gazetteer-query"/>
+      <element name="report-format"
+        type="gaz:report-format-type"/>
+      <element name="geometry-language" type="anyURI"
+        minOccurs="0"/>
+    </sequence>
+  </complexType>
+
+</element>
+
+<element name="query-response">
+  <complexType>
+    <sequence>
+      <choice minOccurs="0">
+        <element name="standard-reports">
+          <complexType>
+            <sequence>
+              <element ref="gaz:gazetteer-standard-report"
+                minOccurs="0" maxOccurs="unbounded"/>
+
+            </sequence>
+          </complexType>
+        </element>
+        <element name="extended-reports">
+          <complexType>
+            <sequence>
+              <any processContents="lax" minOccurs="0"
+                maxOccurs="unbounded"/>
+            </sequence>
+          </complexType>
+
+        </element>
+      </choice>
+      <element ref="gaz:error" minOccurs="0"/>
+    </sequence>
+  </complexType>
+</element>
+
+<element name="download-request">
+  <complexType>
+    <sequence>
+
+      <element name="report-format"
+        type="gaz:report-format-type"/>
+      <element name="geometry-language" type="anyURI"
+        minOccurs="0"/>
+    </sequence>
+  </complexType>
+</element>
+
+<element name="download-response">
+  <complexType>
+    <sequence>
+      <choice minOccurs="0">
+
+        <element name="standard-reports">
+          <complexType>
+            <sequence>
+              <element ref="gaz:gazetteer-standard-report"
+                minOccurs="0" maxOccurs="unbounded"/>
+            </sequence>
+          </complexType>
+        </element>
+        <element name="extended-reports">
+          <complexType>
+
+            <sequence>
+              <any processContents="lax" minOccurs="0"
+                maxOccurs="unbounded"/>
+            </sequence>
+          </complexType>
+        </element>
+      </choice>
+      <element ref="gaz:error" minOccurs="0"/>
+    </sequence>
+  </complexType>
+
+</element>
+
+<element name="error">
+  <complexType>
+    <sequence>
+      <element name="code" type="string" minOccurs="0"/>
+      <element name="description" type="string"
+        minOccurs="0"/>
+    </sequence>
+  </complexType>
+</element>
+
+</schema>

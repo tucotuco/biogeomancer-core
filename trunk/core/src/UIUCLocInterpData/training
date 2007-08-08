@@ -1,0 +1,200 @@
+<FOH><feature>LA PEÑITA;</feature> <offset>5.5.</offset> <unit>MI</unit> <heading>N</heading></FOH>
+<F><feature>Baird Mtns.</feature></F><DEL><del>;</del></DEL> <PS><path>Salmon R.</path> <sub>headwaters</sub></PS>
+<F><feature>CALIENTE MOUNTAIN</feature></F>
+<FOH><offset>10</offset> <unit>MI</unit> <heading>SW</heading> <feature>CANAS</feature></FOH><DEL><del>,</del></DEL> <P><path>RIO HIGUERON</path></P>
+<NF><proximity>near</proximity> <feature>Sedan</feature></NF>
+<FOO><offset>4.4</offset> <unit>MI</unit> <heading>N,</heading> <offset>6.2</offset> <unit>MI</unit> <heading>W</heading> <feature>SEMINOLE</feature></FOO>
+<F><feature>Kenai Mts.</feature></F><DEL><del>;</del></DEL> <F><feature>Cooper Landing</feature></F><DEL><del>,</del></DEL> <POM><marker>Mile 49.5</marker> <path>Sterling Hwy.</path></POM>
+<ADDR><offset>9200</offset> <heading>S</heading> <feature>WASATCH BLVD.</feature></ADDR><DEL><del>,</del></DEL> <F><feature>SALT LAKE CITY</feature></F>
+<F><feature>Alaska Peninsula</feature></F><DEL><del>;</del></DEL> <F><feature>Ivanof Bay</feature></F>
+<F><feature>Cakaldere</feature></F>
+<FOH><offset>0.7</offset> <unit>MI</unit> <heading>W</heading> <feature>OAKDALE</feature></FOH>
+<F><feature>LAKE SUPERIOR PROVINCIAL PARK</feature></F><DEL><del>,</del></DEL> <UNK><unk>TRAPLINE 18</unk></UNK>
+<F><feature>Little Hogneck</feature></F>
+<FOH><feature>CONCORDIA,</feature> <offset>2.5</offset> <unit>MI</unit> <heading>NE</heading> <pre>OF</pre></FOH>
+<F><feature>Rough Butt Bald</feature></F> <F><feature>[Haywood/Jackson County]</feature></F>
+<F><feature>LA TAGUA</feature></F>
+<F><feature>Deerfield Twp</feature></F><DEL><del>,</del></DEL> <F><feature>W Highland Park</feature></F>
+<BP><between>between</between> <path>Tanana R</path> <conj>and</conj> <path>Clearwater Cr</path></BP><DEL><del>,</del></DEL> <UNK><unk>B-2</unk></UNK>
+<F><feature>Lake Eder-See</feature></F><DEL><del>,</del></DEL> <NF><proximity>near</proximity> <feature>Kassel</feature></NF>
+<F><feature>Kish</feature></F>
+<F><feature>Chugach Mts.</feature></F><DEL><del>;</del></DEL> <F><feature>Lower Snowhawk</feature></F>
+<F><feature>Tikal</feature></F><DEL><del>,</del></DEL> <F><feature>Temple P</feature></F>
+<F><feature>Ko Keow</feature></F><DEL><del>,</del></DEL> <F><feature>Upper Mae Nam Mae Wong</feature></F><DEL><del>,</del></DEL> <LL><long>15d 57'</long><longw>n</longw><del>,</del><lat>99d 26'</lat><latw>e</latw></LL>
+<F><feature>Alaska Peninsula</feature></F><DEL><del>;</del></DEL> <NF><feature>Wide Bay</feature> <proximity>area</proximity></NF>
+<F><feature>SEVILLETA NWR</feature></F><DEL><del>;</del></DEL> <F><feature>GOAT DRAW</feature></F><DEL><del>,</del></DEL> <UNK><unk>ARTHROPOD PIT FALLS</unk></UNK><DEL><del>,</del></DEL> <UNK><unk>LIN</unk></UNK>
+<F><feature>Victoria I.</feature></F><DEL><del>,</del></DEL> <F><feature>Wollaston Penin.</feature></F><DEL><del>,</del></DEL> <NF><proximity>vic.</proximity> <feature>Falaise Bay</feature></NF>
+<F><feature>Kottiwara</feature></F>
+<F><feature>EMIGRATION CANYON</feature></F><DEL><del>,</del></DEL> <FOH><offset>5</offset> <unit>MI.</unit> <heading>E</heading> <feature>SALT LAKE</feature></FOH>
+<FS><feature>CARMICHALEA WAU</feature> <sub>MOUTH</sub></FS><DEL><del>,</del></DEL> <FOH><offset>5</offset> <unit>MI</unit> <heading>S</heading> <pre>OF</pre> <feature>DADANAWA</feature></FOH>
+<F><feature>Fenneville Game Area</feature></F>
+<F><feature>Kenai Peninsula</feature></F><DEL><del>;</del></DEL> <F><feature>Whale Bay</feature></F><DEL><del>,</del></DEL> <F><feature>"Humpback Cove"</feature></F>
+<FOO><feature>Ohanapecosh Entrance,</feature> <offset>5</offset> <unit>mi</unit> <heading>N,</heading> <offset>1</offset> <unit>mi</unit> <heading>E</heading></FOO><DEL><del>;</del></DEL> <F><feature>Shriner Peak</feature></F>
+<FOH><offset>3</offset> <unit>mi</unit> <heading>NW</heading> <feature>Bulolo</feature></FOH>
+<F><feature>Yukon-Tanana Uplands</feature></F><DEL><del>;</del></DEL> <P><path>Eagle Cr.</path></P> <NF><proximity>vic.</proximity> <feature>Berry Camp</feature></NF>
+<F><feature>BARRA DE MONDO NOVO</feature></F>
+<F><feature>PLEASANT LAKE</feature></F>
+<F><feature>Kobuk R. valley</feature></F><DEL><del>;</del></DEL> <F><feature>Onion Portage</feature></F>
+<FOH><feature>DARIO,</feature> <offset>7</offset> <unit>MI</unit> <heading>WNW</heading> <pre>OF</pre></FOH><DEL><del>;</del></DEL> <F><feature>RIO VIEJO</feature></F>
+<F><feature>Monteverde</feature></F><DEL><del>;</del></DEL> <UNK><unk>W Guindon's house</unk></UNK>
+<FOH><offset>9</offset> <unit>MI.</unit> <heading>S</heading> <feature>GREEN RIVER WY</feature></FOH><DEL><del>,</del></DEL> <NF><proximity>NEAR</proximity> <feature>LOGAN RANCH</feature></NF>
+<P><path>trail to Puu Kalani</path></P><DEL><del>,</del></DEL> <F><feature>Upper Olaa Forest Reserve</feature></F><DEL><del>,</del></DEL> <F><feature>Puna</feature></F>
+<FOH><offset>2</offset> <unit>mi.</unit> <heading>E</heading> <pre>of</pre> <feature>Vermontville</feature></FOH>
+<P><path>Mount Baker Hwy</path></P><DEL><del>;</del></DEL> <P><path>Bagley Creek</path></P>
+<FOH><offset>2.1</offset> <unit>km</unit> <heading>S</heading> <feature>Montepio</feature></FOH>
+<FOH><feature>NOGALES;</feature> <offset>23</offset> <unit>KM</unit> <heading>S</heading></FOH>
+<FOH><feature>Shush,</feature> <offset>35</offset> <unit>km</unit> <heading>SSW</heading></FOH>
+<FOH><feature>Oraparinna Station,</feature> <offset>13</offset> <unit>mi</unit> <heading>ENE</heading></FOH>
+<UNK><unk>BLM; </unk></UNK><F><feature>Nulato Hills</feature></F><DEL><del>;</del></DEL> <UNK><unk>vic. S of VABM Cascade</unk></UNK>
+<FOH><offset>30</offset> <unit>mi</unit> <heading>E</heading> <feature>Cape Rojo</feature></FOH> <NF><proximity>near</proximity> <feature>Laguna de Tamiahua</feature></NF> <P><path>on La Breche</path></P><DEL><del>,</del></DEL> <FOH><offset>40</offset> <unit>mi</unit> <heading>N</heading> <feature>Naranjos</feature></FOH>
+<P><path>Mexican Camp Road</path></P>
+<FOH><feature>Hart's Place,</feature> <offset>1</offset> <unit>mi</unit> <heading>W</heading></FOH>
+<TRS><s>Sec. 20,</s> <t>T29N and</t> <r>R5E</r></TRS>
+<FPOH><offset>18.2</offset> <unit>MI</unit> <pre>BY</pre> <path>RD S</path> <feature>BALMORRHEA</feature></FPOH>
+<TRS><t>T23 N,</t><r>R1 W,</r></TRS><P><path>AU SABLE RIVER</path></P>
+<TRS><t>T43 N,</t><r>R30 W,</r><s>SEC.18</s></TRS>
+<F><feature>St. Elias Mts.</feature></F><DEL><del>;</del></DEL> <F><feature>Four Winds Mt.</feature></F>
+<NF><proximity>NEAR</proximity> <feature>BUEA</feature></NF>
+<F><feature>YASS</feature></F>
+<NJ><proximity>area</proximity> <pre>at</pre> <junc>junction</junc> <pre>of</pre> <feature>E Black River</feature> <conj>and</conj> <feature>Oshetna River</feature></NJ>
+<F><feature>FORT PICKENS</feature></F> <UNK><unk>LINE 3A</unk></UNK>
+<P><path>Carpenter Creek,</path></P> <F><feature>Pismo Beach</feature></F>
+<POH><offset>2</offset> <unit>MI.</unit> <heading>NE</heading> <path>MINNIE MAUDE CREEK</path></POH><DEL><del>,</del></DEL> <FOH><offset>17</offset> <unit>MI.</unit> <heading>NE</heading> <feature>PRICE</feature></FOH>
+<F><feature>PASO MC. DOUGAL</feature></F><DEL><del>,</del></DEL> <F><feature>REGION PINACATE</feature></F>
+<FOH><offset>9.4</offset> <unit>MI</unit> <heading>S</heading> <feature>WINK</feature></FOH>
+<F><feature>Phulung Ghyang</feature></F>
+<P><path>EAST FORK JEMEZ RIVER</path></P> <UNK><unk>SEC 2</unk></UNK>
+<FPOH><offset>28.8</offset><unit>KM</unit> <heading>WNW</heading> <path>(BY ROAD)</path> <feature>MADREJON</feature></FPOH>
+<F><feature>JAYAPURA</feature></F> <F><feature>[=HOLLANDIA]</feature></F>
+<F><feature>TWIN LAKES FORST. CMP</feature></F><DEL><del>,</del></DEL> <FOO><offset>16</offset> <unit>mi.</unit> <heading>S,</heading> <offset>5.5</offset> <unit>mi.</unit> <heading>E</heading> <feature>COLLBRA</feature></FOO>
+<F><feature>Fdo. Los Copihues</feature></F><DEL><del>,</del></DEL> <FH><heading>NW</heading> <feature>Angol</feature></FH>
+<F><feature>Steilacoom</feature></F>
+<NF><proximity>near</proximity> <feature>Aleutian Islands</feature></NF><DEL><del>;</del></DEL> <FH><heading>S</heading> <pre>of</pre> <feature>Amukta Pass</feature></FH>
+<F><feature>Rat Islands</feature></F><DEL><del>,</del></DEL> <F><feature>Buldir Island</feature></F><DEL><del>,</del></DEL> <NF><proximity>near</proximity> <feature>East Cape</feature></NF>
+<FOH><offset>5</offset> <unit>MI</unit> <heading>E</heading> <feature>WOODRUFF</feature></FOH> <UNK><unk>(KILL:14-MAY-1984)</unk></UNK>
+<F><feature>Pisznice Cave</feature></F>
+<FS><sub>Base</sub> <pre>of</pre> <feature>Harquahala Mts,</feature> <sub>NW side</sub></FS><DEL><del>;</del></DEL> <NP><proximity>off</proximity> <path>Hwy 60</path></NP><DEL><del>;</del></DEL> <FH><heading>NE</heading> <feature>Salome</feature> <conj>and</conj> <feature>Wenden</feature></FH><DEL><del>,</del></DEL> <FH><heading>SW</heading> <feature>Gladden</feature></FH>
+<FOH><offset>5</offset><unit>MI</unit> <heading>SW</heading> <feature>CLOVERDALE</feature></FOH><DEL><del>,</del></DEL><F><feature>FLETCHER'S LAKE</feature></F>
+<F><feature>SEVILLETA NATNL WLDLF REFUGE</feature></F><DEL><del>,</del></DEL> <F><feature>WEST MESA</feature></F><DEL><del>,</del></DEL> <F><feature>SITE 12</feature></F>
+<F><feature>CAMBRIDGE</feature></F>
+<F><feature>MENDOZA</feature></F>
+<F><feature>Angayucham Mts.</feature></F><DEL><del>;</del></DEL> <F><feature>Fritts Mt.</feature></F>
+<F><feature>EAST TULSA</feature></F>
+<P><path>INDIAN CREEK</path></P><DEL><del>,</del></DEL> <POH><offset>11</offset> <unit>MI.</unit> <heading>W</heading> <path>HWY 160</path></POH>
+<F><feature>Endicott Mts.<feature></F><DEL><del>;</del></DEL> <PS><sub>upper</sub> <path>Encampment Cr.</path></PS><DEL><del>,</del></DEL> <FOH><offset>3</offset> <unit>km</unit> <heading>NNE</heading> <pre>of</pre> <feature>Inualurak Mt.</feature></FOH>
+<P><path>Pilgrim Hot Springs Rd.</path></P>
+<F><feature>De Long Mountains</feature></F><DEL><del>;</del></DEL> <FS><feature>Desperation Lake,</feature> <sub>S shore</sub></FS>
+<F><feature>Yukon-Tanana Uplands</feature></F><DEL><del>;</del></DEL> <F><feature>West Crazy Mts.</feature></F><DEL><del>,</del></DEL> <FOH><offset>1</offset> <unit>km</unit> <heading>W</heading> <pre>of</pre> <feature>VABM Wolf</feature></FOH>
+<FS><sub>N. W. Section</sub> <pre>of</pre> <feature>Neultin Lake</feature></FS>
+<F><feature>Mt. Ida</feature></F><DEL><del>,</del></DEL> <FOH><offset>3.5</offset> <unit>mi</unit> <heading>SE</heading> <feature>Sims</feature></FOH>
+<P><path>TIESMA RD</path></P><DEL><del>,</del></DEL> <FOH><offset>1.5</offset> <unit>MI</unit> <heading>NW</heading> <feature>EDGEWATER</feature></FOH> <NP><proximity>OFF</proximity> <path>LAKE MICHIGAN R</path></NP>
+<FPOH><offset>3</offset> <unit>km</unit> <heading>E</heading> <path>(by road)</path> <feature>El Pauji</feature></FPOH><DEL><del>,</del></DEL> <FPOH><offset>87</offset> <unit>km</unit> <heading>W</heading> <path>(by road)</path> <feature>Santa Elena de Uairen</feature></FPOH>
+<F><feature>HAWK MOUNTAIN</feature></F>
+<FOH><feature>WALDEN,</feature> <offset>3.8</offset> <unit>KM</unit> <heading>S</heading> <pre>OF</pre></FOH><DEL><del>;</del></DEL> <F><feature>ARAPAHO NATIONAL WILDLIFE REFUGE</feature></F>
+<F><feature>HOUGH LAKE</feature></F>
+<FOH><offset>4</offset> <unit>mi</unit> <heading>N</heading> <pre>of</pre> <feature>Cape Thompson</feature></FOH>
+<TRS><t>TOWNSHIP 14,</t> <r>RANGE 7</r></TRS><DEL><del>,</del></DEL><FOH><offset>3.4</offset> <unit>MI</unit> <heading>S</heading> <pre>OF</pre> <feature>DELTA</feature></FOH>
+<F><feature>Pearce Point</feature></F><DEL><del>,</del></DEL> <FH><heading>E</heading> <pre>of</pre> <feature>Paulatuk</feature></FH>
+<FS><sub>central</sub> <feature>Texas</feature></FS>
+<F><feature>CREDITVIEW WETLAND</feature></F>
+<POM><marker>Mi 66</marker> <path>Denali Park Road</path></POM><DEL><del>,</del></DEL> <F><feature>Eielson Visitor Center</feature></F>
+<F><feature>Beachton</feature></F>
+<FOO><feature>Drain,</feature> <offset>5.5</offset> <unit>mi</unit> <heading>N,</heading> <offset>4</offset> <unit>mi</unit> <heading>W</heading></FOO>
+<P><path>Klondike Loop</path></P><DEL><del>;</del></DEL> <FPH><feature>Dawson City,</feature> <heading>E</heading> <pre>of,</pre> <path>road to Midnight Dome</path></FPH>
+<F><feature>Arctic Foothills</feature></F><DEL><del>;</del></DEL> <F><feature>Castle Mtn.</feature></F>
+<F><feature>Kenai Mts.</feature></F><DEL><del>;</del></DEL> <F><feature>Cooper Landing</feature></F><DEL><del>,</del></DEL> <POM><marker>mile 49.5</marker> <path>Sterling Hwy.</path></POM>
+<FOH><offset>1 1/2</offset> <unit>MI.</unit> <heading>W</heading> <feature>LOST LAKE</feature></FOH>
+<F><feature>MOGOLLON MTNS</feature></F>
+<F><feature>JACONA</feature></F><DEL><del>;</del></DEL> <FOH><feature>CERRO LA ARENA,</feature> <offset>5</offset> <unit>KM</unit> <heading>SW</heading></FOH>
+<PS><sub>head</sub> <pre>of</pre> <path>Grouse Creek</path></PS>
+<F><feature>Mitkof Island</feature></F>
+<F><feature>Seward Peninsula</feature></F><DEL><del>;</del></DEL> <FS><feature>Killeak Lakes,</feature> <sub>southernmost  lake</sub></FS>
+<F><feature>Chitina R. Basin</feature></F><DEL><del>;</del></DEL> <F><feature>Towhead Mtn.</feature></F>
+<F><feature>Lang</feature></F><DEL><del>;</del></DEL> <F><feature>Soledad Canyon</feature></F>
+<F><feature>Santa Catalina Mountains</feature></F><DEL><del>;</del></DEL> <F><feature>Bear Canyon</feature></F>
+<FOH><offset>1 1/2</offset> <unit>MI</unit> <heading>W</heading> <feature>HOLBROOK</feature></FOH>
+<P><path>Ladue River</path></P>
+<FOO><offset>3</offset> <unit>MI</unit> <heading>N,</heading> <offset>6</offset> <unit>MI</unit> <heading>E</heading> <feature>SHALLOWATER</feature></FOO>
+<F><feature>Columbus</feature></F><DEL><del>,</del></DEL> <F><feature>Colmbus Zoo</feature></F>
+<F><feature>Hlagong</feature></F>
+<F><feature>Hacienda Paramba</feature></F>
+<UNK><unk>Restinga vegetation</unk></UNK><DEL><del>,</del></DEL> <UNK><unk>matas do Sistema Aracruz</unk></UNK><DEL><del>,</del></DEL> <F><feature>Aracruz Celulose S.A.</feature></F><DEL><del>,</del></DEL> <F><feature>Municipio Aracruz</feature></F>
+<PS><sub>Mouth</sub> <pre>of</pre> <path>Inglutalik</path> <conj>and</conj> <path>Akulik R.</path></PS>
+<FOH><offset>200</offset> <unit>yds</unit> <heading>S</heading> <feature>West Entrance Checking Station</feature></FOH>
+<FOO><feature>Drain,</feature> <offset>6.75</offset> <unit>mi</unit> <heading>N,</heading> <offset>5.5</offset> <unit>mi</unit> <heading>E</heading></FOO>
+<FOO><offset>2.4</offset> <unit>km</unit> <heading>N</heading> <conj>and</conj> <offset>4.4</offset> <unit>km</unit> <heading>W</heading> <feature>Frijoles</feature></FOO>
+<FOH><offset>1/2</offset> <unit>MI.</unit> <heading>E</heading> <feature>MORGAN CITY</feature></FOH>
+<F><feature>Madison</feature></F>
+<F><feature>YELLOWSTONE NATL PK</feature></F><DEL><del>.</del></DEL><UNK><unk>LAMAR/NE</unk></UNK><DEL><del>,</del></DEL> <UNK><unk>NE MAINTENANCE</unk></UNK><DEL><del>.</del></DEL> <UNK><unk>UTM</unk></UNK>
+<TRS><t>T44N</t> <r>R25W</r> <s>Section 9</s></TRS>
+<FOO><offset>15.6</offset> <unit>MI.</unit> <heading>N.,</heading> <offset>4.2</offset> <unit>MI.</unit> <heading>W.</heading> <feature>LAS CRUCES</feature></FOO>
+<F><feature>Maria Tecum Block</feature></F><DEL><del>,</del></DEL> <P><path>Rta. Nacional 1</path></P><DEL><del>,</del></DEL> <FOO><offset>5</offset> <unit>km</unit> <heading>N,</heading> <offset>6</offset> <unit>km</unit> <heading>E</heading> <feature>(by air) Nahuala</feature></FOO>
+<F><feature>SWANSEA CAVE</feature></F>
+<FOH><feature>Neenach School,</feature> <offset>3</offset> <unit>mi</unit> <heading>E</heading></FOH>
+<F><feature>Farewell</feature></F>
+<FOO><feature>WALTMAN,</feature> <offset>9</offset> <unit>MI</unit> <heading>N,</heading> <offset>2.5</offset> <unit>MI</unit> <heading>W</heading> <pre>OF</pre></FOO>
+<F><feature>Marsabit District</feature></F><DEL><del>;</del></DEL> <F><feature>Mt Kulal</feature></F><DEL><del>,</del></DEL> <NF><proximity>above</proximity> <feature>Gatab</feature></NF>
+<NF><feature>Big Bay</feature> <proximity>vic.</proximity></NF>
+<F><feature>Kenai Mts.</feature></F><DEL><del>;</del></DEL> <F><feature>Rock Lake</feature></F><DEL><del>,</del></DEL> <P><path>Skilak Lake Road</path></P>
+<FOH><offset>11</offset> <unit>miles</unit> <heading>west</heading> <feature>Las Cruces</feature></FOH>
+<NF><proximity>ABOVE</proximity> <feature>GATLINGBURG</feature></NF><DEL><del>,</del></DEL><F><feature>GRASSY PATCH</feature></F>
+<J><junc>bridge</junc> <pre>across</pre> <feature>Salt River</feature></J>
+<FOH><offset>12 1/2</offset> <unit>MI.</unit> <heading>E</heading> <feature>NORTH TIP GRANITE MTN.</feature></FOH>
+<FO><feature>El Salvador border,</feature> <offset>5</offset> <unit>km</unit></FO>
+<F><feature>Freewater</feature></F>
+<FOO><offset>6</offset> <unit>MI</unit> <heading>N,</heading> <offset>6</offset> <unit>MI</unit> <heading>W</heading> <feature>NOTREES</feature></FOO>
+<F><feature>Hanning Bay</feature></F><DEL><del>,</del></DEL> <TRSS><t>T3S,</t> <r>R10E,</r> <s>Sec 1,</s> <sub>NW 1/4</sub> <pre>of</pre> <sec>the NE 1/4</sec></TRSS>
+<F><feature>Tesopaco</feature></F><DEL><del>,</del></DEL> <FOH><offset>15</offset> <unit>mi</unit> <heading>N</heading> <feature>Laguna Hanson</feature></FOH><DEL><del>,</del></DEL> <F><feature>Sierra Juarez</feature></F>
+<FOH><offset>2</offset><unit>MI</unit> <heading>S</heading> <feature>TOURS</feaature></FOH>
+<F><feature>Alaska Range</feature></F><DEL><del>;</del></DEL> <F><feature>Clearwater Cr. Drainage</feature></F>
+<FOO><offset>4 1/4</offset> <unit>MI</unit> <heading>N,</heading> <offset>6 1/2</offset> <unit>MI</unit> <heading>E</heading> <feature>CANJILON</feature></FOO><DEL><del>,</del></DEL> <P><path>CANJILON CREEK</path></P><F><feature>CA</feature></F>
+<F><feature>RIFT VALLEY CAVE</feature></F><F><feature>ON MT. SUSWA</feature></F> <FOH><offset>35</offset> <unit>MI</unit> <heading>WNW</heading> <feature>NAIROBI</feature></FOH>
+<FPOH><offset>0.4</offset> <unit>mi</unit> <heading>N</heading> <feature>Collinston</feature> <pre>on</pre> <path>LA 138</path></FPOH>
+<FOO><feature>Brush Prairie,</feature> <offset>3.5</offset> <unit>mi</unit> <heading>S,</heading> <offset>.8</offset> <unit>mi</unit> <heading>W</heading></FOO>
+<F><feature>Isla Tiburon</feature></F>
+<F><feature>Seward Peninsula</feature></F><DEL><del>;</del></DEL> <F><feature>Cowpack Inlet 'Lagoon'</feature></F><DEL><del>,</del></DEL> <FS><sub>N arm</sub> <pre>of</pre> <feature>Shishmaref Inlet</feature></FS>
+<F><feature>Malaspina Coastal Plain</feature></F><DEL><del>;</del></DEL> <F><feature>Ancient Forest site</feature></F><DEL><del>,</del></DEL> <UNK><unk>recently deglaciated</unk></UNK> <NF><pre>by</pre> <feature>Bering Gl.</feature></NF>
+<F><feature>Endicott Mts.</feature></F><DEL><del>;</del></DEL> <FS><feature>Chandler Lake,</feature> <sub>S shore</sub></FS>
+<F><feature>Cache Lake</feature></F><DEL><del>,</del></DEL> <F><feature>Algoquin Park</feature></F>
+<F><feature>BIG BEND RANCH STATE NATURAL AREA</feature></F>
+<F><feature>Ugashik</feature></F><DEL><del>,</del></DEL> <NF><proximity>off</proximity> <feature>Smoky Point</feature></NF>
+<FOH><offset>10</offset> <unit>KM</unit> <heading>N</heading> <pre>OF</pre> <feature>KUALA LUMPUR</feature></FOH>
+<F><feature>SALT LAKE CITY</feature></F>
+<F><feature>VOLCAN IRAZU</feature></F><DEL><del>,</del></DEL><F><feature>FINCA COLIBLANCO</feature></F><DEL><del>,</del></DEL><E><offset>2350</offset><unit>M</unit></E>
+<F><feature>Yukon-Tanana Uplands</feature></F><DEL><del>;</del></DEL> <FPH><path>Murphy Dome Road</path> <heading>NW</heading> <pre>of</pre> <feature>Fairbanks</feature></FPH>
+<F><feature>Coronation Island</feature></F><DEL><del>,</del></DEL> <F><feature>Egg Harbor</feature></F>
+<PBF><path>trail</path> <pre>from</pre> <feature>La Cantarrana Camp</feature> <pre>to</pre> <feature>Cascante Camp</feature></PBF><DEL><del>,</del></DEL> <F><feature>Zona Protectora La Selva</feature></F>
+<F><feature>Bonners Ferry</feature></F>
+<F><feature>Meramee Caverns</feature></F>
+<F><feature>Seward Peninsula</feature></F><DEL><del>;</del></DEL> <NF><proximity>vic.</proximity> <feature>Bluff</feature></NF><DEL><del>,</del></DEL> <FS><sub>S</sub> <feature>coast</feature></FS>
+<F><feature>Kakagrak Hills</feature></F><DEL><del>,</del></DEL> <NF><proximity>vic.</proximity> <feature>'radio tower' airstrip</feature></NF>
+<F><feature>Johnson's Well</feature></F><DEL><del>,</del></DEL> <PH><heading>W side</heading> <path>Purgatory Creek</path></PH><DEL><del>,</del></DEL> <FOH><offset>1.9</offset> <unit>mi</unit> <heading>SW</heading> <feature>(by air) center of San Marcos</feature></FOH>
+<P><path>Black River</path></P><DEL><del>,</del></DEL> <UNK><unk>C-4</unk></UNK>
+<F><feature>TERRY RANCH</feature></F><DEL><del>,</del></DEL> <F><feature>BEAVER DAM WASH</feature></F>
+<F><feature>Mt. Schwatka</feature></F>
+<F><feature>Rio Aguarico</feature></F>
+<F><feature>Brooks Range</feature></F><DEL><del>,</del></DEL> <P><path>Killik R.</path></P><DEL><del>;</del></DEL> <F><feature>Lake Kaniksrak</feature></F>
+<F><feature>AGUA AMARGA</feature></F>
+<FOO><feature>FAIRVIEW,</feature> <offset>1</offset> <unit>MI</unit> <heading>N,</heading> <offset>3</offset> <unit>MI</unit> <heading>W</heading> <pre>OF</pre></FOO>
+<TRS><t>T21N</t> <r>R2W</r> <s>Section 4</s></TRS>
+<F><feature>UPPER VALLEY</feature></F>
+<F><feature>Alaska Range</feature></F><DEL><del>;</del></DEL> <NF><proximity>vic.</proximity> <feature>Eielson Visitors Center</feature></NF>
+<F><feature>SALTCREEK WASH</feature></F><DEL><del>,</del></DEL> <TRSS><sub>NW1/4,</sub> <s>SEC.20,</s> <t>T.30S,</t> <r>R.20E,</r></TRSS> <E><offset>4950</offset><unit>FT.</unit></E>
+<F><feature>Matuguinao</feature></F>
+<LL><long>24D24.5'</long><longw>N,</longw> <lat>110DD25.9'</lat><latw>W</latw></LL><DEL><del>.</del></DEL> <E><offset>0</offset><unit>M</unit></E><DEL><del>.</del></DEL> <F><feature>ISLA ESPIRITU SANTO.<feature></F>
+<FH><feature>COLLEGE PLACE,</feature> <heading>W</heading> <pre>OF</pre></FH>
+<F><feature>La Macarena Parque</feature></F><DEL><del>,</del></DEL> <P><path>Rio Guapaya</path></P>
+<FOH><offset>10</offset> <unit>mi</unit> <pre>BELOW</pre> <heading>NW</heading> <feature>WALKER PASS</feature></FOH><DEL><del>,</del></DEL> <E><offset>ELEV.= (+/-) 3800</offset> <unit>ft</unit></E>
+<P><path>Exit Glacier-Harding Icefield Trail</path></P>
+<F><feature>Goodnews Bay Platinum Mine</feature></F>
+<F><feature>Kenai Peninsula</feature></F><DEL><del>;</del></DEL> <POM><marker>Mi 133</marker> <path>Sterling Hwy.</path></POM><DEL><del>,</del></DEL> <FOH><offset>6</offset> <unit>km</unit> <heading>N</heading> <feature>Ninilchik</feature></FOH>
+<F><feature>Cirque Lake</feature></F>
+<FOO><feature>Ross Lake Dam,</feature> <offset>10.5</offset> <unit>mi</unit> <heading>N,</heading> <offset>3</offset> <unit>mi</unit> <heading>E</heading></FOO><DEL><del>;</del></DEL> <P><path>Lightning Creek</path></P>
+<P><path>Range Road</path></P> <NF><proximity>near</proximity> <feature>B Mountain</feature> <conj>and</conj> <feature>Lark Ramp</feature></NF><DEL><del>,</del></DEL> <F><feature>China Lake</feature></F>
+<FH><feature>Mt Albasso,</feature> <heading>E</heading> <pre>of</pre></FH><DEL><del>,</del></DEL> <FH><feature>Lakicha,</feature> <heading>S</heading> <pre>of</pre></FH><DEL><del>,</del></DEL> <F><feature>Arusi Plateau</feature></F>
+<P><path>INDIAN CREEK</path></P><DEL><del>,</del></DEL> <FOH><offset>10</offset> <unit>MI</unit> <heading>WSW</heading> <feature>MONTICELLO</feature></FOH>
+<F><feature>Aboalimena</feature></F><DEL><del>,</del></DEL> <PH><heading>north</heading> <pre>of</pre> <path>Tsiribihina River</path></PH>
+<P><path>Power Cr. Road</path></P><DEL><del>,</del></DEL> <F><feature>Cordova</feature></F>
+<FOH><offset>5</offset> <unit>KM</unit> <heading>W</heading> <feature>PUERTO MARQUEZ</feature></FOH>
+<FS><feature>Arctic Foothills</feature> <sub>(Southern)</sub></FS><DEL><del>;</del></DEL> <POM><marker>Mi 285</marker> <path>Dalton Hwy.</path></POM><DEL><del>,</del></DEL> <F><feature>Toolik Lake</feature></F>
+<F><feature>La Candela</feature></F>

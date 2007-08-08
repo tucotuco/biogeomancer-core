@@ -1,0 +1,839 @@
+/* 
+ * This file is part of BioGeomancer.
+ *
+ *  Biogeomancer is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  any later version.
+ *
+ *  Biogeomancer is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with Biogeomancer; if not, write to the Free Software
+ *  Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+ */
+package org.biogeomancer.managers;
+
+import java.io.BufferedWriter;
+import java.io.OutputStreamWriter;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.util.Properties;
+
+import org.apache.log4j.Logger;
+import org.biogeomancer.records.Georef;
+import org.biogeomancer.records.Rec;
+import org.biogeomancer.records.RecSet;
+import org.biogeomancer.utils.SupportedLanguages;
+
+import edu.tulane.bg_geolocate;
+import edu.tulane.bg_geolocate.bg_geolocate_Exception;
+import edu.uiuc.BGI.Hmm.BGIHmm;
+import edu.uiuc.BGI.Hmm.BGIHmm.BGIHmmException;
+import edu.yale.GBI.BGI;
+import edu.yale.GBI.BGI.BGIException;
+
+public class GeorefManager extends BGManager {
+
+	public class GeorefManagerException extends Exception {
+		GeorefManagerException(String errormsg) {
+			super(errormsg);
+		}
+
+		GeorefManagerException(Exception exception) {
+			super(exception);
+		}
+
+		GeorefManagerException(String errormsg, Exception exception) {
+			super(errormsg, exception);
+		}
+	}
+
+	private static final Logger log = Logger.getLogger(GeorefManager.class);
+	private static Properties props = new Properties();
+  public static String PROPS_FILE = "GeorefManager.properties";
+
+  static {
+    initProps(PROPS_FILE, props);
+  }
+  
+  
+	private RecSet recset;
+	private BGI yaleLocInterp;
+	private BGIHmm uiucLocInterp;
+	bg_geolocate TULocInterp;
+	private SpatialDescriptionManager spatialDescriptionManager;
+
+	public static void main(String[] args) throws Exception {
+		int test = 0;
+		String arg1 = null;
+		String arg2 = null;
+		
+		// choose test to run by one of the following integers in the first argument
+		final int INTERP = 1; // no args
+		final int DIFF_IO = 2; // no args
+		final int DIFF_INTERP = 3; // no args
+		final int INTERP_TULANE = 4; // no args
+		final int INTERP_YALE = 5; // fieldname
+		final int INTERP_UIUC = 6; // fieldname
+		final int YALE_FIRST = 7; // no args
+		final int UIUC_FIRST = 8; // no args
+		final int TULANE_FIRST = 9; // no args
+		final int SAME_INTERP = 10; // whatever, "showorig"
+		final int FIND_LOCTYPE = 11;  // LocType
+		final int COUNT_LOCTYPE = 12; // interpreter ("yale", "uiuc", "tulane"), fieldname
+		final int TO_MARKUP = 13; // no args
+		final int NEW_GEOREF = 14; // interpreter ("yale", "uiuc", "tulane")
+		final int SINGLE_GEOREF = 15; // interpreter ("yale", "uiuc", "tulane")
+		final int INTERP_NEWYALE = 16; // fieldname or "all", language
+		if(args.length > 0){
+			Integer z = new Integer(args[0]);
+			test = z.intValue();
+		}
+		if(args.length > 1){
+			arg1 = new String(args[1]);
+		}
+		if(args.length > 2){
+			arg2 = new String(args[2]);
+		}
+
+		// test the georef manager
+		GeorefManager gm = new GeorefManager();
+		RecSet rs = null;
+
+		// Grab test data from bg.config and create RecSet from it.
+		String localData, remoteData, downloadData = null;
+		localData = gm.props.getProperty("testdata.local.georefmanager");
+		remoteData = gm.props.getProperty("testdata.remote.georefmanager");
+		downloadData = gm.props.getProperty("downloads");
+		if (localData != null) {
+			rs = new RecSet(localData, "tab");
+		} else if (remoteData != null) {
+			if (downloadData != null)
+				rs = new RecSet(remoteData, "tab", downloadData);
+			else
+				System.out
+				.println("No download location configured in "
+						+ System.getProperty("user.home")
+						+ "/bg.config... Please define downloads as a path to where these files should be stored.");
+		} else
+			System.out
+			.println("No test data configured in "
+					+ System.getProperty("user.home")
+					+ "/bg.config... Please define testdata.local.georefmanager or testdata.remote.georefmanager.");
+
+		gm.setRecSet(rs);
+		GeorefPreferences gp = null;
+		if( arg1 == null ) gp = new GeorefPreferences("all");
+		else gp = new GeorefPreferences(arg1);
+
+		long starttime = System.currentTimeMillis();
+		switch (test) {
+		case INTERP:
+			System.out.println("***INTERPRETATION test***");
+			gm.testInterpretation();
+			break;
+		case DIFF_IO:
+			System.out.println("***INPUT/OUTPUT DIFFERENCE test***");
+			gm.diffInputOutput();
+			break;
+		case DIFF_INTERP:
+			System.out.println("***DIFFERENT INTERPRETATIONS test***");
+			gm.diffInterpretations();
+			break;
+		case SAME_INTERP:
+			System.out.println("***SAME INTERPRETATIONS test***");
+			if(arg2 != null && arg2.equalsIgnoreCase("showorig")) gm.sameInterpretations(true);
+			else gm.sameInterpretations(false);
+			break;
+		case YALE_FIRST:
+			System.out.println("***GEOREFERENCE YALE FIRST test***"); 
+			gm.georeferenceAllYaleFirst();
+			break;
+		case UIUC_FIRST:
+			System.out.println("***GEOREFERENCE UIUC FIRST test***");
+			gm.georeferenceAllUIUCFirst();
+			break;
+		case TULANE_FIRST:
+			System.out.println("***GEOREFERENCE TULANE FIRST test***");
+			gm.georeferenceAllTulaneFirst();
+			break;
+		case INTERP_YALE:
+			System.out.println("***YALE INTERPRETATION test***");
+			gm.interpretYale(arg1); // parsefieldname or "all"
+			break;
+		case INTERP_NEWYALE:
+			System.out.println("***NEW YALE INTERPRETATION test***");
+			gm.newInterpretYale(arg1, arg2); // parsefieldname or "all", language of original text ("english", spanish", "portuguese", "french")
+			break;
+		case INTERP_UIUC:
+			System.out.println("***UIUC INTERPRETATION test***");
+			gm.interpretUIUC(arg1);
+			break;
+		case INTERP_TULANE:
+			System.out.println("***TULANE INTERPRETATION test***");
+			gm.interpretTulane();
+			break;
+		case FIND_LOCTYPE:
+			System.out.println("***LOCTYPE SEARCH test: LocType "+arg1+" ***");
+			gm.findLocTypeInterpretations(arg1);
+			break;
+		case COUNT_LOCTYPE:
+			System.out.println("***LOCTYPE COUNT test***");
+			gm.locTypeCounts(arg1, args[2]); // arg1 (e.g., "yale"), args[2]=interpfield (e.g., "Locality")
+			break;
+		case TO_MARKUP:
+			System.out.println("***GEOREFERENCE MARKUP test: "+gp.locinterp+"***");
+			gm.georeference(gp);
+			String recsetstring = new String(gm.recset.toMarkup());
+			System.out.println(recsetstring);
+			break;
+		case NEW_GEOREF:
+			System.out.println("***NEWGEOREFERENCE test***");
+			gm.newGeoreference(gp);
+			break;
+		case SINGLE_GEOREF:
+			System.out.println("***SINGLE GEOREFERENCE test***");
+			for( Rec r : gm.recset.recs){
+				gm.georeference(r, gp);
+				System.out.println(r.toXML(false));
+			}
+			break;
+		default:
+			System.out.println("***GEOREFERENCE test***");		
+			gm.georeference(gp);
+		break;
+		}		
+
+		long endtime = System.currentTimeMillis();
+		log.info("\nElapsed test time: " + (endtime - starttime) + " (ms)\n");
+		gm.shutdown();
+	}
+
+	public GeorefManager() throws GeorefManager.GeorefManagerException {
+		init();
+	}
+
+	public void setRecSet(RecSet recset) {
+		this.recset = recset;
+	}
+
+	private void init() throws GeorefManagerException {
+		try {
+			log.info("GeorefManager started");
+			yaleLocInterp = new BGI();
+//			log.info("after BGI()");
+			uiucLocInterp = new BGIHmm();
+//			log.info("after BGIHmm()");
+			TULocInterp = new bg_geolocate();
+//			log.info("after BGIHmm()");
+
+// Comment out the spatialDescriptionManager to test interpreters without connecting to the gazetteer. 
+			spatialDescriptionManager = new SpatialDescriptionManager();
+//			log.info("after SpatialDescriptionManager()");
+		} catch (Throwable t) {
+			log.error("Problem in GeorefManager.init()! " + t.toString());
+			// throw new GeorefManager.GeorefManagerException(e.toString(), e);
+		}
+	}
+	public GeorefManager(RecSet recset) // Remember to call shutdown() when finished with a GeorefManager.
+	throws GeorefManager.GeorefManagerException {
+		this.recset = recset;
+		init();
+	}
+
+	public void shutdown(){
+		if(spatialDescriptionManager !=null) spatialDescriptionManager.shutdown();
+	}
+
+	public void testXML() {
+		System.out.print(this.recset.toXML());
+	}
+
+	public void locTypeCounts(String arg1, String interpfield) {
+		String[] loctypes = {"addr", "adm", "bf", "bp", "e", "f", "fh", "fo", "foh", 
+				"foo", "fpoh", "fs", "j", "jo", "jh", "joh", "joo", "jpoh", "ll", 
+				"nf", "nj", "nn", "np", "npom", "p", "ph", "po", "poh", "pom", 
+				"ps", "q", "trs", "trss", "unk", "utm"};
+		int[] loccounts = {0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0,0,0,0,0,0, 
+				0,0,0,0,0,0,0,0,0,0, 0,0,0,0,0, 0};
+		int clausecount = 0;
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			if(arg1.equalsIgnoreCase("yale")){
+				try {
+					this.yaleLocInterp.doParsing(this.recset.recs.get(i), interpfield);
+				} catch (BGIException e) {
+					e.printStackTrace();
+				}
+			}
+			if(arg1.equalsIgnoreCase("uiuc")){
+				try {
+					this.uiucLocInterp.doParsing(this.recset.recs.get(i), interpfield);
+				} catch (BGIHmmException e) {
+					e.printStackTrace();
+				}
+			}
+			for(int j=0;j<this.recset.recs.get(i).clauses.size(); j++){
+				clausecount ++;
+				int k=0;
+				while(k<loctypes.length && loctypes[k].equalsIgnoreCase(this.recset.recs.get(i).clauses.get(j).locType)==false) k++;
+				loccounts[k]++;
+			}
+		}
+		for(int i=0;i<loctypes.length;i++){
+			System.out.println(loctypes[i]+":  \t"+loccounts[i]+"\t("+100.0*loccounts[i]/clausecount+"%)");
+		}
+		System.out.println("Recs: "+this.recset.recs.size()+" Clauses: "+clausecount);
+	}
+
+	public void testInterpretation() {
+		long starttime = 0, endtime = 0;
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			if (this.recset.recs.get(i).get("Id") == null) {
+				System.out.println("Orig\tRow: " + i + ";\tTime: 0;\tMarkup: "
+						+ this.recset.recs.get(i).get("locality"));
+			} else {
+				System.out.println("Orig\tRec: " + i + ";\tTime: 0;\tMarkup: "
+						+ this.recset.recs.get(i).get("locality"));
+			}
+			starttime = System.currentTimeMillis();
+			try {
+				this.yaleLocInterp.doParsing(this.recset.recs.get(i), "Locality");
+			} catch (BGIException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			if (this.recset.recs.get(i).get("Id") == null) {
+				System.out.println("Yale\tRow: " + i + ";\tTime: "
+						+ (endtime - starttime) + ";\tMarkup: "
+						+ this.recset.recs.get(i).toMarkup());
+			} else {
+				System.out.println("Yale\tRec: " + this.recset.recs.get(i).get("Id")
+						+ ";\tTime: " + (endtime - starttime) + ";\tMarkup: "
+						+ this.recset.recs.get(i).toMarkup());
+			}
+
+			this.recset.recs.get(i).clear();
+			starttime = System.currentTimeMillis();
+			try {
+				this.uiucLocInterp.doParsing(this.recset.recs.get(i), "Locality");
+			} catch (BGIHmmException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			if (this.recset.recs.get(i).get("Id") == null) {
+				System.out.println("UIUC\tRow: " + i + ";\tTime: "
+						+ (endtime - starttime) + ";\tMarkup: "
+						+ this.recset.recs.get(i).toMarkup());
+			} else {
+				System.out.println("UIUC\tRec: " + this.recset.recs.get(i).get("Id")
+						+ ";\tTime: " + (endtime - starttime) + ";\tMarkup: "
+						+ this.recset.recs.get(i).toMarkup());
+			}
+		}
+	}
+
+	public void diffInputOutput(){
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			Rec rec = this.recset.recs.get(i);
+			System.out.println(this.recset.recs.get(i).georefs.size()+" georefs for\t"+this.recset.recs.get(i).uFullLocality);
+			for (int j = 0; j < this.recset.recs.get(i).georefs.size(); j++) {
+				Georef g = this.recset.recs.get(i).georefs.get(j);
+				System.out.println(i+":"+j+"\t"+this.recset.recs.get(i).georefs.get(j).iLocality);
+				if(this.recset.recs.get(i).georefs.get(j).pointRadius!=null){
+					System.out.println("\t"+this.recset.recs.get(i).georefs.get(j).pointRadius.toString());
+
+				}
+			}
+		}		
+	}
+	public void diffInterpretations() {
+		try {
+			Writer out = new BufferedWriter(new OutputStreamWriter(System.out, "UTF-8"));
+		} catch (UnsupportedEncodingException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		// Set up output stream
+		long starttime = 0, endtime = 0, diffcount=0;
+		String oInterp, yInterp, uInterp;
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			String recid = null;
+			if (this.recset.recs.get(i).get("Id") != null) {
+				recid = new String(this.recset.recs.get(i).get("Id"));
+			}else recid = new String(""+i);
+			oInterp=new String(recid+"\torig\t"+this.recset.recs.get(i).get("locality"));
+			starttime = System.currentTimeMillis();
+			try {
+				this.yaleLocInterp.doParsing(this.recset.recs.get(i),
+				"Locality");
+			} catch (BGIException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			yInterp=new String(this.recset.recs.get(i).toMarkup());
+
+			this.recset.recs.get(i).clear();
+			starttime = System.currentTimeMillis();
+			try {
+				this.uiucLocInterp.doParsing(this.recset.recs.get(i), "Locality");
+			} catch (BGIHmmException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			uInterp=new String(this.recset.recs.get(i).toMarkup());
+			if(yInterp.equalsIgnoreCase(uInterp) == false){
+				diffcount++;
+				System.out.println(oInterp+"\n"+recid+"\tyale\t"+yInterp+"\n"+recid+"\tuiuc\t"+uInterp);
+			} else {
+				System.out.println(oInterp+"\n"+recid+"\tboth\t"+yInterp);			
+			}
+		}
+		double percentdiffs = (double)diffcount/(double)this.recset.recs.size();
+		System.out.println(diffcount+" diffs of "+this.recset.recs.size()+" records ("+100*percentdiffs+"%)");
+	}
+
+	public void findLocTypeInterpretations(String loctype) {
+		if( loctype == null ) return;
+		try {
+			Writer out = new BufferedWriter(new OutputStreamWriter(System.out, "UTF-8"));
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		// Set up output stream
+		long starttime = 0, endtime = 0, diffcount=0;
+		String oInterp, yInterp, uInterp;
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			String recid = null;
+			if (this.recset.recs.get(i).get("Id") != null) {
+				recid = new String(this.recset.recs.get(i).get("Id"));
+			}else recid = new String(""+i);
+			oInterp=new String(recid+"\torig\t"+this.recset.recs.get(i).get("locality"));
+			starttime = System.currentTimeMillis();
+			try {
+				this.yaleLocInterp.doParsing(this.recset.recs.get(i),
+				"Locality");
+			} catch (BGIException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			yInterp=new String(this.recset.recs.get(i).toMarkup(loctype));
+
+			this.recset.recs.get(i).clear();
+			starttime = System.currentTimeMillis();
+			try {
+				this.uiucLocInterp.doParsing(this.recset.recs.get(i), "Locality");
+			} catch (BGIHmmException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			uInterp=new String(this.recset.recs.get(i).toMarkup(loctype));
+			if(yInterp.indexOf(loctype)>0 || uInterp.indexOf(loctype)>0 ){
+				diffcount++;
+				System.out.println(oInterp+"\n"+recid+"\tyale\t"+yInterp+"\n"+recid+"\tuiuc\t"+uInterp);
+			}
+		}
+		double percentdiffs = (double)diffcount/(double)this.recset.recs.size();
+		System.out.println(diffcount+" records with LocType <"+loctype+"> of "+this.recset.recs.size()+" records ("+100*percentdiffs+"%)");
+	}
+
+	public void sameInterpretations(boolean showorig) {
+		try {
+			Writer out = new BufferedWriter(new OutputStreamWriter(System.out, "UTF-8"));
+		} catch (UnsupportedEncodingException e1) {
+			e1.printStackTrace();
+		}
+		// Set up output stream
+		long starttime = 0, endtime = 0, diffcount=0;
+		String yInterp, uInterp;
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			String recid = null;
+			if (this.recset.recs.get(i).get("Id") != null) {
+				recid = new String(this.recset.recs.get(i).get("Id"));
+			}else recid = new String(""+i);
+			starttime = System.currentTimeMillis();
+			try {
+				this.yaleLocInterp.doParsing(this.recset.recs.get(i),"Locality");
+			} catch (BGIException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			yInterp=new String(this.recset.recs.get(i).toMarkup());
+
+			this.recset.recs.get(i).clear();
+			starttime = System.currentTimeMillis();
+			try {
+				this.uiucLocInterp.doParsing(this.recset.recs.get(i), "Locality");
+			} catch (BGIHmmException e) {
+				e.printStackTrace();
+			}
+			endtime = System.currentTimeMillis();
+			uInterp=new String(this.recset.recs.get(i).toMarkup());
+			if(yInterp.equalsIgnoreCase(uInterp) == true){
+				diffcount++;
+				System.out.println(recid+"\torig\t"+this.recset.recs.get(i).get("locality"));
+				System.out.println(recid+"\tboth\t"+yInterp);			
+			}
+		}
+		double percentdiffs = (double)diffcount/(double)this.recset.recs.size();
+		System.out.println(diffcount+" the same of "+this.recset.recs.size()+" records ("+100*percentdiffs+"%)");
+	}
+
+	public void interpretTulane() throws bg_geolocate_Exception {
+		if (this.recset == null) return;
+		System.out.println("Output from interpretTulane() using as input: "+recset.filename);
+		String recid = null;
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			if (this.recset.recs.get(i).get("Id") != null) {
+				recid = this.recset.recs.get(i).get("Id");
+			}else recid = new String(""+i);
+			this.TULocInterp.doParsing(this.recset.recs.get(i), "Locality", "Highergeography", "Country", "State", "County");
+			System.out.println(recid+"\t"+this.recset.recs.get(i).toMarkup());
+		}
+	}
+
+	public void interpretUIUC(String parsefield) throws GeorefManager.GeorefManagerException,
+	BGIHmmException {
+		if (this.recset == null) return; 
+		System.out.println("Output from interpretUIUC() using as input: "+recset.filename);
+		String recid = null;
+		if( parsefield == null || parsefield.equalsIgnoreCase("all")){
+			this.uiucLocInterp.doParsing(this.recset);
+			for (int i = 0; i < this.recset.recs.size(); i++) {
+				if (this.recset.recs.get(i).get("Id") != null) {
+					recid = this.recset.recs.get(i).get("Id");
+				} else recid = new String(""+i);
+				System.out.println(recid+"\t"+this.recset.recs.get(i).toMarkup());
+			}
+		} else {
+			for (int i = 0; i < this.recset.recs.size(); i++) {
+				if (this.recset.recs.get(i).get("Id") != null) {
+					recid = this.recset.recs.get(i).get("Id");
+				}else recid = new String(""+i);
+				this.uiucLocInterp.doParsing(this.recset.recs.get(i), parsefield);
+				System.out.println(recid+"\t"+this.recset.recs.get(i).toMarkup());
+			}
+		}
+	}
+
+	public void interpretYale(String parsefield) throws GeorefManager.GeorefManagerException,
+	BGIException {
+		if (this.recset == null) return;
+		System.out.println("Output from interpretYale() using as input: "+recset.filename);
+		String recid = null;
+		if( parsefield == null || parsefield.equalsIgnoreCase("all")){
+			this.yaleLocInterp.doParsing(this.recset);
+			for (int i = 0; i < this.recset.recs.size(); i++) {
+				if (this.recset.recs.get(i).get("Id") != null) {
+					recid = this.recset.recs.get(i).get("Id");
+				} else recid = new String(""+i);
+				System.out.println(recid+"\t"+this.recset.recs.get(i).toMarkup());
+			}
+		} else {
+			for (int i = 0; i < this.recset.recs.size(); i++) {
+				if (this.recset.recs.get(i).get("Id") != null) {
+					recid = this.recset.recs.get(i).get("Id");
+				}else recid = new String(""+i);
+				this.yaleLocInterp.doParsing(this.recset.recs.get(i), parsefield);
+				System.out.println(recid+"\t"+this.recset.recs.get(i).toMarkup());
+			}
+		}
+	}
+
+	public void newInterpretYale(String parsefield, String language) throws GeorefManager.GeorefManagerException,
+	BGIException {
+		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
+		SupportedLanguages interplang = SupportedLanguages.english;
+		if(language.equalsIgnoreCase("español") || language.equalsIgnoreCase("spanish")){
+			interplang=SupportedLanguages.spanish;
+		} else if (language.equalsIgnoreCase("português") || language.equalsIgnoreCase("portuguese")){
+			interplang=SupportedLanguages.portuguese;			
+		} else if (language.equalsIgnoreCase("français") || language.equalsIgnoreCase("french")){
+			interplang=SupportedLanguages.french;
+		}
+		
+		if (this.recset == null) return;
+		System.out.println("Output from newInterpretYale() using as input: "+recset.filename);
+		String recid = null;
+		if( parsefield == null || parsefield.equalsIgnoreCase("all")){
+			this.yaleLocInterp.doParsing(this.recset, gdm, interplang);
+			for (int i = 0; i < this.recset.recs.size(); i++) {
+				if (this.recset.recs.get(i).get("Id") != null) {
+					recid = this.recset.recs.get(i).get("Id");
+				} else recid = new String(""+i);
+				System.out.println(recid+"\t"+this.recset.recs.get(i).toMarkup());
+			}
+		} else {
+			for (int i = 0; i < this.recset.recs.size(); i++) {
+				if (this.recset.recs.get(i).get("Id") != null) {
+					recid = this.recset.recs.get(i).get("Id");
+				}else recid = new String(""+i);
+				this.yaleLocInterp.doParsing(this.recset.recs.get(i), parsefield, gdm, interplang);
+				System.out.println(recid+"\t"+this.recset.recs.get(i).toMarkup());
+			}
+		}
+	}
+
+	public boolean georeferenceAllYaleFirst()
+	throws GeorefManager.GeorefManagerException, BGIException,
+	BGIHmmException {
+		if (this.recset == null)
+			return false;
+		String s = new String("RecSet: ");
+		if (recset.filename == null)
+			s = s.concat("[no filename]; ");
+		else
+			s = s.concat(recset.filename + "; ");
+		s = s.concat("Count=" + recset.recs.size());
+		log.info(s);
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			Rec r = this.recset.recs.get(i);
+			String s1 = new String("Rec:\t" + r.get("id"));
+			this.yaleLocInterp.doParsing(r, "locality");
+			spatialDescriptionManager.doSpatialDescription(r);
+			if (r.georefs == null || r.georefs.size() == 0) {
+				r.clear();
+				s1 = s1.concat(";\tYale failed");
+				this.uiucLocInterp.doParsing(r, "Locality");
+				spatialDescriptionManager.doSpatialDescription(r);
+				if (r.georefs == null || r.georefs.size() == 0) {
+					s1 = s1.concat(";\tUIUC failed");
+				} else {
+					s1 = s1.concat(";\tUIUC succeeded");
+				}
+			} else {
+				s1 = s1.concat(";\tYale succeeded\tUIUC not attempted");
+			}
+			log.info(s1);
+		}
+		return true;
+	}
+
+	public boolean georeferenceAllUIUCFirst()
+	throws GeorefManager.GeorefManagerException, BGIException,
+	BGIHmmException {
+
+		if (this.recset == null)
+			return false;
+		String s = new String("RecSet: ");
+		if (recset.filename == null)
+			s = s.concat("[no filename]; ");
+		else
+			s = s.concat(recset.filename + "; ");
+		s = s.concat("Count=" + recset.recs.size());
+		log.info(s);
+		for (int i = 0; i < this.recset.recs.size(); i++) {
+			Rec r = this.recset.recs.get(i);
+			String s1 = new String("Rec:\t" + r.get("id"));
+			this.uiucLocInterp.doParsing(r, "Locality");
+			spatialDescriptionManager.doSpatialDescription(r);
+			if (r.georefs == null || r.georefs.size() == 0) {
+				r.clear();
+				s1 = s1.concat(";\tUIUC failed");
+				this.yaleLocInterp.doParsing(r, "locality");
+				spatialDescriptionManager.doSpatialDescription(r);
+				if (r.georefs == null || r.georefs.size() == 0) {
+					s1 = s1.concat(";\tYale failed");
+				} else {
+					s1 = s1.concat(";\tYale succeeded");
+				}
+			} else {
+				s1 = s1.concat(";\tUIUC succeeded\tYale not attempted");
+			}
+			log.info(s1);
+		}
+		return true;
+	}
+
+	public boolean georeferenceAllTulaneFirst()
+	throws GeorefManager.GeorefManagerException, BGIException,
+	BGIHmmException {
+		return false;
+	}
+
+	public boolean newGeoreference(GeorefPreferences prefs)
+	throws GeorefManager.GeorefManagerException {
+		for (Rec rec : this.recset.recs) {
+			georeference(rec, prefs);
+		}
+		return true;
+	}
+
+	public boolean georeference(Rec rec, int featureid){
+		// In this method we are going to add a single georeference 
+		// to the rec based solely on the feature referenced by featureid 
+		// with locType F. This assumes the the rest of the Rec has already been
+		// georeferenced.
+		spatialDescriptionManager.doSpatialDescription(rec, featureid);
+		return false;
+	}
+
+	public boolean georeference(Rec rec, GeorefPreferences prefs){
+		if(rec == null) return false;
+//		String s = new String("RecSet: ");
+		try {
+//			long interpstarttime = 0, interpendtime = 0;
+			if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
+//				interpstarttime = System.currentTimeMillis();
+				this.yaleLocInterp.doParsing(rec, "locality");
+				this.yaleLocInterp.doParsing(rec, "highergeography", true);
+				this.yaleLocInterp.doParsing(rec, "continent", true);
+				this.yaleLocInterp.doParsing(rec, "waterbody", true);
+				this.yaleLocInterp.doParsing(rec, "islandgroup", true);
+				this.yaleLocInterp.doParsing(rec, "island", true);
+				this.yaleLocInterp.doParsing(rec, "country", true);
+				this.yaleLocInterp.doParsing(rec, "stateprovince", true);
+				this.yaleLocInterp.doParsing(rec, "county", true);   
+				this.yaleLocInterp.doParsing(rec, "verbatimlatitude");   
+				this.yaleLocInterp.doParsing(rec, "verbatimlongitude");   
+				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates");
+				this.yaleLocInterp.doParsing(rec, "verbatimelevation");
+
+//				interpendtime = System.currentTimeMillis();
+//				s = s.concat(" (default) Yale interpreter elapsed time: "
+//						+ (interpendtime - interpstarttime) + "(ms)");
+			} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
+//				interpstarttime = System.currentTimeMillis();
+				this.uiucLocInterp.doParsing(rec, "Locality");
+				this.uiucLocInterp.doParsing(rec, "HigherGeography");
+				this.uiucLocInterp.doParsing(rec, "Continent");
+				this.uiucLocInterp.doParsing(rec, "WaterBody");
+				this.uiucLocInterp.doParsing(rec, "IslandGroup");
+				this.uiucLocInterp.doParsing(rec, "Island");
+				this.uiucLocInterp.doParsing(rec, "Country");
+				this.uiucLocInterp.doParsing(rec, "StateProvince");
+				this.uiucLocInterp.doParsing(rec, "County");
+				this.uiucLocInterp.doParsing(rec, "VerbatimLatitude");
+				this.uiucLocInterp.doParsing(rec, "VerbatimLongitude");
+				this.uiucLocInterp.doParsing(rec, "VerbatimCoordinates");
+				this.uiucLocInterp.doParsing(rec, "VerbatimElevation");
+//				interpendtime = System.currentTimeMillis();
+//				s = s.concat(" UIUC interpreter elapsed time: "
+//						+ (interpendtime - interpstarttime) + "(ms)");
+			} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
+//				interpstarttime = System.currentTimeMillis();
+				this.TULocInterp.doParsing(rec, "Locality", "Highergeography", "Country", "State", "County");
+				System.out.println(rec);
+//				interpendtime = System.currentTimeMillis();
+//				s = s.concat(" Tulane interpreter elapsed time: "
+//						+ (interpendtime - interpstarttime) + "(ms)");
+			} else return false;
+		} catch (BGIHmm.BGIHmmException e) {
+			e.printStackTrace();
+		} catch (BGI.BGIException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("Error in GeorefManager.georeference()");
+		}
+//		long sdstarttime = System.currentTimeMillis();
+//		log.info("Doing Spatial Description for rec.");
+//*** Comment next line for testing while not connected
+		spatialDescriptionManager.doSpatialDescription(rec);
+//		long sdendtime = System.currentTimeMillis();
+//		s = s.concat(" Spatial Description Elapsed Time: "
+//				+ (sdendtime - sdstarttime) + "(ms)");
+//		log.info(s);
+		return true;
+	}
+
+	public boolean georeference(GeorefPreferences prefs)
+	throws GeorefManager.GeorefManagerException {
+		if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("all")) {
+//			 I think this won't work: Interpreters will just add more clauses to the same Rec.
+//			 Need to consider a redesign to allow multiple interpreters' georefs. ClauseSets, but for a new reason.
+//							this.yaleLocInterp.doParsing(this.recset);
+//							this.uiucLocInterp.doParsing(this.recset);
+//							this.TULocInterp.doParsing(this.recset, "Locality", "HigherGeography", "Country", "State", "County");
+		} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
+			try {
+				this.uiucLocInterp.doParsing(this.recset);
+			} catch (BGIHmm.BGIHmmException e) {
+				e.printStackTrace();
+				throw this.new GeorefManagerException(e.toString(), e);
+			}
+			for (Rec rec : this.recset.recs) {
+				spatialDescriptionManager.doSpatialDescription(rec);
+			}
+		} else if (prefs.locinterp.equalsIgnoreCase("yale")) {
+			try {
+				this.yaleLocInterp.doParsing(this.recset);
+			} catch (BGI.BGIException e) {
+						e.printStackTrace();
+						throw this.new GeorefManagerException(e.toString(), e);
+			}
+			for (Rec rec : this.recset.recs) {
+				spatialDescriptionManager.doSpatialDescription(rec);
+			}
+		} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
+			try {
+				this.TULocInterp.doParsing(this.recset, "Locality", "HigherGeography", "Country", "State", "County");
+			} catch (Exception e) {
+				System.out.println("Error in GeorefManager.georeference()");
+			}
+			for (Rec rec : this.recset.recs) {
+				rec.toString();
+			}
+		}
+		return true;
+	}
+}
+/*
+public boolean georeference(GeorefPreferences prefs)
+throws GeorefManager.GeorefManagerException {
+	if (this.recset == null)
+		return false;
+	String s = new String("RecSet: ");
+	if (recset.filename == null)
+		s = s.concat("[no filename]; ");
+	else
+		s = s.concat(recset.filename + "; ");
+	s = s.concat("Count=" + recset.recs.size());
+	try {
+		long interpstarttime = 0, interpendtime = 0;
+		if (prefs.locinterp == null) {
+			interpstarttime = System.currentTimeMillis();
+			this.yaleLocInterp.doParsing(this.recset);
+			interpendtime = System.currentTimeMillis();
+			s = s.concat(" (default) Yale interpreter elapsed time: "
+					+ (interpendtime - interpstarttime) + "(ms)");
+		} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
+			interpstarttime = System.currentTimeMillis();
+			this.uiucLocInterp.doParsing(this.recset);
+			interpendtime = System.currentTimeMillis();
+			s = s.concat(" UIUC interpreter elapsed time: "
+					+ (interpendtime - interpstarttime) + "(ms)");
+		} else if (prefs.locinterp.equalsIgnoreCase("yale")) {
+			interpstarttime = System.currentTimeMillis();
+			this.yaleLocInterp.doParsing(this.recset);
+			System.out
+			.println("georeference() returning from yale.doParsing()");
+
+			interpendtime = System.currentTimeMillis();
+			s = s.concat(" Yale interpreter elapsed time: "
+					+ (interpendtime - interpstarttime) + "(ms)");
+		}
+	} catch (BGIHmm.BGIHmmException e) {
+		e.printStackTrace();
+		throw this.new GeorefManagerException(e.toString(), e);
+	} catch (BGI.BGIException e) {
+		e.printStackTrace();
+		throw this.new GeorefManagerException(e.toString(), e);
+	} catch (Exception e) {
+		System.out.println("Error in GeorefManager.georeference()");
+
+	}
+	long sdstarttime = System.currentTimeMillis();
+	for (Rec rec : this.recset.recs) { // print out each record
+		log.info("Doing Spatial Description for rec ID = "+rec.get("id"));
+		spatialDescriptionManager.doSpatialDescription(rec);
+	}
+	long sdendtime = System.currentTimeMillis();
+	s = s.concat(" Spatial Description Elapsed Time: "
+			+ (sdendtime - sdstarttime) + "(ms)");
+	log.info(s);
+	return true;
+}
+ */

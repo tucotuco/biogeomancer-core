@@ -1,0 +1,249 @@
+# Start of Mapfile (world.map)
+NAME world
+STATUS ON
+SIZE 480 240
+EXTENT -180 -90 180 90
+UNITS DD
+IMAGETYPE PNG
+IMAGECOLOR 165 214 239
+  
+# Map projection definition
+PROJECTION
+  "proj=latlong"
+  "ellps=WGS84"
+  "datum=WGS84"
+END
+
+
+# Map interface definition
+
+WEB
+  #LOG "C:\Program Files\Apache Software Foundation\Apache2\logs\mapserver.log"
+  
+  #IMAGEPATH "C:\Program Files\Apache Software Foundation\Apache2\htdocs\temp\" 
+  IMAGEPATH "/var/tmp/"
+  
+  #IMAGEURL "/temp/"
+  IMAGEURL "/tmp/"
+  #EMPTY "/biogeomancer/templates/no_records.html"  
+  EMPTY "/biogeomancer_dneufeld/templates/no_records.html"
+    METADATA
+      WMS_TITLE "BioGeomancer"
+      WMS_ABSTRACT "This is a biogeomancer application."
+      WMS_ACCESSCONSTRAINTS none
+
+      # change this value to match your setup
+      WMS_ONLINERESOURCE "http://bg.berkeley.edu/bioGeomancer/client/index.html"
+
+      WMS_SRS "EPSG:4326"
+      
+      WFS_TITLE "BioGeomancer"
+      WFS_ABSTRACT "This is a biogeomancer application."
+      WFS_ACCESSCONSTRAINTS none
+
+      # change this value to match your setup
+      WFS_ONLINERESOURCE "http://bg.berkeley.edu/bioGeomancer/client/index.html"
+      WFS_SRS "EPSG:4326"      
+    END  
+END
+
+  SYMBOL
+    NAME 'circle'
+    TYPE ELLIPSE
+    POINTS 1 1 END
+    FILLED TRUE
+  END
+
+  QUERYMAP
+    STATUS ON
+    STYLE HILITE
+    COLOR 255 255 0
+  END 
+
+  # Our background image
+  LAYER
+    NAME wsiearth
+    METADATA
+      "wms_title" "Wsiearth"
+      "wms_srs" "EPSG:4318"   
+    END
+  
+    # Used for CGI queries
+  
+    TYPE RASTER
+    STATUS ON
+    DUMP TRUE
+  
+    #DATA "C:\Program Files\Apache Software Foundation\Apache2\htdocs\biogeomancer\data\wsiearth.tif"
+    DATA "/home/dneufeld/bgproj/data/gis/wsiearth.tif"
+    PROJECTION
+      "proj=latlong"
+      "ellps=WGS84"
+      "datum=WGS84"
+    END  
+  END
+  
+  # Our country shapefile, just to get some political boundaries
+  LAYER
+    NAME cntry
+    METADATA
+      "wms_title" "Country"
+      "wms_srs" "EPSG:4318"
+      "wfs_title" "Country"
+      "wfs_service" "WFS"
+      "wfs_version" "1.0.0"
+      "wfs_typename" "country"  
+      "wfs_srs" "EPSG:4326"      
+    END
+  
+    # Used for CGI queries
+    CLASS
+      NAME 'Country'
+      TEMPLATE "templates/cntry.html"
+        STYLE
+          OUTLINECOLOR 0 0 0
+        END    
+    END
+
+    HEADER "templates/cntry_header.html"
+    FOOTER "templates/cntry_footer.html"  
+  
+    TYPE POLYGON
+    STATUS ON
+    DUMP TRUE
+  
+    #DATA "C:\Program Files\Apache Software Foundation\Apache2\htdocs\biogeomancer\data\cntry00.shp"
+    DATA "/home/dneufeld/bgproj/data/gis/cntry00.shp"
+    PROJECTION
+      "proj=latlong"
+      "ellps=WGS84"
+      "datum=WGS84"
+    END  
+    CLASS
+      OUTLINECOLOR 0 0 0
+    END
+  END
+
+  # Our country shapefile, just to get some political boundaries
+  LAYER
+    NAME lakes
+    METADATA
+      "wms_title" "Lakes"
+      "wms_srs" "EPSG:4318"
+      "wfs_title" "Lakes"
+      "wfs_service" "WFS"
+      "wfs_version" "1.0.0"
+      "wfs_typename" "lakes"  
+      "wfs_srs" "EPSG:4326"      
+    END
+  
+    # Used for CGI queries
+    CLASS
+      NAME 'Lakes'
+      TEMPLATE "templates/lakes.html"
+        STYLE
+          COLOR 0 0 255
+          OUTLINECOLOR 0 0 255
+        END    
+    END
+
+    HEADER "templates/lakes_header.html"
+    FOOTER "templates/lakes_footer.html"  
+  
+    TYPE POLYGON
+    STATUS ON
+    DUMP TRUE
+  
+    #DATA "C:\Program Files\Apache Software Foundation\Apache2\htdocs\biogeomancer\data\lakes.shp"
+    DATA "/home/dneufeld/bgproj/data/gis/lakes.shp"
+    PROJECTION
+      "proj=latlong"
+      "ellps=WGS84"
+      "datum=WGS84"
+    END  
+  END
+  
+  # Rivers
+  LAYER
+    NAME rivers
+    METADATA
+      "wms_title" "Rivers"
+      "wms_srs" "EPSG:4318"
+      "wfs_title" "Rivers"
+      "wfs_service" "WFS"
+      "wfs_version" "1.0.0"
+      "wfs_typename" "Rivers"  
+      "wfs_srs" "EPSG:4326"      
+    END
+  
+    # Used for CGI queries
+    CLASS
+      NAME 'Rivers'
+      TEMPLATE "templates/rivers.html"
+        STYLE
+          COLOR 0 0 255
+        END    
+    END
+
+    HEADER "templates/rivers_header.html"
+    FOOTER "templates/rivers_footer.html"  
+  
+    TYPE LINE
+    STATUS ON
+    DUMP TRUE
+  
+    #DATA "C:\Program Files\Apache Software Foundation\Apache2\htdocs\biogeomancer\data\rivers.shp"
+    DATA "/home/dneufeld/bgproj/data/gis/rivers.shp"
+    PROJECTION
+      "proj=latlong"
+      "ellps=WGS84"
+      "datum=WGS84"
+    END  
+ 
+  END
+  
+  LAYER
+    NAME collections
+    METADATA
+      "wms_title" "Collections"
+      "wms_srs" "EPSG:4326"
+      "wfs_title" "collections"
+      "wfs_service" "WFS"
+      "wfs_version" "1.0.0"
+      "wfs_typename" "collections"  
+      "wfs_srs" "EPSG:4326"
+    END
+
+    CLASS
+      NAME 'Collections'
+      TEMPLATE "templates/collections.html"    
+      STYLE
+        COLOR 255 0 0
+        SYMBOL 'circle'
+        SIZE 7
+      END
+    END
+
+    HEADER "templates/collections_header.html"
+    FOOTER "templates/collections_footer.html"
+
+    TOLERANCE 3 
+
+    TYPE POINT
+
+    STATUS ON
+    DUMP TRUE    
+
+    CONNECTIONTYPE postgis
+    CONNECTION "user=Owner password=Owner dbname=biogeomancer host=localhost"
+    DATA "the_geom from collections"
+    #DATA "/home/dneufeld/bgproj/data/gis/collections.shp"
+
+    PROJECTION
+      "proj=latlong"
+      "ellps=WGS84"
+      "datum=WGS84"
+   END 
+  END
+END # End of mapfile world.map
+
