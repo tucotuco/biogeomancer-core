@@ -1,6 +1,0 @@
-#!/usr/bin/python
-import os
-os.system('ant -propertyfile mybuild.properties remove')
-os.system('ant -propertyfile mybuild.properties clean')
-os.system('ant -propertyfile mybuild.properties install')
-print 'done.'
