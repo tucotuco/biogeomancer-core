@@ -6,7 +6,7 @@
   </description>
 
 	<property name="version" value="1.0" />
-	
+
 	<!-- set classpath -->
 	<path id="project.class.path">
 		<pathelement path="${java.class.path}/" />
@@ -22,10 +22,33 @@
 		</javac>
 	</target>
 
-	<target name="package" depends="compile" description="Package up the project as a jar">
+	<target name="javadoc" description="Generates the JavaDoc">
+		<delete dir="docs" />
+		<mkdir dir="docs" />
+		<javadoc author="true" destdir="docs" nohelp="true" public="true" packagenames="org.biogeomancer.*" version="true" windowtitle="JavaDoc of the BioGeomancer project">
+			<classpath>
+				<!-- be sure not to use ${} here -->
+				<path refid="project.class.path" />
+			</classpath>
+			<sourcepath>
+				<!-- be sure not to use ${} here -->
+				<pathelement path="src" />
+			</sourcepath>
+		</javadoc>
+		<!-- This is required because the jar tag cannot create a new target
+		directory for the docs.-->
+		<copy verbose='true' todir="bin/docs">
+			<fileset dir="docs" />
+		</copy>
+	</target>
+
+	<target name="package" depends="compile,javadoc" description="Package up the project as a jar">
 		<jar destfile="biogeomancer-core-${version}.jar">
 			<fileset dir="bin">
 				<include name="**/*.class" />
+			</fileset>
+			<fileset dir="bin">
+				<include name="docs/**" />
 			</fileset>
 			<!-- Get everything; source, modules, html files -->
 			<fileset dir="src">
