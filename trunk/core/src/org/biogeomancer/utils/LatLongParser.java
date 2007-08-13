@@ -1,12 +1,14 @@
 /**
- *LatLongParser.java
+ *@ LatLongParser.java
  *
  *The main purpose of this code is to take a String with latitude and
  *longitude or two Strings, one of which is latitude and one of which is longitude,
  *and return an array of LatLong objects with possible parsings.
  *
- *Author: Peter DeVore
- *Email: pdevore AT berkeley dot edu
+ *@version alpha, untested
+ *
+ *@author Peter DeVore
+ *@email pdevore AT berkeley dot edu
  */
 package org.biogeomancer.utils;
 
@@ -16,11 +18,15 @@ import java.util.regex.*;
 
 public abstract class LatLongParser {
 
-	static final String[] LATITUDEMARKERS = { "N", "n", "S", "s" };
-	static final String[] LONGITUDEMARKERS = { "E", "e", "W", "w" };
-	static final String[] DEGREEMARKERS = { "D", "d", "\u00b0" };
-	static final String[] MINUTEMARKERS = { "M", "m", "'" };
-	static final String[] SECONDMARKERS = { "S", "s", "\"" };
+	static final String LATLONGPREFIX = "(?<=[^A-Za-z]";
+	static final String LATLONGSUFFIX = ")(?=.*?[0-9]?)";
+	static final Pattern LATITUDEPATTERN = Pattern.compile(LATLONGPREFIX
+			+ "[NnSs]" + LATLONGSUFFIX);
+	static final Pattern LONGITUDEPATTERN = Pattern.compile(LATLONGPREFIX
+			+ "[EeWW]" + LATLONGSUFFIX);
+	static final Pattern DEGREEPATTERN = Pattern.compile("[Dd\u00b0]");
+	static final Pattern MINUTEPATTERN = Pattern.compile("[Mm']");
+	static final Pattern SECONDPATTERN = Pattern.compile("[Ss\"]");
 
 	public static LatLong[] parse(String s) {
 		ArrayList<LatLong> temp = latAndLongParseHelper(s);
@@ -53,38 +59,36 @@ public abstract class LatLongParser {
 
 		// Try to split around any sort of direction marking
 		// Then send all matches to the parser.
-		ArrayList<String[]> tempStrAL = splitByDirection(s);
+		ArrayList<LatStrLonStr> tempStrAL = splitByDirection(s);
 		for (int i = 0; i < tempStrAL.size(); i++) {
-			retval.addAll(latAndLongParseHelper(tempStrAL.get(i)[0], tempStrAL
-					.get(i)[1]));
+			retval.addAll(latThenLongParseHelper(tempStrAL.get(i).latitude,
+					tempStrAL.get(i).longitude));
 		}
 
 		return retval;
 	}
 
 	// Takes a single string that has lat and lon in it
-	// and attempts to split it into lat and lon types
-	// Then tries to parse the rest of the string
-	private static ArrayList<String[]> splitByDirection(String s) {
-		String[] temp;
-		ArrayList<String[]> retval = new ArrayList<String[]>();
-		for (int i = 0; i < LATITUDEMARKERS.length; i++) {
-			temp = s.split("(?<=[^A-Za-z]" + LATITUDEMARKERS[i]
-					+ ")(?=.*?[0-9])");
-			if (temp.length == 2) {
-				temp[0] = temp[0].trim();
-				temp[1] = temp[1].trim();
-				retval.add(temp);
-			}
+	// and attempts to split it into lat and lon Strings
+	private static ArrayList<LatStrLonStr> splitByDirection(String s) {
+		LatStrLonStr temp;
+		ArrayList<LatStrLonStr> retval = new ArrayList<LatStrLonStr>();
+		Matcher match;
+		match = LATITUDEPATTERN.matcher(s);
+		while (match.find()) {
+			// eventually add in code that only adds temp to retval if each part
+			// has a number in it
+			temp = new LatStrLonStr();
+			temp.latitude = s.substring(0, match.end());
+			temp.longitude = s.substring(match.end());
+			retval.add(temp);
 		}
-		for (int i = 0; i < LONGITUDEMARKERS.length; i++) {
-			temp = s.split("(?<=[^A-Za-z]" + LONGITUDEMARKERS[i]
-					+ ")(?=.*?[0-9])");
-			if (temp.length == 2) {
-				temp[0] = temp[0].trim();
-				temp[1] = temp[1].trim();
-				retval.add(temp);
-			}
+		match = LONGITUDEPATTERN.matcher(s);
+		while (match.find()) {
+			temp = new LatStrLonStr();
+			temp.longitude = s.substring(0, match.end());
+			temp.longitude = s.substring(match.end());
+			retval.add(temp);
 		}
 		return retval;
 
@@ -110,12 +114,11 @@ public abstract class LatLongParser {
 		 * TwoDirsAndMags.Direction.EAST; } else if
 		 * (latitudeSplitters[i].equals("W") ||
 		 * latitudeSplitters[i].equals("w")) { dirsmags.direction2 =
-		 * TwoDirsAndMags.Direction.WEST; }
-		 *  } } } } if ((dirsmags.direction1 == TwoDirsAndMags.Direction.NORTH ||
-		 * dirsmags.direction1 == TwoDirsAndMags.Direction.SOUTH) &&
-		 * (dirsmags.direction2 != TwoDirsAndMags.Direction.EAST &&
-		 * dirsmags.direction2 != TwoDirsAndMags.Direction.EAST)) { double temp = }
-		 * return dirsmags;
+		 * TwoDirsAndMags.Direction.WEST; } } } } } if ((dirsmags.direction1 ==
+		 * TwoDirsAndMags.Direction.NORTH || dirsmags.direction1 ==
+		 * TwoDirsAndMags.Direction.SOUTH) && (dirsmags.direction2 !=
+		 * TwoDirsAndMags.Direction.EAST && dirsmags.direction2 !=
+		 * TwoDirsAndMags.Direction.EAST)) { double temp = } return dirsmags;
 		 */
 	}
 
@@ -135,7 +138,6 @@ public abstract class LatLongParser {
 	private static ArrayList<LatLong> latAndLongParseHelper(String s1, String s2) {
 		// Create the ArrayList<LatLong> to hold candidates
 		ArrayList<LatLong> retval = new ArrayList<LatLong>();
-
 		// Try to figure out which is lat and which is long, then pass info to
 		// latThenLongParseHelper
 
@@ -157,7 +159,6 @@ public abstract class LatLongParser {
 	 */
 	private static ArrayList<LatLong> latThenLongParseHelper(String lat,
 			String lon) {
-
 		// Create the ArrayList<LatLong> to hold candidates
 		ArrayList<LatLong> retval = new ArrayList<LatLong>();
 
@@ -167,60 +168,72 @@ public abstract class LatLongParser {
 	/**
 	 * parseNumber parses a String representing an angle.
 	 * 
-	 * @param numstr the String that represents the number to be parsed.
+	 * @param numstr
+	 *            the String that represents the number to be parsed.
+	 * 
+	 * This is done for now, however it will need much fixing.
 	 * 
 	 * @return an ArrayList<DegMinSec> containing all possible parsings.
 	 */
 	private static ArrayList<DegMinSec> parseDirection(String numstr) {
 		ArrayList<DegMinSec> retval = new ArrayList<DegMinSec>();
 		numstr = numstr.trim();
-		//first find the location of all number substrings
-		Pattern numberPattern = 
-				Pattern.compile("[([0-9]*[.]?[0-9]+)([0-9]+[.]?[0-9]*)]");
+		// first find the location of all number substrings
+		Pattern numberPattern = Pattern
+				.compile("[([0-9]*[.]?[0-9]+)([0-9]+[.]?[0-9]*)]");
 		Matcher numberMatch = numberPattern.matcher(numstr);
 		boolean somethingGotSet;
 		while (numberMatch.find()) {
-			ArrayList<DegMinSec> blah;
+			ArrayList<DegMinSec> resultSet = new ArrayList<DegMinSec>();
+			DegMinSec temp = new DegMinSec();
 			somethingGotSet = false;
-			for (String s: DEGREEMARKERS) {
-				if (s.equals(
-						numstr.substring(numberMatch.end(), numberMatch.end()+1))) {
+			for (String s : DEGREEPATTERN) {
+				if (s.equals(numstr.substring(numberMatch.end(), numberMatch
+						.end() + 1))) {
+					try {
+						temp.setDeg(Double.parseDouble(numberMatch.group()));
+						temp.isValid = true;
+						somethingGotSet = true;
+					} catch (NumberFormatException e) {
+					}
+				}
+			}
+			for (String s : MINUTEPATTERN) {
+				if (s.equals(numstr.substring(numberMatch.end(), numberMatch
+						.end() + 1))) {
 					if (somethingGotSet) {
-						//If something did get set beforehand with this number
-						//then this number could represent multiple different numbers
-						//and we can't be sure what the heck is going on!
+						// If something did get set beforehand with this number
+						// then this number could represent multiple different
+						// numbers so we must copy this over to more
+						// possibilities
 					}
 					try {
-						retval.setDeg(Double.parseDouble(numberMatch.group()));
-						retval.isValid = true;
+						temp.setMin(Double.parseDouble(numberMatch.group()));
+						temp.isValid = true;
 						somethingGotSet = true;
-					} catch (NumberFormatException e) {}
+					} catch (NumberFormatException e) {
+					}
 				}
 			}
-			for (String s: MINUTEMARKERS) {
-				if (s.equals(
-						numstr.substring(numberMatch.end(), numberMatch.end()+1))) {
+			for (String s : SECONDPATTERN) {
+				if (s.equals(numstr.substring(numberMatch.end(), numberMatch
+						.end() + 1))) {
 					try {
-						retval.setMin(Double.parseDouble(numberMatch.group()));
-						retval.isValid = true;
+						temp.setSec(Double.parseDouble(numberMatch.group()));
+						temp.isValid = true;
 						somethingGotSet = true;
-					} catch (NumberFormatException e) {}
+					} catch (NumberFormatException e) {
+					}
 				}
 			}
-			for (String s: SECONDMARKERS) {
-				if (s.equals(
-						numstr.substring(numberMatch.end(), numberMatch.end()+1))) {
-					try {
-						retval.setSec(Double.parseDouble(numberMatch.group()));
-						retval.isValid = true;
-						somethingGotSet = true;
-					} catch (NumberFormatException e) {}
-				}
+			if (temp.isValid) {
+				resultSet.add(temp);
 			}
-			
-		}	
-		
-		
+			if (!somethingGotSet) {
+
+			}
+			retval.addAll(resultSet);
+		}
 		return retval;
 	}
 
@@ -236,48 +249,60 @@ public abstract class LatLongParser {
 			}
 		}
 	}
+
+	public static void main(String args[]) {
+
+	}
+}
+
+class LatStrLonStr {
+	String latitude;
+	String longitude;
 }
 
 class DegMinSec {
 	private double degree;
 	private double minute;
 	private double second;
-	
-	DegMinSec () {
+	boolean isValid;
+
+	DegMinSec() {
 		degree = 0;
 		minute = 0;
 		second = 0;
+		isValid = false;
 	}
-	
+
 	DegMinSec copy() {
 		DegMinSec retval = new DegMinSec();
 		retval.degree = this.degree;
 		retval.minute = this.minute;
 		retval.second = this.second;
+		retval.isValid = this.isValid;
 		return retval;
-		//retval. = this.;
+		// retval. = this.;
 	}
-	
+
 	void setDeg(double deg) {
 		degree = deg;
 	}
-	
+
 	void setMin(double min) {
 		minute = min;
 	}
-	
+
 	void setSec(double sec) {
 		second = sec;
 	}
-	
+
 	double getDeg() {
 		return degree;
 	}
-	
+
 	double getMin() {
 		return minute;
 	}
-	
+
 	double getSec() {
 		return second;
 	}
