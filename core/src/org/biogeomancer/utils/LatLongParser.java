@@ -17,14 +17,15 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class LatLongParser {
-
+  static final String A_LATLONGPREFIX = "(?<=[^A-Za-z]";
+  static final String A_LATLONGSUFFIX = ")(?=.*?[0-9]?)";
   static final Pattern DEGREEPATTERN = Pattern.compile("[Dd\u00b0]");
-  static final Pattern LATITUDEPATTERN = Pattern.compile(LATLONGPREFIX
-      + "[NnSs]" + LATLONGSUFFIX);
-  static final String LATLONGPREFIX = "(?<=[^A-Za-z]";
-  static final String LATLONGSUFFIX = ")(?=.*?[0-9]?)";
-  static final Pattern LONGITUDEPATTERN = Pattern.compile(LATLONGPREFIX
-      + "[EeWW]" + LATLONGSUFFIX);
+
+  static final Pattern LATITUDEPATTERN = Pattern.compile(A_LATLONGPREFIX
+      + "[NnSs]" + A_LATLONGSUFFIX);
+  static final Pattern LONGITUDEPATTERN = Pattern.compile(A_LATLONGPREFIX
+      + "[EeWW]" + A_LATLONGSUFFIX);
+
   static final Pattern MINUTEPATTERN = Pattern.compile("[Mm']");
   static final Pattern SECONDPATTERN = Pattern.compile("[Ss\"]");
 
