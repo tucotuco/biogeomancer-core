@@ -1,0 +1,44 @@
+#summary Project vision and requirements
+#labels Phase-Requirements,Featured
+
+= Web Services Vision =
+A REST based web service that accepts locality, higher geography, and interpreter parameters, uses the BioGeomancer Core API to generate georeferences, and returns an XML representation of each generated georeferece.
+
+= Requirements =
+
+== Interface ==
+The web service interface is based on the REST protocol with the following case insensitive parameters:
+|| *Parameter* || *Description* || *Example* ||
+|| l || The locality description || 5 Miles West of Berkeley ||
+|| hg || The higher geography || Berkeley, CA ||
+|| i || The interpreter || Yale, UIUC || 
+
+Example:
+`http://bg.berkeley.edu/georeference?l=5 Miles West of Berkeley&hg=Berkeley, CA&i=Yale`
+
+== Georeferencing ==
+The web service will use the latest BioGeomancer Core API for generating georeferences.
+
+== Output ==
+Web service output will be XML (UTF-8) within the `bg` namespace using georeference elements:
+{{{  
+<?xml version="1.0" encoding="utf-8"?>
+<georeferences xmlns="bg">
+  <locality>5 Miles West of Berkeley</locality>
+  <higherGeography>Berkeley, CA</higherGeography>
+  <interpreter>Yale</interpreter>
+  <georeference lat=foo lng=bar radius=baz/>
+  <georeference lat=foo lng=bar radius=baz/>
+  <georeference lat=foo lng=bar radius=baz/>
+  <georeference lat=foo lng=bar radius=baz/>
+</georeferences>
+}}}  
+
+
+
+
+
+
+
+
+
