@@ -4,7 +4,7 @@
 = Web Services Vision =
 A REST based web service that accepts locality, higher geography, and interpreter parameters, uses the BioGeomancer Core API to generate georeferences, and returns an XML representation of each generated georeferece.
 
-= Requirements =
+= Single Georeference Requirements =
 
 == Interface ==
 The web service interface is based on the REST protocol with the following case insensitive parameters:
@@ -35,6 +35,8 @@ Web service output will be XML (UTF-8) within the `bg` namespace using georefere
 }}}  
 
 
+= Batch Georeference Requirements =
+_TODO..._
 
 
 
