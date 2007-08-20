@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8" ?>
-<project name="BioGeomancer Core" default="all" basedir=".">
-	<description>
-    BioGeomancer Core build file. This is used to package up the project as a jar,
-    if you want to distribute it. 
-  </description>
+<project name="biogeomancer-core" default="dist" basedir=".">
 
-	<property name="version" value="1.0" />
+	<description>
+	</description>
+
+	<!-- The Ant properties file. -->
+	<property file="ant.properties" />
+
+	<!-- Properties -->
+	<property name="jar.version" value="1.0" />
+	<property name="jar.filename" value="biogeomancer-core-${jar.version}.jar" />
 
 	<!-- set classpath -->
 	<path id="project.class.path">
@@ -15,6 +19,42 @@
 		</fileset>
 	</path>
 
+	<path id="lib.classpath">
+		<fileset dir="lib">
+			<include name="*.jar" />
+		</fileset>
+	</path>
+
+	<!--
+		JAVADOC
+		
+		* Creates javadocs
+	-->
+	<target name="javadoc">
+		<javadoc destdir="docs" excludepackagenames="edu.berkeley.cache.public/*" author="true" version="true" use="true" windowtitle="DwC TAPIR Cache">
+			<fileset dir="src">
+				<include name="**/*.java" />
+			</fileset>
+		</javadoc>
+	</target>
+
+	<!--		
+		DIST
+		
+		* Creates jar file in dist directory.
+		* Creates war file in dist directory.
+	-->
+	<target name="dist" depends="init, create-jar">
+		<echo message="complete" />
+	</target>
+
+
+	<!--		
+		COMPILE
+		
+		* Compiles the Java src and test files into the bin directory.
+		* Uses the project.class.path classpath. 
+	-->
 	<target name="compile" description="Compile src to bin">
 		<mkdir dir="bin" />
 		<javac srcdir="src:test" destdir="bin" includes="**" debug="on" debuglevel="lines,vars,source" source="1.5">
@@ -22,52 +62,104 @@
 		</javac>
 	</target>
 
-	<target name="javadoc" description="Generates the JavaDoc">
-		<delete dir="docs" />
-		<mkdir dir="docs" />
-		<javadoc author="true" destdir="docs" nohelp="true" public="true" packagenames="org.biogeomancer.*" version="true" windowtitle="JavaDoc of the BioGeomancer project">
-			<classpath>
-				<!-- be sure not to use ${} here -->
-				<path refid="project.class.path" />
-			</classpath>
-			<sourcepath>
-				<!-- be sure not to use ${} here -->
-				<pathelement path="src" />
-			</sourcepath>
-		</javadoc>
-		<!-- This is required because the jar tag cannot create a new target
-		directory for the docs.-->
-		<copy verbose='true' todir="bin/docs">
-			<fileset dir="docs" />
-		</copy>
-	</target>
 
-	<target name="package" depends="compile,javadoc" description="Package up the project as a jar">
-		<jar destfile="biogeomancer-core-${version}.jar">
+	<!-- 
+		CREATE-JAR
+		* Creates a jar file by packaging class, source, and resource files.
+	-->
+	<target name="create-jar" depends="javadoc, compile" description="Package up the project as a jar">
+		<jar destfile="dist/${jar.filename}">
 			<fileset dir="bin">
 				<include name="**/*.class" />
 			</fileset>
-			<fileset dir="bin">
-				<include name="docs/**" />
-			</fileset>
-			<!-- Get everything; source, modules, html files -->
 			<fileset dir="src">
 				<include name="**" />
 			</fileset>
 			<fileset dir="test">
 				<include name="**" />
 			</fileset>
+			<fileset dir=".">
+				<include name="docs/**" />
+			</fileset>
+			<fileset dir="lib">
+				<include name="amh/**" />
+				<include name="bg/**" />
+				<include name="biogeomancer/**" />
+				<include name="colorado/**" />
+				<include name="com/**" />
+				<include name="edu/**" />
+				<include name="island/**" />
+				<include name="javax/**" />
+				<include name="org/**" />
+				<include name="w3/**" />
+				<include name="simplelog.properties" />
+			</fileset>
 		</jar>
 	</target>
 
+	<!--	
+		BUILD
+		 
+		* Compiles the Java source files into the build/WEB-INF/classes directory.
+	  	* Copies resource files into the build/WEB-INF/classes directory.
+	-->
+	<target name="build" depends="init">
+		<!-- Compile -->
+		<javac deprecation="off" includeAntRuntime="yes" debug="on" srcdir="src" destdir="build/WEB-INF/classes">
+			<include name="**/*.java" />
+			<classpath refid="lib.classpath" />
+		</javac>
+		<!-- Copy resources -->
+		<copy todir="build/classes">
+			<fileset dir="src">
+				<include name="**/*.properties" />
+				<include name="**/*.cfg" />
+				<include name="**/*.cfg.xml" />
+				<include name="**/*.hbm.xml" />
+			</fileset>
+		</copy>
+		<!-- Copy docs. -->
+		<copy todir="build/doc">
+			<fileset dir="docs">
+				<include name="**/*" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!--
+
+		INIT
+		
+		* Creates the build directory structure.
+		* Copies jar files from lib to build/WEB-INF/lib.
+		* Copies the web.xml file to build/WEB-INF.
+	-->
+	<target name="init" depends="clean">
+		<mkdir dir="dist" />
+		<mkdir dir="docs" />
+		<mkdir dir="build" />
+		<copy todir="build/lib">
+			<fileset dir="lib">
+				<include name="**/*.jar" />
+			</fileset>
+		</copy>
+	</target>
+
+	<!--
+
+		CLEAN
+		
+		* Deletes the build and dist directory trees.
+		* Deletes the dwc-tapir-cache.jar.
+		* Deletes all class files from bin.
+	-->
 	<target name="clean">
-		<!-- Delete the bin directory tree -->
-		<delete file="biogeomancer-core-${version}.jar" />
+		<delete dir="build" />
+		<delete dir="dist" />
+		<delete dir="docs" />
 		<delete>
 			<fileset dir="bin" includes="**/*.class" />
 		</delete>
 	</target>
-
-	<target name="all" depends="clean, package" />
 
 </project>
