@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE web-app
+  PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
+  "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
+
+<web-app>
+  <display-name>DwC TAPIR Cache</display-name>
+   <description>cache</description>
+
+  <welcome-file-list>
+    <welcome-file>Cache.html</welcome-file>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <servlet>
+      <servlet-name>BGWS</servlet-name>
+      <servlet-class>edu.berkeley.biogeomancer.webservice.BGWS</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>BGWS</servlet-name>
+      <url-pattern>/controller</url-pattern>
+  </servlet-mapping>
+
+	
+</web-app>
