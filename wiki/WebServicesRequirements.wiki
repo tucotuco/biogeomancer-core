@@ -44,19 +44,18 @@ Batch georeferencing will be supported by POSTing an XML batch request:
 <?xml version="1.0" encoding="utf-8"?>
 <biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
   <request type="batch" interpreter="Yale">
-    <records>
-      <record>
-        <dwc:Locality>Berkeley</dwc:Locality>
-        <dwc:HigherGeography>California</dwc:HigherGeography>
-      </record>
-      <record>
-        <dwc:Locality>Stuttgart</dwc:Locality>
-        <dwc:HigherGeography>Germany</dwc:HigherGeography>
-      </record>
-      <record>
-        <dwc:Locality>St. Petersburg</dwc:Locality>
-        <dwc:HigherGeography>Russia</dwc:HigherGeography>
-      </record>
+    <record>
+      <dwc:Locality>Berkeley</dwc:Locality>
+      <dwc:HigherGeography>California</dwc:HigherGeography>
+    </record>
+    <record>
+      <dwc:Locality>Stuttgart</dwc:Locality>
+      <dwc:HigherGeography>Germany</dwc:HigherGeography>
+    </record>
+    <record>
+      <dwc:Locality>St. Petersburg</dwc:Locality>
+      <dwc:HigherGeography>Russia</dwc:HigherGeography>
+    </record>
   </request>
 </biogeomancer>              
 }}}
@@ -99,7 +98,6 @@ Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the D
 </record>
 </biogeomancer>              
 }}}
-
 
 
 
