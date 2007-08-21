@@ -19,5 +19,14 @@
       <servlet-name>SingleGeoreferenceWebService</servlet-name>
       <url-pattern>/single</url-pattern>
   </servlet-mapping>
-	
+
+  <servlet>
+      <servlet-name>BatchGeoreferenceWebService</servlet-name>
+      <servlet-class>edu.berkeley.biogeomancer.webservice.BatchGeoreferenceWebService</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>BatchGeoreferenceWebService</servlet-name>
+      <url-pattern>/batch</url-pattern>
+  </servlet-mapping>
+  	
 </web-app>
