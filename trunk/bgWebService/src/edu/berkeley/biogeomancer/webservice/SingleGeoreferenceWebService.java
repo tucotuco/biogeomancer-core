@@ -48,11 +48,11 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
     out.println("<biogeomancer xmlns=\"http://bg.berkeley.edu\" "
         + "xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
-    out.println("<georeferences>");
+
+    out.println("<interpreter>" + interpreter + "</interpreter>");
     out.println("<dwc:Locality>" + locality + "</dwc:Locality>");
     out.println("<dwc:HigherGeography>" + higherGeography
         + "</dwc:HigherGeography>");
-    out.println("<interpreter>" + interpreter + "</interpreter>");
 
     List<Georef> georefs = georeference(locality, higherGeography, interpreter);
     for (Georef g : georefs) {
@@ -65,7 +65,6 @@ public class SingleGeoreferenceWebService extends HttpServlet {
           + "</dwc:CoordinateUncertaintyInMeters>");
       out.println("</georeference>");
     }
-    out.println("</georeferences>");
     out.println("</biogeomancer>");
   }
 
@@ -100,3 +99,17 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     }
   }
 }
+
+/*
+ * 
+ * <biogeomancer> <request type="batch" interpreter="Yale"> <records> <record>
+ * <dwc:Locality>Berkeley</dwc:Locality> <dwc:HigherGeography>California</dwc:HigherGeography>
+ * </record> <record> <dwc:Locality>Stuttgart</dwc:Locality>
+ * <dwc:HigherGeography>Germany</dwc:HigherGeography> </record> <record>
+ * <dwc:Locality>St. Petersburg</dwc:Locality> <dwc:HigherGeography>Russia</dwc:HigherGeography>
+ * </record> </request> </biogeomancer>
+ * 
+ * 
+ * 
+ * 
+ */
