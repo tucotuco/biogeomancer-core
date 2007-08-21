@@ -23,13 +23,20 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.biogeomancer.managers.GeorefManager;
-import org.biogeomancer.managers.GeorefPreferences;
-import org.biogeomancer.managers.GeorefManager.GeorefManagerException;
+import org.apache.log4j.Logger;
 import org.biogeomancer.records.Georef;
-import org.biogeomancer.records.Rec;
 
+import edu.berkeley.biogeomancer.webservice.util.BgUtil;
+
+/**
+ * Web service for georeferencing a single locality.
+ * 
+ */
 public class SingleGeoreferenceWebService extends HttpServlet {
+
+  Logger log = Logger.getLogger(SingleGeoreferenceWebService.class);
+
+  private final BgUtil bgUtil = new BgUtil();
 
   /**
    * Georeferences a single locality using the BioGeomancer Core API. Returns
@@ -41,6 +48,9 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     String locality = request.getParameter("l");
     String higherGeography = request.getParameter("hg");
     String interpreter = request.getParameter("i");
+
+    log.info("Locality: " + locality + " HigherGeography: " + higherGeography
+        + " Interpreter: " + interpreter);
 
     PrintWriter out = response.getWriter();
 
@@ -54,7 +64,9 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     out.println("<dwc:HigherGeography>" + higherGeography
         + "</dwc:HigherGeography>");
 
-    List<Georef> georefs = georeference(locality, higherGeography, interpreter);
+    List<Georef> georefs = bgUtil.georeference(locality, higherGeography,
+        interpreter);
+
     for (Georef g : georefs) {
       out.println("<georeference>");
       out.println("<dwc:DecimalLatitude>" + g.pointRadius.y
@@ -67,48 +79,5 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     }
     out.println("</biogeomancer>");
   }
-  
-  /**
-   * Returns a list of Georef objects generated using BioGeomancer Core API. If
-   * there is an error or if no georeferences were generated, returns null.
-   * 
-   * @param locality the locality to georeference
-   * @param higherGeography the higher geography to georeference
-   * @param interpreter the BioGeomancer locality intepreter to use
-   * @return List<Georef> the generated georeferences
-   */
-  private List<Georef> georeference(String locality, String higherGeography,
-      String interpreter) {
 
-    // Default interpreter is Yale.
-    if (interpreter == null || interpreter.equals("")) {
-      interpreter = "yale";
-    }
-    final Rec rec = new Rec();
-    rec.put("locality", locality);
-    rec.put("highergeography", higherGeography);
-    GeorefManager gm;
-    try {
-      gm = new GeorefManager();
-      gm.georeference(rec, new GeorefPreferences(interpreter));
-      return rec.georefs;
-    } catch (GeorefManagerException e) {
-      e.printStackTrace();
-      return null;
-    }
-  }
 }
-
-/*
- * 
- * <biogeomancer> <request type="batch" interpreter="Yale"> <records> <record>
- * <dwc:Locality>Berkeley</dwc:Locality> <dwc:HigherGeography>California</dwc:HigherGeography>
- * </record> <record> <dwc:Locality>Stuttgart</dwc:Locality>
- * <dwc:HigherGeography>Germany</dwc:HigherGeography> </record> <record>
- * <dwc:Locality>St. Petersburg</dwc:Locality> <dwc:HigherGeography>Russia</dwc:HigherGeography>
- * </record> </request> </biogeomancer>
- * 
- * 
- * 
- * 
- */
