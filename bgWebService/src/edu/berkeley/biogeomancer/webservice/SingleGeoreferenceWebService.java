@@ -67,7 +67,7 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     }
     out.println("</biogeomancer>");
   }
-
+  
   /**
    * Returns a list of Georef objects generated using BioGeomancer Core API. If
    * there is an error or if no georeferences were generated, returns null.
@@ -81,10 +81,9 @@ public class SingleGeoreferenceWebService extends HttpServlet {
       String interpreter) {
 
     // Default interpreter is Yale.
-    if (interpreter.equals("") || interpreter == null) {
+    if (interpreter == null || interpreter.equals("")) {
       interpreter = "yale";
     }
-
     final Rec rec = new Rec();
     rec.put("locality", locality);
     rec.put("highergeography", higherGeography);
