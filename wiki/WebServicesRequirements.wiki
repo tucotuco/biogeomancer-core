@@ -20,23 +20,95 @@ Example:
 The web service will use the latest BioGeomancer Core API for generating georeferences.
 
 == Output ==
-Web service output will be XML (UTF-8) within the `bg` namespace using georeference elements:
+Web service output will be XML (UTF-8) with a dwc namespace using the DarwinCore schema:
 {{{  
 <?xml version="1.0" encoding="utf-8"?>
-<georeferences xmlns="bg">
-  <locality>5 Miles West of Berkeley</locality>
-  <higherGeography>Berkeley, CA</higherGeography>
-  <interpreter>Yale</interpreter>
-  <georeference lat=foo lng=bar radius=baz/>
-  <georeference lat=foo lng=bar radius=baz/>
-  <georeference lat=foo lng=bar radius=baz/>
-  <georeference lat=foo lng=bar radius=baz/>
-</georeferences>
+<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+  <interpreter>yale</interpreter>
+  <dwc:Locality>berkeley</dwc:Locality>
+  <dwc:HigherGeography>ca</dwc:HigherGeography>
+  <georeference>
+    <dwc:DecimalLatitude>37.8715897</dwc:DecimalLatitude>
+    <dwc:DecimalLongitude>-122.272747</dwc:DecimalLongitude>
+    <dwc:CoordinateUncertaintyInMeters>5062.0</dwc:CoordinateUncertaintyInMeters>
+  </georeference>
+</biogeomancer>
 }}}  
 
 
 = Batch Georeference Requirements =
-_TODO..._
+== Interface ==
+Batch georeferencing will be supported by POSTing an XML batch request:
+
+{{{
+<?xml version="1.0" encoding="utf-8"?>
+<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+  <request type="batch" interpreter="Yale">
+    <records>
+      <record>
+        <dwc:Locality>Berkeley</dwc:Locality>
+        <dwc:HigherGeography>California</dwc:HigherGeography>
+      </record>
+      <record>
+        <dwc:Locality>Stuttgart</dwc:Locality>
+        <dwc:HigherGeography>Germany</dwc:HigherGeography>
+      </record>
+      <record>
+        <dwc:Locality>St. Petersburg</dwc:Locality>
+        <dwc:HigherGeography>Russia</dwc:HigherGeography>
+      </record>
+  </request>
+</biogeomancer>              
+}}}
+
+== Georeferencing ==
+The batch georeferencing web service will use the latest BioGeomancer Core API for generating georeferences.
+
+== Output ==
+Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the DarwinCore schema:
+
+{{{
+<?xml version="1.0" encoding="utf-8"?>
+<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+  <request type="batch" interpreter="Yale">
+    <records>
+      <record>
+        <dwc:Locality>Berkeley</dwc:Locality>
+        <dwc:HigherGeography>California</dwc:HigherGeography>
+        <georeference>
+          <dwc:DecimalLatitude>39.4650896</dwc:DecimalLatitude>
+          <dwc:DecimalLongitude>-78.0275126</dwc:DecimalLongitude>
+          <dwc:CoordinateUncertaintyInMeters>22675.0</dwc:CoordinateUncertaintyInMeters>
+        </georeference>
+	<georeference>
+          <dwc:DecimalLatitude>33.1993704</dwc:DecimalLatitude>
+          <dwc:DecimalLongitude>-79.9517488</dwc:DecimalLongitude>
+          <dwc:CoordinateUncertaintyInMeters>47092.0</dwc:CoordinateUncertaintyInMeters>
+        </georeference>
+	<georeference>
+          <dwc:DecimalLatitude>38.7544956</dwc:DecimalLatitude>
+          <dwc:DecimalLongitude>-90.3312263</dwc:DecimalLongitude>
+          <dwc:CoordinateUncertaintyInMeters>5038.0</dwc:CoordinateUncertaintyInMeters>
+        </georeference>
+      </record>
+      <record>
+        <dwc:Locality>Stuttgart</dwc:Locality>
+        <dwc:HigherGeography>Germany</dwc:HigherGeography>
+      </record>
+      <record>
+        <dwc:Locality>St. Petersburg</dwc:Locality>
+        <dwc:HigherGeography>Russia</dwc:HigherGeography>
+      </record>
+  </request>
+</biogeomancer>              
+}}}
+
+
+
+
+
+
+
 
 
 
