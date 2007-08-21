@@ -4,22 +4,20 @@
   "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
 
 <web-app>
-  <display-name>DwC TAPIR Cache</display-name>
+  <display-name>BioGeomancer Web Services</display-name>
    <description>cache</description>
 
   <welcome-file-list>
-    <welcome-file>Cache.html</welcome-file>
     <welcome-file>index.html</welcome-file>
   </welcome-file-list>
 
   <servlet>
-      <servlet-name>BGWS</servlet-name>
-      <servlet-class>edu.berkeley.biogeomancer.webservice.BGWS</servlet-class>
+      <servlet-name>SingleGeoreferenceWebService</servlet-name>
+      <servlet-class>edu.berkeley.biogeomancer.webservice.SingleGeoreferenceWebService</servlet-class>
   </servlet>
   <servlet-mapping>
-      <servlet-name>BGWS</servlet-name>
-      <url-pattern>/controller</url-pattern>
+      <servlet-name>SingleGeoreferenceWebService</servlet-name>
+      <url-pattern>/single</url-pattern>
   </servlet-mapping>
-
 	
 </web-app>

@@ -2,11 +2,6 @@
 <project name="bgws" default="dist" basedir=".">
 
 	<description>
-
-		Ant build file for the DwC TAPIR Cache for:
-			1) Creating the dwc-tapir-cache.jar library.
-			2) Creating the dwc-tapir-cache.war for Tomcat deployment.
-	
 	</description>
 
 	<!-- The Ant properties file. -->
@@ -15,8 +10,8 @@
 	<!-- Properties -->
 	<property name="war.version" value="0.1" />
 	<property name="jar.version" value="0.1" />
-	<property name="war.filename" value="bgws-${war.version}.war" />
-	<property name="jar.filename" value="bgws-${jar.version}.jar" />
+	<property name="war.filename" value="biogeomancer-webservice-${war.version}.war" />
+	<property name="jar.filename" value="biogeomancer-webservice-${jar.version}.jar" />
 
 	<!-- set classpath -->
 	<path id="project.class.path">
