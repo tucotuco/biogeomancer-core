@@ -38,7 +38,7 @@ Web service output will be XML (UTF-8) with a dwc namespace using the DarwinCore
 
 = Batch Georeference Requirements =
 == Interface ==
-Batch georeferencing will be supported by POSTing an XML batch request:
+Batch georeferencing will be supported by POSTing an XML batch request with a 5000 record limit:
 
 {{{
 <?xml version="1.0" encoding="utf-8"?>
@@ -98,7 +98,6 @@ Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the D
 </record>
 </biogeomancer>              
 }}}
-
 
 
 
