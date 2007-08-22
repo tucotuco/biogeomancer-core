@@ -1,6 +1,12 @@
 package edu.berkeley.biogeomancer.webservice.util;
 
+import java.io.File;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
+
+import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
 import org.biogeomancer.managers.GeorefManager;
@@ -8,6 +14,9 @@ import org.biogeomancer.managers.GeorefPreferences;
 import org.biogeomancer.managers.GeorefManager.GeorefManagerException;
 import org.biogeomancer.records.Georef;
 import org.biogeomancer.records.Rec;
+import org.biogeomancer.records.RecSet;
+import org.biogeomancer.records.RecSet.RecSetException;
+
 
 /**
  * Utility class for wrapping BioGeomancer Core API.
@@ -20,9 +29,38 @@ public class BgUtil {
    * @param recs the list of Rec objects to georeference
    * @return the georeferences
    */
-  public static List<Georef> georeference(List<Rec> recs) {
+  public static List<Georef> georeference(String FileName, String interpreter) {
     // TODO: tri
-    return null;
+	// take FileName argument and interperter name
+	// get RecSet from the file and return Georef List
+	  // has not tested yet
+	try 
+	{
+		RecSet referenceSet = new RecSet(FileName, "\t");
+		//Iterator<Rec> recIter = referenceSet.recs.iterator();
+		List<Georef> recsList = new ArrayList<Georef>();
+		for (Iterator<Rec> recIter = referenceSet.recs.iterator(); recIter.hasNext();)
+		{
+			Rec currentRec = recIter.next();
+			GeorefManager gm;
+			 try 
+			{
+				 gm = new GeorefManager();
+			     gm.georeference(currentRec, new GeorefPreferences(interpreter));
+			     recsList.addAll(currentRec.georefs);
+			 } catch (GeorefManagerException e)
+			 {
+				 //TODO: Logging error to an error log
+			     e.printStackTrace();
+			 }
+			
+		}
+		return recsList;
+	} catch (RecSetException e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+		return null;
+	}
   }
 
   /**
@@ -38,7 +76,7 @@ public class BgUtil {
       String higherGeography, String interpreter) {
 
     // Default interpreter is Yale.
-    if (interpreter.equals("") || interpreter == null) {
+    if (interpreter == null || interpreter.equals("")) {
       interpreter = "yale";
     }
 
@@ -55,6 +93,45 @@ public class BgUtil {
       return null;
     }
   }
+  /**
+   * 
+   * @param String locality
+   * @param String higherGeography
+   * @param String interpreter
+   * @param String out
+   * create a list of Georefs from locality, higherGeography, and interpreter
+   * output xml tag and value for these georeferences in format:
+   * <dwc:Locality>LocalityName</dwc:Locality>
+   * <dwc:HigherGeography>HigherGeographyName</dwc:HigherGeography>
+   * <georeference>
+   *  <dwc:DecimalLatitude>value</dwc:DecimalLatitude>
+   *  <dwc:DecimalLongitude>value</dwc:DecimalLongitude>
+   *  <dwc:CoordinateUncertaintyInMeters>value</dwc:CoordinateUncertaintyInMeters>
+   * </georeference>
+   * more georeferences here if there are more
+   */
+  public static void buildSingleXmlText(String locality, String higherGeography, String interpreter, PrintWriter out)
+  {
+	  /*log.info("Locality: " + locality + " HigherGeography: " + higherGeography
+		        + " Interpreter: " + interpreter);*/
+		    //out.println("<interpreter>" + interpreter + "</interpreter>");
+		    out.println("<dwc:Locality>" + locality + "</dwc:Locality>");
+		    out.println("<dwc:HigherGeography>" + higherGeography
+		        + "</dwc:HigherGeography>");
+		    List<Georef> georefs = georeference(locality, higherGeography,
+		            interpreter);
+		    for (Georef g : georefs) {
+		      out.println("<georeference>");
+		      out.println("<dwc:DecimalLatitude>" + g.pointRadius.y
+		          + "</dwc:DecimalLatitude>");
+		      out.println("<dwc:DecimalLongitude>" + g.pointRadius.x
+		          + "</dwc:DecimalLongitude>");
+		      out.println("<dwc:CoordinateUncertaintyInMeters>" + g.pointRadius.extent
+		          + "</dwc:CoordinateUncertaintyInMeters>");
+		      out.println("</georeference>");
+		    }
+		  //  out.println("</biogeomancer>");	  
+  }
 
-  private final Logger log = Logger.getLogger(BgUtil.class);
+  private static Logger log = Logger.getLogger(BgUtil.class);
 }

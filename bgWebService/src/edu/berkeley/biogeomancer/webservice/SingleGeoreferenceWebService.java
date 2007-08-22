@@ -49,35 +49,17 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     String higherGeography = request.getParameter("hg");
     String interpreter = request.getParameter("i");
 
-    log.info("Locality: " + locality + " HigherGeography: " + higherGeography
-        + " Interpreter: " + interpreter);
+    /*log.info("Locality: " + locality + " HigherGeography: " + higherGeography
+        + " Interpreter: " + interpreter);*/
 
     PrintWriter out = response.getWriter();
 
     // Build the XML header.
     out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-    out.println("<biogeomancer xmlns=\"http://bg.berkeley.edu\" "
-        + "xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
+    out.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
 
     out.println("<interpreter>" + interpreter + "</interpreter>");
-    out.println("<dwc:Locality>" + locality + "</dwc:Locality>");
-    out.println("<dwc:HigherGeography>" + higherGeography
-        + "</dwc:HigherGeography>");
-
-    List<Georef> georefs = bgUtil.georeference(locality, higherGeography,
-        interpreter);
-
-    for (Georef g : georefs) {
-      out.println("<georeference>");
-      out.println("<dwc:DecimalLatitude>" + g.pointRadius.y
-          + "</dwc:DecimalLatitude>");
-      out.println("<dwc:DecimalLongitude>" + g.pointRadius.x
-          + "</dwc:DecimalLongitude>");
-      out.println("<dwc:CoordinateUncertaintyInMeters>" + g.pointRadius.extent
-          + "</dwc:CoordinateUncertaintyInMeters>");
-      out.println("</georeference>");
-    }
+    BgUtil.buildSingleXmlText(locality, higherGeography, interpreter, out);
     out.println("</biogeomancer>");
   }
-
 }
