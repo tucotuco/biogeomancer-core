@@ -1,6 +1,8 @@
 package edu.berkeley.biogeomancer.webservice.util;
 
-import java.io.File;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -112,26 +114,36 @@ public class BgUtil {
    */
   public static void buildSingleXmlText(String locality, String higherGeography, String interpreter, PrintWriter out)
   {
-	  /*log.info("Locality: " + locality + " HigherGeography: " + higherGeography
-		        + " Interpreter: " + interpreter);*/
-		    //out.println("<interpreter>" + interpreter + "</interpreter>");
-		    out.println("<dwc:Locality>" + locality + "</dwc:Locality>");
-		    out.println("<dwc:HigherGeography>" + higherGeography
-		        + "</dwc:HigherGeography>");
-		    List<Georef> georefs = georeference(locality, higherGeography,
-		            interpreter);
-		    for (Georef g : georefs) {
-		      out.println("<georeference>");
-		      out.println("<dwc:DecimalLatitude>" + g.pointRadius.y
-		          + "</dwc:DecimalLatitude>");
-		      out.println("<dwc:DecimalLongitude>" + g.pointRadius.x
-		          + "</dwc:DecimalLongitude>");
-		      out.println("<dwc:CoordinateUncertaintyInMeters>" + g.pointRadius.extent
-		          + "</dwc:CoordinateUncertaintyInMeters>");
-		      out.println("</georeference>");
-		    }
-		  //  out.println("</biogeomancer>");	  
+	  log.info("Locality: " + locality + " HigherGeography: " + higherGeography + " Interpreter: " + interpreter);
+	  out.println("<dwc:Locality>" + locality + "</dwc:Locality>");
+	  out.println("<dwc:HigherGeography>" + higherGeography + "</dwc:HigherGeography>");
+	  List<Georef> georefs = georeference(locality, higherGeography, interpreter);
+	  for (Georef g : georefs) {
+		  out.println("<georeference>");
+		  out.println("<dwc:DecimalLatitude>" + g.pointRadius.y + "</dwc:DecimalLatitude>");
+		  out.println("<dwc:DecimalLongitude>" + g.pointRadius.x + "</dwc:DecimalLongitude>");
+		  out.println("<dwc:CoordinateUncertaintyInMeters>" + g.pointRadius.extent + "</dwc:CoordinateUncertaintyInMeters>");
+		  out.println("</georeference>");
+	  }
   }
+  /**
+   * 
+   * @param fileName
+   * @param data
+   * write string of data to a file
+   */
+  public static void recordToFile(String fileName, String data)
+  {
+	  try {
+		  BufferedWriter buff = new BufferedWriter(new FileWriter(fileName));
+		  buff.write(data);
+		  buff.close();
+	  } catch (IOException e) {
+		  // TODO Auto-generated catch block
+		  e.printStackTrace();
+	  }
 
+	  
+  }
   private static Logger log = Logger.getLogger(BgUtil.class);
 }
