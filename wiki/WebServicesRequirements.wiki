@@ -68,7 +68,7 @@ Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the D
 
 {{{
 <?xml version="1.0" encoding="utf-8"?>
-<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+<biogeomancer xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
 <records interpreter="yale">
 <record>
   <dwc:Locality>Berkeley</dwc:Locality>
@@ -100,7 +100,6 @@ Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the D
 </records>
 </biogeomancer>              
 }}}
-
 
 
 
