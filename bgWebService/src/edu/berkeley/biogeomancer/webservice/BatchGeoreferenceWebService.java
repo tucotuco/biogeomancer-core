@@ -48,18 +48,19 @@ import java.net.URL;
  */
 public class BatchGeoreferenceWebService extends HttpServlet {
 
-  /**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 
-Logger log = Logger.getLogger(BatchGeoreferenceWebService.class);
+	Logger log = Logger.getLogger(BatchGeoreferenceWebService.class);
 
 //  private final BgUtil bgUtil = new BgUtil();
 	/**
 	 * Georeferences a batch locality using the BioGeomancer Core API. Returns
 	 * all generated georeferences as XML.
 	 */
+	/*public void doGet(HttpServletRequest request, HttpServletResponse response)
+    throws ServletException, java.io.IOException {
+		
+	}*/
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, java.io.IOException {
     System.out.println("doPost...");
@@ -76,7 +77,6 @@ Logger log = Logger.getLogger(BatchGeoreferenceWebService.class);
     out.close();
 	}
   
-  @SuppressWarnings("unchecked")
   /**
    * @param Reader read
    * @param PrintWriter out

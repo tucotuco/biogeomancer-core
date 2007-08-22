@@ -40,30 +40,6 @@ public class BgClient implements BioGeomancerClient {
     String serviceUrl = "http://localhost:8080/ws/batch";
     URL connectUrl = new URL(serviceUrl);
     bgClient.setServiceUrl(connectUrl);
-    /*HttpURLConnection connection = (HttpURLConnection) (new URL(serviceUrl)) .openConnection();
-
-    connection.setDoInput(true);
-    connection.setDoOutput(true);
-    connection.setRequestMethod("POST");
-
-    // Post the data item
-    OutputStream outputStream = connection.getOutputStream();
-    outputStream.write(data.getBytes());
-    outputStream.flush();
-    outputStream.close();
-
-    // Retrieve the output
-    int responseCode = connection.getResponseCode();
-    InputStream inputStream;
-    if (responseCode == HttpURLConnection.HTTP_OK) {
-      inputStream = connection.getInputStream();
-    } else {
-      inputStream = connection.getErrorStream();
-    }
-
-    // write the output to the console
-    System.out.println(toString(inputStream));*/
-
   }
 
   /**
@@ -84,7 +60,6 @@ public class BgClient implements BioGeomancerClient {
   }
 
  // private final BgUtil bgUtil = new BgUtil();
-
   public List<Georef> georeference(String fileName, String interpreter) {
     return BgUtil.georeference(fileName, interpreter);
   }
@@ -102,6 +77,8 @@ public class BgClient implements BioGeomancerClient {
    * @param URL service URL
    * connect to URL: set URL Method to POST and write batch interface for doPost to read
    * the interface is in String data (class static variable)
+   * write the xml text to a file, default file name is autoGenerate.xml 
+   * store in current working directory
    */
   public void setServiceUrl(URL serviceUrl){
     // TODO
@@ -128,7 +105,10 @@ public class BgClient implements BioGeomancerClient {
 		}
 		
 		  // write the output to the console
-		System.out.println(toString(inputStream));
+		String xmlText = toString(inputStream);
+		System.out.println(xmlText);
+		BgUtil.recordToFile("autoGenerate.xml", xmlText);
+		connection.disconnect();
 	} catch (IOException e) {
 		e.printStackTrace();
 	} 
