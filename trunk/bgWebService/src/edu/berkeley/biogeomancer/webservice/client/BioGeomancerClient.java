@@ -16,6 +16,8 @@
 package edu.berkeley.biogeomancer.webservice.client;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
@@ -33,7 +35,7 @@ public interface BioGeomancerClient {
    * @param file tab delineated with a DarwinCore header
    * @return List<Georef> of georeferences
    */
-  public List<Georef> georeference(File file);
+  public List<Georef> georeference(String filename, String interpreter);
 
   /**
    * Batch georeferences an XML request using the BioGeomancer web service.
@@ -51,13 +53,13 @@ public interface BioGeomancerClient {
    * @param interpreter the locality interpreter (defaults to Yale)
    * @return the Georef
    */
-  public Georef georeference(String locality, String higherGeography,
+  public List<Georef> georeference(String locality, String higherGeography,
       String interpreter);
 
   /**
    * Sets the service URL for the BioGeomancer web service.
    * 
-   * @param serviceUrl the service URL
+   * @param serviceUrl the service URL 
    */
   public void setServiceUrl(URL serviceUrl);
 }
