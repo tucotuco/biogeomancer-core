@@ -23,7 +23,7 @@ The web service will use the latest BioGeomancer Core API for generating georefe
 Web service output will be XML (UTF-8) with a dwc namespace using the DarwinCore schema:
 {{{  
 <?xml version="1.0" encoding="utf-8"?>
-<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+<biogeomancer xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
   <interpreter>yale</interpreter>
   <dwc:Locality>berkeley</dwc:Locality>
   <dwc:HigherGeography>ca</dwc:HigherGeography>
@@ -42,7 +42,7 @@ Batch georeferencing will be supported by POSTing an XML batch request with a 50
 
 {{{
 <?xml version="1.0" encoding="utf-8"?>
-<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+<biogeomancer xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
   <request type="batch" interpreter="Yale">
     <record>
       <dwc:Locality>Berkeley</dwc:Locality>
@@ -100,7 +100,6 @@ Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the D
 </records>
 </biogeomancer>              
 }}}
-
 
 
 
