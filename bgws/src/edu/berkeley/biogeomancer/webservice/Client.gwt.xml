@@ -1,0 +1,19 @@
+<module>
+
+	<!-- Inherit the core Web Toolkit stuff.                  -->
+	<inherits name='com.google.gwt.user.User'/>
+	<inherits name ="com.google.gwt.xml.XML"/> 
+
+	<!-- Specify the app entry point class.                   -->
+	<entry-point class='edu.berkeley.biogeomancer.webservice.client.Client'/>
+  
+    <servlet path='/controller' 
+             class='edu.berkeley.biogeomancer.webservice.server.services.controller.ControllerServiceImpl'/>
+             
+    <servlet path='/ws/single' 
+             class='edu.berkeley.biogeomancer.webservice.server.services.SingleGeorefServlet'/>
+    
+    <servlet path='/ws/batch' 
+             class='edu.berkeley.biogeomancer.webservice.server.services.BatchGeorefServlet'/>
+    
+</module>

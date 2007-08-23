@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE web-app
+  PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.2//EN"
+  "http://java.sun.com/j2ee/dtds/web-app_2_2.dtd">
+
+<web-app>
+  <display-name>Biogeomancer Web Services</display-name>
+   <description>biogeomancer</description>
+
+  <welcome-file-list>
+    <welcome-file>Client.html</welcome-file>
+    <welcome-file>index.html</welcome-file>
+  </welcome-file-list>
+
+  <servlet>
+      <servlet-name>ControllerService</servlet-name>
+      <servlet-class>edu.berkeley.biogeomancer.webservice.server.services.controller.ControllerServiceImpl</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>ControllerService</servlet-name>
+      <url-pattern>/controller</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+      <servlet-name>SingleGeorefServlet</servlet-name>
+      <servlet-class>edu.berkeley.biogeomancer.webservice.server.services.SingleGeorefServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>SingleGeorefServlet</servlet-name>
+      <url-pattern>/ws/single</url-pattern>
+  </servlet-mapping>
+
+  <servlet>
+      <servlet-name>BatchGeorefServlet</servlet-name>
+      <servlet-class>edu.berkeley.biogeomancer.webservice.server.services.BatchGeorefServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+      <servlet-name>BatchGeorefServlet</servlet-name>
+      <url-pattern>/ws/batch</url-pattern>
+  </servlet-mapping>
+    
+	
+</web-app>
