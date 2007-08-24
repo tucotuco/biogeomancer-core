@@ -33,6 +33,8 @@ import org.dom4j.Element;
 import org.dom4j.Node;
 import org.dom4j.io.SAXReader;
 
+import com.google.gwt.user.client.Window;
+
 import edu.berkeley.biogeomancer.webservice.server.util.BgUtil;
 import edu.berkeley.biogeomancer.webservice.server.util.CustomNamespaceDocument;
 
@@ -64,7 +66,9 @@ public class BatchGeorefServlet extends HttpServlet {
 
     String requestXml = request.getParameter("requestXml");
     BufferedReader reader = request.getReader();
+    Window.alert("requestXml");
     String line;
+    //System.out.println("doPost");
     while ((line = reader.readLine()) != null) {
       log.info(line);
     }

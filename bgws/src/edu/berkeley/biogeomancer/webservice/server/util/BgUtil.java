@@ -57,6 +57,28 @@ public class BgUtil {
       out.println("</georeference>");
     }
   }
+  /**
+   * 
+   * @param String locality
+   * @param String higherGeography
+   * @param String interpreter
+   * @param StringBuilder response
+   * generate single georeference and append it to response
+   */
+  public static void buildSingleGeoreference(String locality,
+	      String higherGeography, String interpreter, StringBuilder response) {
+	    log.info("Locality: " + locality + " HigherGeography: " + higherGeography
+	        + " Interpreter: " + interpreter);
+	    List<Georef> georefs = georeference(locality, higherGeography, interpreter);
+	    response.append("Locality: " + locality + " HigherGeography: " + higherGeography
+	            + " Interpreter: " + interpreter + "<BR>");
+	    for (Georef g : georefs) {
+		    response.append("Georeference: ");
+		    response.append("DecimalLatitude=" + g.pointRadius.y + "<BR>");
+		    response.append("DecimalLongitude=" + g.pointRadius.x + "<BR>");
+		    response.append("CoordinateUncertaintyInMeters=" + g.pointRadius.extent+ "<P>");
+	  }
+  }
 
   /**
    * Georeferences the list of recs using BioGeomancer Core API.

@@ -26,4 +26,5 @@ public interface ControllerServiceAsync {
 
   public void georeference(String locality, String higherGeog, String interp,
       AsyncCallback cb);
+  public void batchGeoreference(String xmlRequest, AsyncCallback cb);
 }

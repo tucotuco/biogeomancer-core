@@ -27,5 +27,5 @@ import com.google.gwt.user.client.rpc.RemoteService;
 public interface ControllerService extends RemoteService {
 
   public String georeference(String locality, String higherGeog, String interp);
-
+  public String batchGeoreference(String xmlRequest);
 }
