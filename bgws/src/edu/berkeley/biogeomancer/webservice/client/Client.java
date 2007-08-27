@@ -6,7 +6,9 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.ClickListener;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.ListBox;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextArea;
 import com.google.gwt.user.client.ui.TextBox;
@@ -36,6 +38,75 @@ public class Client implements EntryPoint {
 
 	private VerticalPanel vpBatch;
 
+	private HorizontalPanel vpSingle;
+
+	private void initializeBoxes() {
+
+		vpSingle = new HorizontalPanel();
+		final ListBox georefListBox = new ListBox();
+		georefListBox.addItem("Interpreter");
+		georefListBox.addItem("HigherGeography");
+		georefListBox.addItem("Country");
+		georefListBox.addItem("Locality");
+		georefListBox.addItem("Stateprovince");
+		georefListBox.addItem("County");
+		georefListBox.addItem("Verbatimlatitude");
+		georefListBox.addItem("Verbatimlongitude");
+		georefListBox.addItem("Island");
+		georefListBox.addItem("IslandGroup");
+		georefListBox.addItem("Waterbody");
+		georefListBox.addItem("Continent");
+
+		vpSingle.setSpacing(8);
+		vpSingle.add(georefListBox);
+
+		Button addField = new Button("Add Field");
+		final VerticalPanel singleGeorefField = new VerticalPanel();
+		singleGeorefField.setSpacing(8);
+		Button submit = new Button("Georeference");
+		addField.addClickListener(new ClickListener() {
+
+			public void onClick(Widget sender) {
+				ListBox fieldBox = (ListBox) vpSingle.getWidget(0);
+				int selectedIndex = fieldBox.getSelectedIndex();
+				String addedFieldName = fieldBox.getItemText(selectedIndex);
+				Label addedFieldLabel = new Label(addedFieldName);
+				TextBox addedFieldText = new TextBox();
+				singleGeorefField.add(addedFieldLabel);
+				singleGeorefField.add(addedFieldText);
+			}
+
+		});
+		// singleGeorefField.iterator();
+		// there is an error here
+		submit.addClickListener(new ClickListener() {
+
+			public void onClick(Widget sender) {
+				Controller.getInstance().singleGeoreference(singleGeorefField,
+						new AsyncCallback() {
+							public void onFailure(Throwable caught) {
+								Window.alert(caught.getMessage());
+							}
+
+							public void onSuccess(Object result) {
+								if (result != null) {
+									HTML htmlResponse = new HTML();
+									String data = (String) result;
+									htmlResponse.setHTML(data);
+									vpSingle.add(htmlResponse);
+								}
+							}
+						});
+
+			}
+
+		});
+		vpSingle.add(addField);
+		vpSingle.add(submit);
+		RootPanel.get("slot1").add(vpSingle);
+		RootPanel.get("slot1").add(singleGeorefField);
+	}
+
 	/**
 	 * This is the entry point method. cal singleGeoref which just do single
 	 * georeference base on the fields enter form user
@@ -51,43 +122,27 @@ public class Client implements EntryPoint {
 	 * base input from the 3 textBoxes
 	 */
 	private void singleGeoref() {
-		final VerticalPanel vp = new VerticalPanel();
-		final Label lLabel = new Label("Locality:");
-		final TextBox lBox = new TextBox();
-		final Label hgLabel = new Label("HigherGeography:");
-		final TextBox hgBox = new TextBox();
-		final Label iLabel = new Label("Interpreter:");
-		final TextBox iBox = new TextBox();
-
-		vp.setSpacing(8);
-		vp.add(lLabel);
-		vp.add(lBox);
-		vp.add(hgLabel);
-		vp.add(hgBox);
-		vp.add(iLabel);
-		vp.add(iBox);
-		Button submit = new Button("Georeference");
-		submit.addClickListener(new ClickListener() {
-			public void onClick(Widget sender) {
-				Controller.getInstance().georeference(lBox.getText(),
-						hgBox.getText(), iBox.getText(), new AsyncCallback() {
-							public void onFailure(Throwable caught) {
-								Window.alert(caught.getMessage());
-							}
-
-							public void onSuccess(Object result) {
-								if (result != null) {
-									HTML htmlResponse = new HTML();
-									String data = (String) result;
-									htmlResponse.setHTML(data);
-									vp.add(htmlResponse);
-								}
-							}
-						});
-			}
-		});
-		vp.add(submit);
-		RootPanel.get("slot1").add(vp);
+		initializeBoxes();
+		/*
+		 * final VerticalPanel vp = new VerticalPanel(); final Label lLabel =
+		 * new Label("Locality:"); final TextBox lBox = new TextBox(); final
+		 * Label hgLabel = new Label("HigherGeography:"); final TextBox hgBox =
+		 * new TextBox(); final Label iLabel = new Label("Interpreter:"); final
+		 * TextBox iBox = new TextBox();
+		 * 
+		 * vp.setSpacing(8); vp.add(lLabel); vp.add(lBox); vp.add(hgLabel);
+		 * vp.add(hgBox); vp.add(iLabel); vp.add(iBox); Button submit = new
+		 * Button("Georeference"); submit.addClickListener(new ClickListener() {
+		 * public void onClick(Widget sender) {
+		 * Controller.getInstance().georeference(lBox.getText(),
+		 * hgBox.getText(), iBox.getText(), new AsyncCallback() { public void
+		 * onFailure(Throwable caught) { Window.alert(caught.getMessage()); }
+		 * 
+		 * public void onSuccess(Object result) { if (result != null) { HTML
+		 * htmlResponse = new HTML(); String data = (String) result;
+		 * htmlResponse.setHTML(data); vp.add(htmlResponse); } } }); } });
+		 * vp.add(submit); RootPanel.get("slot1").add(vp);
+		 */
 	}
 
 	/**
