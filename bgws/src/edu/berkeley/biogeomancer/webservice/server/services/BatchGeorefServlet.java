@@ -16,9 +16,9 @@
 package edu.berkeley.biogeomancer.webservice.server.services;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.Enumeration;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -44,31 +44,21 @@ import edu.berkeley.biogeomancer.webservice.server.util.CustomNamespaceDocument;
  */
 public class BatchGeorefServlet extends HttpServlet {
 
-  private static final long serialVersionUID = 1L;
-
   Logger log = Logger.getLogger(BatchGeorefServlet.class);
 
-  // private final BgUtil bgUtil = new BgUtil();
-  /**
-   * Georeferences a batch locality using the BioGeomancer Core API. Returns all
-   * generated georeferences as XML.
-   */
-  /*
-   * public void doGet(HttpServletRequest request, HttpServletResponse response)
-   * throws ServletException, java.io.IOException { }
-   */
   public void doPost(HttpServletRequest request, HttpServletResponse response)
-      throws ServletException, java.io.IOException {
-    System.out.println("doPost...");
-    response.setContentType("text/html");
+      throws ServletException, IOException {
+    while (request.getParameterNames().hasMoreElements()) {
+      log.info("Cool");
+    }
 
-    Enumeration foo = request.getParameterNames();
+    log.info(request.getReader().readLine());
 
     String requestXml = request.getParameter("requestXml");
     BufferedReader reader = request.getReader();
     Window.alert("requestXml");
     String line;
-    //System.out.println("doPost");
+    // System.out.println("doPost");
     while ((line = reader.readLine()) != null) {
       log.info(line);
     }
@@ -77,7 +67,7 @@ public class BatchGeorefServlet extends HttpServlet {
     out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
     out.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
 
-    parseXml(reader, out);
+    // parseXml(reader, out);
     out.println("</biogeomancer>");
     out.close();
   }
