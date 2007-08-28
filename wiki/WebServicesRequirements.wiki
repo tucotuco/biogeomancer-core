@@ -8,6 +8,9 @@ A georeferencing web service that accepts a DwC record and returns georeferences
 
 == Web Service Interface ==
 The web service interface accepts HTTP GET requests using the following case insensitive URL parameters:
+
+_TODO: remove required?_
+
 || *Parameter* || *Description* || *Required* ||
 || locality || The Locality DwC concept || √ ||
 || interpreter || The BioGeomancer locality interpreter || √ ||
@@ -26,6 +29,8 @@ Example:
 
 == Web Service Output ==
 The web service output format will be XML (UTF-8) with a `dwc` namespace for DwC elements. All URL request parameters will appear in the output. For example:
+
+_TODO: add diagnostics element_
 
 {{{  
 <?xml version="1.0" encoding="utf-8"?>
