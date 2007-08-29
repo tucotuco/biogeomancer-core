@@ -11,10 +11,10 @@
     <servlet path='/controller' 
              class='edu.berkeley.biogeomancer.webservice.server.services.controller.ControllerServiceImpl'/>
              
-    <servlet path='/ws/single' 
+    <servlet path='/single' 
              class='edu.berkeley.biogeomancer.webservice.server.services.SingleGeorefServlet'/>
     
-    <servlet path='/ws/batch' 
+    <servlet path='/batch' 
              class='edu.berkeley.biogeomancer.webservice.server.services.BatchGeorefServlet'/>
     
 </module>

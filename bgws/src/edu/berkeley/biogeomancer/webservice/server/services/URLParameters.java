@@ -52,16 +52,16 @@ public class URLParameters {
       conceptMap.put("cy", COUNTRY);
       conceptMap.put("country", COUNTRY);
 
-      conceptMap.put("s", STATE_PROVINCE);
+      conceptMap.put("sp", STATE_PROVINCE);
       conceptMap.put("stateprovince", STATE_PROVINCE);
 
       conceptMap.put("co", COUNTY);
       conceptMap.put("county", COUNTY);
 
-      conceptMap.put("vlat", VERBATIM_LATITUDE);
+      conceptMap.put("vt", VERBATIM_LATITUDE);
       conceptMap.put("verbatimlatitude", VERBATIM_LATITUDE);
 
-      conceptMap.put("vlng", VERBATIM_LONGITUDE);
+      conceptMap.put("vg", VERBATIM_LONGITUDE);
       conceptMap.put("verbatimlongitude", VERBATIM_LONGITUDE);
 
       conceptMap.put("is", ISLAND);
@@ -70,7 +70,7 @@ public class URLParameters {
       conceptMap.put("ig", ISLAND_GROUP);
       conceptMap.put("islandgroup", ISLAND_GROUP);
 
-      conceptMap.put("w", WATER_BODY);
+      conceptMap.put("wb", WATER_BODY);
       conceptMap.put("waterbody", WATER_BODY);
 
       conceptMap.put("c", CONTINENT);

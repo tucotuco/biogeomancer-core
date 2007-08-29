@@ -34,37 +34,39 @@ import org.biogeomancer.records.Georef;
 import org.biogeomancer.records.Rec;
 
 /**
- * Web service for georeferencing a single locality.
+ * The SingleGeorefServlet class provides an HTTP GET web service for
+ * georeferencing single DwC records.
+ * 
+ * @see http://code.google.com/p/biogeomancer-core/wiki/WebServicesRequirements
  * 
  */
 public class SingleGeorefServlet extends HttpServlet {
 
+  /**
+   * The default BioGeomancer locality interpreter.
+   */
   private static String INTERPRETER = "yale";
 
   Logger log = Logger.getLogger(SingleGeorefServlet.class);
 
   /**
-   * Georeference a single locality using the BioGeomancer Core API. Returns all
-   * generated georeferences as XML.
+   * Handles the HTTP GET request.
    */
   public void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, java.io.IOException {
-    response.setContentType("text/xml");
-    Rec rec = buildRecFromRequest(request);
-
-    PrintWriter out = response.getWriter();
-    out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-    out.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
     StringBuilder sb = new StringBuilder();
+    sb.append("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+    sb.append("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
 
+    // Output the original DwC record.
+    Rec rec = buildRecFromRequest(request);
     for (Entry<String, String> entry : rec.entrySet()) {
       sb.append("<dwc:" + entry.getKey() + ">");
       sb.append(entry.getValue());
       sb.append("</dwc:" + entry.getKey() + ">");
     }
-    out.println(sb.toString());
 
-    sb = new StringBuilder();
+    // Output the georeferences.
     List<Georef> georefs = georeference(rec, INTERPRETER);
     double lng, lat, extent;
     for (Georef g : georefs) {
@@ -78,21 +80,27 @@ public class SingleGeorefServlet extends HttpServlet {
           + "</dwc:CoordinateUncertaintyInMeters>");
       sb.append("</georeference>");
     }
+
+    sb.append("</biogeomancer>");
+
+    // Send output to client.
+    response.setContentType("text/xml");
+    PrintWriter out = response.getWriter();
     out.print(sb.toString());
-    out.println("</biogeomancer>");
   }
 
   /**
    * Returns a new Rec built from the request URL parameter key/value pairs.
    * 
-   * @param request the GET request
-   * @return a new Rec
+   * @param request the HTTP GET request
+   * @return Rec
    */
   private Rec buildRecFromRequest(HttpServletRequest request) {
     Rec rec = new Rec();
     Map<String, String> conceptMap = URLParameters.getConceptMap();
     Map<String, String[]> urlParamVals = request.getParameterMap();
 
+    // Adds valid URL parameter KVP to new Rec.
     String paramName = null, conceptName = null, conceptVal = null;
     Enumeration<String> urlParamNames = request.getParameterNames();
     while (urlParamNames.hasMoreElements()) {
@@ -100,7 +108,7 @@ public class SingleGeorefServlet extends HttpServlet {
       if (conceptMap.containsKey(paramName)) {
         conceptName = conceptMap.get(paramName);
         conceptVal = urlParamVals.get(paramName)[0];
-        rec.put(conceptName, conceptVal);
+        rec.put(conceptName.toLowerCase(), conceptVal);
       }
     }
 
@@ -108,7 +116,7 @@ public class SingleGeorefServlet extends HttpServlet {
   }
 
   /**
-   * Georeferences the Rec and returns a list of Georef object.
+   * Georeferences the Rec and returns a list of Georef objects.
    * 
    * @param rec the record to georeference
    * @param interpreter the locality interpreter
@@ -124,17 +132,5 @@ public class SingleGeorefServlet extends HttpServlet {
       e.printStackTrace();
       return null;
     }
-
-  }
-
-  /**
-   * @param recMapping
-   * @param key
-   * @param value helper function for getParamerters: put the value along with
-   *          its key Record if value != null
-   */
-  private void put(Rec recMapping, String key, String value) {
-    if (value != null)
-      recMapping.put(key, value);
   }
 }
