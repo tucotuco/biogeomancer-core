@@ -1,0 +1,17 @@
+# Rename this file 'ant.properties' and fill in the properties below.
+
+# GWT properties.
+gwt.user.jar=
+gwt.dev.jar=
+gwt.servlet.jar=
+
+# Tomcat properties.
+tomcat.manager.url=
+tomcat.user=
+tomcat.pass=
+tomcat.path=
+
+# Executable properties.
+executable.svnversion=
+executable.date=
+executable.sh=

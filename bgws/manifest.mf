@@ -1,0 +1,7 @@
+Manifest-version: 1.0
+
+Name: org/biogeomancer
+Implementation-Title: BioGeomancer Web Application
+Implementation-Version: 0.1
+Implementation-Vendor:  Museum of Vertebrate Zoology, UC Berkeley
+Implementation-Vendor-Id: org.mvz

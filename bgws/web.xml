@@ -27,7 +27,7 @@
   </servlet>
   <servlet-mapping>
       <servlet-name>SingleGeorefServlet</servlet-name>
-      <url-pattern>/ws/single</url-pattern>
+      <url-pattern>/single</url-pattern>
   </servlet-mapping>
 
   <servlet>
@@ -36,7 +36,7 @@
   </servlet>
   <servlet-mapping>
       <servlet-name>BatchGeorefServlet</servlet-name>
-      <url-pattern>/ws/batch</url-pattern>
+      <url-pattern>/batch</url-pattern>
   </servlet-mapping>
     
 	
