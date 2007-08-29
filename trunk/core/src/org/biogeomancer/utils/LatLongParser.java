@@ -1,15 +1,19 @@
 /**
- *@ LatLongParser.java
- *
- *The main purpose of this code is to take a String with latitude and
- *longitude or two Strings, one of which is latitude and one of which is longitude,
- *and return an array of LatLong objects with possible parsings.
- *
- *@version alpha, untested
- *
- *@author Peter DeVore
- *@email pdevore AT berkeley dot edu
+ * Copyright 2007 University of California at Berkeley.
+ * 
+ * Licensed under the Apache License, Version 2.0 (the "License"); you may not
+ * use this file except in compliance with the License. You may obtain a copy of
+ * the License at
+ * 
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS, WITHOUT
+ * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
+ * License for the specific language governing permissions and limitations under
+ * the License.
  */
+
 package org.biogeomancer.utils;
 
 import java.util.ArrayList;
@@ -20,7 +24,7 @@ public abstract class LatLongParser {
   static final Pattern DEGREEPATTERN = Pattern.compile("[Dd\u00b0]");
   static final String A_LATLONGSUFFIX = ")(?=.*?[0-9]?)";
   static final String A_LATLONGPREFIX = "(?<=[^A-Za-z]";
-  
+
   static final Pattern LATITUDEPATTERN = Pattern.compile(A_LATLONGPREFIX
       + "[NnSs]" + A_LATLONGSUFFIX);
   static final Pattern LONGITUDEPATTERN = Pattern.compile(A_LATLONGPREFIX
@@ -77,9 +81,11 @@ public abstract class LatLongParser {
    * the other of which is longitude. However, it is not known at this point
    * which String is latitude and which String is longitude.
    * 
-   * @param s1 either a latitude String or a longitude String, but not the same
+   * @param s1
+   *          either a latitude String or a longitude String, but not the same
    *          type as s2.
-   * @param s2 either a latitude String or a longitude String, but not the same
+   * @param s2
+   *          either a latitude String or a longitude String, but not the same
    *          type as s1.
    * @return an ArrayList<LatLong> of possible parsings.
    */
@@ -97,9 +103,11 @@ public abstract class LatLongParser {
    * and the second of which is longitude. However, it is not known at this
    * point what the numeric values are.
    * 
-   * @param s1 either a latitude String or a longitude String, but not the same
+   * @param s1
+   *          either a latitude String or a longitude String, but not the same
    *          type as s2.
-   * @param s2 either a latitude String or a longitude String, but not the same
+   * @param s2
+   *          either a latitude String or a longitude String, but not the same
    *          type as s1.
    * @return an ArrayList<LatLong> of possible parsings.
    */
@@ -114,7 +122,8 @@ public abstract class LatLongParser {
   /**
    * parseNumber parses a String representing an angle.
    * 
-   * @param numstr the String that represents the number to be parsed.
+   * @param numstr
+   *          the String that represents the number to be parsed.
    * 
    * This is done for now, however it will need much fixing.
    * 
@@ -254,10 +263,10 @@ public abstract class LatLongParser {
 }
 
 class DegMinSec {
-  boolean isValid;
   private double degree;
   private double minute;
   private double second;
+  boolean isValid;
 
   DegMinSec() {
     degree = 0;
