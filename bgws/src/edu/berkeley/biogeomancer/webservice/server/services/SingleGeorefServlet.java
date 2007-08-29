@@ -87,6 +87,8 @@ public class SingleGeorefServlet extends HttpServlet {
     response.setContentType("text/xml");
     PrintWriter out = response.getWriter();
     out.print(sb.toString());
+    out.flush();
+    out.close();
   }
 
   /**

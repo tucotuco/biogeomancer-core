@@ -4,6 +4,8 @@
 package edu.berkeley.biogeomancer.webservice.server.services;
 
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The URLParameters class maps URL parameters to DwC concepts. For example, the
@@ -33,6 +35,19 @@ public class URLParameters {
    * Maps URL parameters to DwC concepts.
    */
   private static HashMap<String, String> conceptMap;
+  private static List<String> conceptList;
+
+  public static List<String> getConceptList() {
+    if (conceptList == null) {
+      conceptList = new LinkedList<String>();
+      for (String c : new String[] { CONTINENT, COUNTRY, COUNTY,
+              HIGHER_GEOGRAPHY, ISLAND, ISLAND_GROUP, LOCALITY, STATE_PROVINCE,
+              VERBATIM_LATITUDE, VERBATIM_LONGITUDE, WATER_BODY }) {
+        conceptList.add(c);
+      }
+    }
+    return conceptList;
+  }
 
   /**
    * Returns the concept map.
