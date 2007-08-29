@@ -8,8 +8,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * The URLParameters class maps URL parameters to DwC concepts. For example, the
- * 'l' and 'locality' URL parameters map to the DwC Locality concept:
+ * The GeorefRequestParameters class maps URL parameters to DwC concepts. For
+ * example, the 'l' and 'locality' URL parameters map to the DwC Locality
+ * concept:
  * 
  * <pre>
  * conceptMap.put('l', 'locality'); 
@@ -17,7 +18,7 @@ import java.util.List;
  * </pre>
  * 
  */
-public class URLParameters {
+public class GeorefRequestParameters {
 
   public static final String CONTINENT = "Continent";
   public static final String COUNTRY = "Country";
@@ -37,6 +38,11 @@ public class URLParameters {
   private static HashMap<String, String> conceptMap;
   private static List<String> conceptList;
 
+  /**
+   * Returns a
+   * <code>List<String><code> of concept names that are accepted in a request.
+   * @return <code>List<String><code> of concept names that are accepted in a request
+   */
   public static List<String> getConceptList() {
     if (conceptList == null) {
       conceptList = new LinkedList<String>();

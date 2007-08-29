@@ -99,7 +99,7 @@ public class SingleGeorefServlet extends HttpServlet {
    */
   private Rec buildRecFromRequest(HttpServletRequest request) {
     Rec rec = new Rec();
-    Map<String, String> conceptMap = URLParameters.getConceptMap();
+    Map<String, String> conceptMap = GeorefRequestParameters.getConceptMap();
     Map<String, String[]> urlParamVals = request.getParameterMap();
 
     // Adds valid URL parameter KVP to new Rec.

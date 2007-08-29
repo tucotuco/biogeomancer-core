@@ -98,7 +98,7 @@ public class BatchGeorefServlet extends HttpServlet {
    */
   private String getGeoreferencedResponse(String xml) {
     SAXReader reader = new SAXReader();
-    List<String> concepts = URLParameters.getConceptList();
+    List<String> concepts = GeorefRequestParameters.getConceptList();
     Rec rec;
     StringBuilder sb = new StringBuilder();
 
