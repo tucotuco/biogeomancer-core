@@ -1,1 +1,0 @@
-This directory temporarily contains uploaded files.

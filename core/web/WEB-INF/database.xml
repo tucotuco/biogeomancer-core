@@ -1,7 +1,0 @@
-<?xml version='1.0'?>
-<database>
-  <user username="gregoryhill597" fromAddress="gregoryhill597@yahoo.com" fullName="GregoryHill597" password="pass">
-    <subscription host="mail.yahoo.com" autoConnect="false" password="bar" type="pop3" username="gregoryhill597">
-    </subscription>
-  </user>
-</database>
