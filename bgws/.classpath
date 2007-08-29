@@ -16,6 +16,7 @@
 	<classpathentry kind="lib" path="lib/commons-logging-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-adapters-1.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-logging-api-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/junit-4.1.jar"/>
 	<classpathentry kind="var" path="GWT_HOME/gwt-user.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
