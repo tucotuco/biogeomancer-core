@@ -119,13 +119,25 @@ public class Rec extends HashMap<String, String> {
     state = RecState.REC_CLEARED;
   }
 
+  /**
+   * Returns the DwC concept value for the given concept name.
+   * 
+   * @param conceptName the DwC concept name
+   * @return
+   */
   public String get(String conceptName) {
     if (conceptName == null) {
       return null;
     }
     String value = super.get(conceptName);
+    // Lower case the entire name.
     if (value == null) {
       value = super.get(conceptName.toLowerCase().trim());
+    }
+    // Upper case the first letter in the name.
+    if (value == null) {
+      value = super.get(conceptName.substring(0, 1).toUpperCase()
+          + conceptName.substring(1, conceptName.length()).toLowerCase());
     }
     return value;
   }
