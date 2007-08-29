@@ -79,28 +79,28 @@ public class Client implements EntryPoint {
 		});
 		// singleGeorefField.iterator();
 		// there is an error here
-		submit.addClickListener(new ClickListener() {
-
-			public void onClick(Widget sender) {
-				Controller.getInstance().singleGeoreference(singleGeorefField,
-						new AsyncCallback() {
-							public void onFailure(Throwable caught) {
-								Window.alert(caught.getMessage());
-							}
-
-							public void onSuccess(Object result) {
-								if (result != null) {
-									HTML htmlResponse = new HTML();
-									String data = (String) result;
-									htmlResponse.setHTML(data);
-									vpSingle.add(htmlResponse);
-								}
-							}
-						});
-
-			}
-
-		});
+//		submit.addClickListener(new ClickListener() {
+//
+//			public void onClick(Widget sender) {
+//				Controller.getInstance().singleGeoreference(singleGeorefField,
+//						new AsyncCallback() {
+//							public void onFailure(Throwable caught) {
+//								Window.alert(caught.getMessage());
+//							}
+//
+//							public void onSuccess(Object result) {
+//								if (result != null) {
+//									HTML htmlResponse = new HTML();
+//									String data = (String) result;
+//									htmlResponse.setHTML(data);
+//									vpSingle.add(htmlResponse);
+//								}
+//							}
+//						});
+//
+//			}
+//
+//		});
 		vpSingle.add(addField);
 		vpSingle.add(submit);
 		RootPanel.get("slot1").add(vpSingle);

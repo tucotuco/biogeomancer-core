@@ -16,7 +16,6 @@
 package edu.berkeley.biogeomancer.webservice.client.services.controller;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * The corresponding asynchronous interface for the controller service.
@@ -25,10 +24,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public interface ControllerServiceAsync {
 
-	public void singleGeoreference(String locality, String higherGeog,
-			String interp, AsyncCallback cb);
+  public void batchGeoreference(String xmlRequest, AsyncCallback cb);
 
-	public void batchGeoreference(String xmlRequest, AsyncCallback cb);
+  public void singleGeoreference(String locality, String higherGeog,
+      String interp, AsyncCallback cb);
 
-	public void singleGeoreference(VerticalPanel georef, AsyncCallback cb);
 }

@@ -16,7 +16,6 @@
 package edu.berkeley.biogeomancer.webservice.client.services.controller;
 
 import com.google.gwt.user.client.rpc.RemoteService;
-import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * The synchronous interface for the controller service. All asynchronous
@@ -27,10 +26,9 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public interface ControllerService extends RemoteService {
 
-	public String singleGeoreference(String locality, String higherGeog,
-			String interp);
+  public String batchGeoreference(String xmlRequest);
 
-	public String batchGeoreference(String xmlRequest);
+  public String singleGeoreference(String locality, String higherGeog,
+      String interp);
 
-	public String singleGeoreference(VerticalPanel georef);
 }

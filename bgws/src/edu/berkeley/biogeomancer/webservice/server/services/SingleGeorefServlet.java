@@ -17,8 +17,9 @@ package edu.berkeley.biogeomancer.webservice.server.services;
 
 import java.io.PrintWriter;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -26,9 +27,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.log4j.Logger;
+import org.biogeomancer.managers.GeorefManager;
+import org.biogeomancer.managers.GeorefPreferences;
+import org.biogeomancer.managers.GeorefManager.GeorefManagerException;
+import org.biogeomancer.records.Georef;
 import org.biogeomancer.records.Rec;
-
-import edu.berkeley.biogeomancer.webservice.server.util.BgUtil;
 
 /**
  * Web service for georeferencing a single locality.
@@ -36,136 +39,102 @@ import edu.berkeley.biogeomancer.webservice.server.util.BgUtil;
  */
 public class SingleGeorefServlet extends HttpServlet {
 
-	Logger log = Logger.getLogger(SingleGeorefServlet.class);
+  private static String INTERPRETER = "yale";
 
-	private final BgUtil bgUtil = new BgUtil();
+  Logger log = Logger.getLogger(SingleGeorefServlet.class);
 
-	/**
-	 * Georeferences a single locality using the BioGeomancer Core API. Returns
-	 * all generated georeferences as XML.
-	 */
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-			throws ServletException, java.io.IOException {
+  /**
+   * Georeference a single locality using the BioGeomancer Core API. Returns all
+   * generated georeferences as XML.
+   */
+  public void doGet(HttpServletRequest request, HttpServletResponse response)
+      throws ServletException, java.io.IOException {
+    response.setContentType("text/xml");
+    Rec rec = buildRecFromRequest(request);
 
-		response.setContentType("text/xml");
-		// String locality = request.getParameter("l");
-		// String higherGeography = request.getParameter("hg");
-		String interpreter = request.getParameter("i");
-		if (interpreter == null)
-			interpreter = request.getParameter("interpreter");
-		if (interpreter == null || interpreter.equals(""))
-			interpreter = "yale";
+    PrintWriter out = response.getWriter();
+    out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+    out.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
+    StringBuilder sb = new StringBuilder();
 
-		Rec recordMap = getParameters(request);
+    for (Entry<String, String> entry : rec.entrySet()) {
+      sb.append("<dwc:" + entry.getKey() + ">");
+      sb.append(entry.getValue());
+      sb.append("</dwc:" + entry.getKey() + ">");
+    }
+    out.println(sb.toString());
 
-		/*
-		 * log.info("Locality: " + locality + " HigherGeography: " +
-		 * higherGeography + " Interpreter: " + interpreter);
-		 */
+    sb = new StringBuilder();
+    List<Georef> georefs = georeference(rec, INTERPRETER);
+    double lng, lat, extent;
+    for (Georef g : georefs) {
+      lat = g.pointRadius.y;
+      lng = g.pointRadius.x;
+      extent = g.pointRadius.extent;
+      sb.append("<georeference>");
+      sb.append("<dwc:DecimalLatitude>" + lat + "</dwc:DecimalLatitude>");
+      sb.append("<dwc:DecimalLongitude>" + lng + "</dwc:DecimalLongitude>");
+      sb.append("<dwc:CoordinateUncertaintyInMeters>" + extent
+          + "</dwc:CoordinateUncertaintyInMeters>");
+      sb.append("</georeference>");
+    }
+    out.print(sb.toString());
+    out.println("</biogeomancer>");
+  }
 
-		PrintWriter out = response.getWriter();
+  /**
+   * Returns a new Rec built from the request URL parameter key/value pairs.
+   * 
+   * @param request the GET request
+   * @return a new Rec
+   */
+  private Rec buildRecFromRequest(HttpServletRequest request) {
+    Rec rec = new Rec();
+    Map<String, String> conceptMap = URLParameters.getConceptMap();
+    Map<String, String[]> urlParamVals = request.getParameterMap();
 
-		// Build the XML header.
-		out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-		out
-				.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
+    String paramName = null, conceptName = null, conceptVal = null;
+    Enumeration<String> urlParamNames = request.getParameterNames();
+    while (urlParamNames.hasMoreElements()) {
+      paramName = urlParamNames.nextElement();
+      if (conceptMap.containsKey(paramName)) {
+        conceptName = conceptMap.get(paramName);
+        conceptVal = urlParamVals.get(paramName)[0];
+        rec.put(conceptName, conceptVal);
+      }
+    }
 
-		out.println("<interpreter>" + interpreter + "</interpreter>");
-		// BgUtil.buildSingleXmlText(locality, higherGeography, interpreter,
-		// out);
-		BgUtil.buildSingleXmlText(recordMap, interpreter, out);
-		out.println("</biogeomancer>");
-	}
+    return rec;
+  }
 
-	/**
-	 * 
-	 * @param request
-	 * @return Rec base on given request helper function for doGet get support
-	 *         url parameters: l,locality = locality hg,highergeography =
-	 *         highergeography cy, country = country s, stateprovince =
-	 *         stateprovince co, county = county vlat, verbatimlatitude =
-	 *         verbatimlatitude vlng, verbatimlongitude = verbatimlongitude is,
-	 *         island = island ig, islandgroup = islandgroup w, waterbody =
-	 *         waterbody c, continent = continent i, interpreter = interpreter
-	 *         (this does not get added to the record)
-	 */
-	@SuppressWarnings("unchecked")
-	private Rec getParameters(HttpServletRequest request) {
-		Rec rec = new Rec();
-		HashMap<String, String> supportParameters = BgUtil.supportpParameters();
-		Map<String, String[]> paramValues = request.getParameterMap();
-		Enumeration<String> paramNames = request.getParameterNames();
-		// paramValues.remove("i");
-		// paramValues.remove("interpreter");
-		while (paramNames.hasMoreElements()) {
-			String paramName = paramNames.nextElement();
-			String supportParam = supportParameters.get(paramName);
-			if (supportParam != null) {
-				String paramVal = paramValues.get(paramName)[0];
-				rec.put(supportParam, paramVal);
+  /**
+   * Georeferences the Rec and returns a list of Georef object.
+   * 
+   * @param rec the record to georeference
+   * @param interpreter the locality interpreter
+   * @return
+   */
+  private List<Georef> georeference(Rec rec, String interpreter) {
+    GeorefManager gm;
+    try {
+      gm = new GeorefManager();
+      gm.georeference(rec, new GeorefPreferences(interpreter));
+      return rec.georefs;
+    } catch (GeorefManagerException e) {
+      e.printStackTrace();
+      return null;
+    }
 
-			}
-		}
+  }
 
-		/*
-		 * String requestParam = request.getParameter("l"); if (requestParam ==
-		 * null) requestParam = request.getParameter("locality"); put(rec,
-		 * "locality", requestParam);
-		 * 
-		 * requestParam = request.getParameter("hg"); if (requestParam == null)
-		 * requestParam = request.getParameter("highergeography"); put(rec,
-		 * "highergeography", requestParam);
-		 * 
-		 * requestParam = request.getParameter("cy"); if (requestParam == null)
-		 * requestParam = request.getParameter("country"); put(rec, "country",
-		 * requestParam);
-		 * 
-		 * requestParam = request.getParameter("s"); if (requestParam == null)
-		 * requestParam = request.getParameter("stateprovince"); put(rec,
-		 * "stateprovince", requestParam);
-		 * 
-		 * requestParam = request.getParameter("co"); if (requestParam == null)
-		 * requestParam = request.getParameter("county"); put(rec, "county",
-		 * requestParam);
-		 * 
-		 * requestParam = request.getParameter("vlat"); if (requestParam ==
-		 * null) requestParam = request.getParameter("verbatimlatitude");
-		 * put(rec, "verbatimlatitude", requestParam);
-		 * 
-		 * requestParam = request.getParameter("vlng"); if (requestParam ==
-		 * null) requestParam = request.getParameter("verbatimlongitude");
-		 * put(rec, "verbatimlongitude", requestParam);
-		 * 
-		 * requestParam = request.getParameter("is"); if (requestParam == null)
-		 * requestParam = request.getParameter("island"); put(rec, "island",
-		 * requestParam);
-		 * 
-		 * requestParam = request.getParameter("ig"); if (requestParam == null)
-		 * requestParam = request.getParameter("islandgroup"); put(rec,
-		 * "islandgroup", requestParam);
-		 * 
-		 * requestParam = request.getParameter("w"); if (requestParam == null)
-		 * requestParam = request.getParameter("waterbody"); put(rec,
-		 * "waterbody", requestParam);
-		 * 
-		 * requestParam = request.getParameter("cn"); if (requestParam == null)
-		 * requestParam = request.getParameter("continent"); put(rec,
-		 * "continent", requestParam);
-		 */
-
-		return rec;
-	}
-
-	/**
-	 * @param recMapping
-	 * @param key
-	 * @param value
-	 *            helper function for getParamerters: put the value along with
-	 *            its key Record if value != null
-	 */
-	private void put(Rec recMapping, String key, String value) {
-		if (value != null)
-			recMapping.put(key, value);
-	}
+  /**
+   * @param recMapping
+   * @param key
+   * @param value helper function for getParamerters: put the value along with
+   *          its key Record if value != null
+   */
+  private void put(Rec recMapping, String key, String value) {
+    if (value != null)
+      recMapping.put(key, value);
+  }
 }
