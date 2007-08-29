@@ -49,7 +49,23 @@ _TODO: add diagnostics element_
 
 = Batch Georeference Requirements =
 == Web Service Interface ==
-Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit:
+Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit. The following DwC elements are accepted:
+
+|| *Element*  || *Description* || *Required* ||
+|| continent || The Continent DwC concept  || ||
+|| country  || The Country DwC concept || ||
+|| county || The County DwC concept || ||
+|| highergeography || The HigherGeography DwC concept || ||
+|| island || The Island DwC concept  || ||
+|| islandgroup || The IslandGroup DwC concept|||| 
+|| locality || The Locality DwC concept ||  ||
+|| stateprovince || The StateProvince DwC concept || ||
+|| verbatimlatitude || The VerbatimLatitude DwC concept || ||
+|| verbatimlongitude || The VerbatimLongitude DwC concept || ||
+|| waterbody || The WaterBody DwC concept  || ||
+|| interpreter || The BioGeomancer locality interpreter ||  ||
+
+Example batch request XML:
 
 {{{
 <?xml version="1.0" encoding="utf-8"?>
@@ -108,3 +124,4 @@ Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the D
 </records>
 </biogeomancer>              
 }}}
+
