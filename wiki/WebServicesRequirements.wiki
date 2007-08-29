@@ -48,7 +48,7 @@ _TODO: add diagnostics element_
 
 
 = Batch Georeference Requirements =
-== Interface ==
+== Web Service Interface ==
 Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit:
 
 {{{
@@ -71,7 +71,7 @@ Batch georeferencing will be supported by HTTP POST of an XML batch request with
 </biogeomancer>              
 }}}
 
-== Output ==
+== Web Service Output ==
 Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the DarwinCore schema:
 
 {{{
