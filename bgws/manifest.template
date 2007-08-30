@@ -1,7 +1,7 @@
 Manifest-version: 1.0
 
-Name: org/biogeomancer
-Implementation-Title: BioGeomancer Web Application
+Name: edu/berkeley
+Implementation-Title: BioGeomancer Web Services
 Implementation-Version: @version@
-Implementation-Vendor:  Museum of Vertebrate Zoology, UC Berkeley
-Implementation-Vendor-Id: org.mvz
+Implementation-Vendor:  University of California at Berkeley
+Implementation-Vendor-Id: edu.berkeley
