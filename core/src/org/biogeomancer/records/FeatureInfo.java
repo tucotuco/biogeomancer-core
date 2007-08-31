@@ -48,26 +48,27 @@ public class FeatureInfo {
   public String name; // The accepted valid name of the feature
   public int featureID; // Unique identifier for the feature
   public String classificationTerm; // The Feature Type in which this feature is
-                                    // classified
+  // classified
   public double latitude; // The decimal latitude of the snapped-to centroid of
-                          // the feature.
+  // the feature.
   public double longitude; // The decimal longitude of the snapped-to centroid
-                            // of the feature.
+  // of the feature.
   public Datum geodeticDatum; // The Coordinate Reference System (geodetic
-                              // datum) of the latitude and longitude.
+  // datum) of the latitude and longitude.
   public double extentInMeters; // The distance from the snapped-to centroid of
-                                // the feature to the further point in the
-                                // feature, in meters.
+  // the feature to the further point in the
+  // feature, in meters.
   public double coordPrecision; // Coordinate precision expressed in decimal
-                                // degrees (e.g., 0.5 means 30 minutes or half a
-                                // degree).
+  // degrees (e.g., 0.5 means 30 minutes or half a
+  // degree).
   public double mapAccuracyInMeters;// Map accuracy in meters (how far off a
-                                    // coordinate can be from the true value
-                                    // based on the original source).
+  // coordinate can be from the true value
+  // based on the original source).
   public String coordSource; // Required for metadata construction.
 
   public String encodedGeometry; // An encoded geometry to hold complex
-                                  // representations of the feature (shapes)
+
+  // representations of the feature (shapes)
   // public MetaData metadata; // metadata object to track processing
   // information, such as timestamps and methods.
   // public ArrayList<MetaData> metadata; // as an ArrayList, metadata could be
@@ -120,6 +121,17 @@ public class FeatureInfo {
     this.coordSource = new String(coordsource);
     this.encodedGeometry = new String(encodedgeometry);
     this.state = FeatureInfoState.FEATUREINFO_CREATED;
+  }
+
+  public boolean equals(Object o) {
+    if (!(o instanceof FeatureInfo))
+      return false;
+    FeatureInfo f = (FeatureInfo) o;
+    return f.featureID == this.featureID;
+  }
+
+  public int hashCode() {
+    return featureID;
   }
 
   public String toString() {
