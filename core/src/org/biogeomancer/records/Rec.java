@@ -143,7 +143,16 @@ public class Rec extends HashMap<String, String> {
     return value;
   }
 
-  public String getFullLocality() {
+	public int getGeorefedClauseCount(){
+		int count=0;
+		for(Clause c : this.clauses){
+			c.cleanupClause();
+			if(c.georefs.size()>0) count++;
+		}
+		return count;
+	}
+
+	public String getFullLocality() {
     String s = new String("(" + this.get("id") + ") ");
     String t = this.get("highergeography");
     if (t != null)
@@ -241,7 +250,23 @@ public class Rec extends HashMap<String, String> {
     return uFullLocality;
   }
 
-  public void set(String concept, String value) {
+	public String getSummary(String prefix){
+		String s = new String("Record: "+uFullLocality);
+		s=s.concat("\n"+prefix+"Clause count: "+clauses.size());
+		s=s.concat("\n"+prefix+"Final Georef count: "+georefs.size());
+		s=s.concat("\n"+prefix+"Clauses:\n");
+		for( Clause c: this.clauses) {
+			s=s.concat(c.getSummary(prefix+prefix));
+		}
+		s=s.concat("\n"+prefix+"Final Georefs: (n="+this.georefs.size()+")\n");
+		for( Georef g: this.georefs) {
+			s=s.concat(g.getSummary(prefix+prefix));
+		}
+		
+		return s;
+	}
+
+	public void set(String concept, String value) {
     super.put(concept, value);
   }
 

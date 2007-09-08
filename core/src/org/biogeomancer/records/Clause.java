@@ -42,6 +42,21 @@ public class Clause // represents information about one atomic interpretable
     this.state = ClauseState.CLAUSE_CREATED;
   }
 
+  public void cleanupClause(){
+	for(Georef g : this.georefs){
+		if(g.state!=GeorefState.GEOREF_COMPLETED) georefs.remove(g);
+	}
+  }
+	public String getSummary(String prefix){
+		String s = new String("\n"+prefix+"Uninterpreted: "+uLocality+"\n"+prefix+"Interpreted: "+iLocality+"\n"+prefix+"LocType: "+locType);
+		s=s.concat("\n"+prefix+"Language: "+interpretedInLanguage);
+		s=s.concat("\n"+prefix+"Georef count: "+georefs.size());
+		s=s.concat("\n"+prefix+"Clause Georefs:\n");
+		for( Georef g: this.georefs) {
+			s=s.concat(g.getSummary(prefix+prefix));
+		}
+		return s;
+	}
   public String makeInterpretedLocality(FeatureInfo fi1, FeatureInfo fi2) {
     if (locType == null || locType.length() == 0) {
       iLocality = null;
