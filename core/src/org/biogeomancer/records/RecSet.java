@@ -28,8 +28,13 @@ import java.io.InputStreamReader;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import org.biogeomancer.managers.GeorefManager;
+import org.biogeomancer.managers.GeorefPreferences;
 
 // import org.biogeomancer.ws.HttpClient;
 
@@ -51,9 +56,10 @@ public class RecSet {
   }
 
   public static void main(String[] args) { // loads a data file and prints out
-                                            // each record
+    // each record
     final int TOMARKUP = 1;
     final int TOXML = 2;
+    final int FEATURE_REPORT = 3;
     if (args.length < 3) {
       System.out
           .println("Usage: main inputfile delimiter testtorun\nExample: main /Users/tuco/Documents/MaNISGeorefUploadTest1-500.txt tab 2");
@@ -62,6 +68,8 @@ public class RecSet {
     String filename = new String(args[0]);
     String delimiter = new String(args[1]);
     Integer z = new Integer(args[2]);
+    String arg1 = args[3];
+
     int test = z.intValue();
     try {
       RecSet recset = new RecSet(filename, delimiter);
@@ -83,6 +91,46 @@ public class RecSet {
       case TOXML:
         System.out.println(recset.toXML());
         break;
+
+      case FEATURE_REPORT:
+        try {
+          GeorefManager gm = new GeorefManager();
+          RecSet rs = null;
+
+          // Grab test data from bg.config and create RecSet from it.
+          String localData, remoteData, downloadData = null;
+          localData = gm.props.getProperty("testdata.local.georefmanager");
+          remoteData = gm.props.getProperty("testdata.remote.georefmanager");
+          downloadData = gm.props.getProperty("downloads");
+          if (localData != null) {
+            rs = new RecSet(localData, "tab");
+          } else if (remoteData != null) {
+            if (downloadData != null)
+              rs = new RecSet(remoteData, "tab", downloadData);
+            else
+              System.out
+                  .println("No download location configured in "
+                      + System.getProperty("user.home")
+                      + "/bg.config... Please define downloads as a path to where these files should be stored.");
+          } else
+            System.out
+                .println("No test data configured in "
+                    + System.getProperty("user.home")
+                    + "/bg.config... Please define testdata.local.georefmanager or testdata.remote.georefmanager.");
+
+          gm.setRecSet(rs);
+          GeorefPreferences gp = null;
+          if (arg1 == null)
+            gp = new GeorefPreferences("all");
+          else
+            gp = new GeorefPreferences(arg1);
+
+          gm.newGeoreference(gp);
+
+          rs.getFeatures();
+        } catch (Exception e) {
+        }
+
       }
     } catch (RecSet.RecSetException e) {
       System.out.println(e);
@@ -90,10 +138,10 @@ public class RecSet {
   }
 
   public ArrayList<Rec> recs; // The list of records for processing in this
-                              // RecSet.
+  // RecSet.
   public String filename; // The file name where the RecSet input is stored.
   public String outfilename; // The file name where the RecSet output is
-                              // stored.
+  // stored.
   public String delineator; // user defined delineator for rec file
   public RecSetState state; // The processing state of the RecSet
 
@@ -102,13 +150,21 @@ public class RecSet {
    */
 
   public String[] originalheader; // The ordered list of columns in the input
-                                  // data.
+  // data.
   // public int priority; // A relative value used to assess the priority for
   // processing this RecSet.
   // public String language; // The ISO 639 three-letter language code for the
   // language in which the localities are in.
 
   private File file;
+
+  /*
+   * RecSet()
+   * 
+   * Constructs a completely blank recset. This is a dummy constructor meant
+   * only for when you fill the recs manually
+   * 
+   */
 
   /*
    * RecSet()
@@ -166,6 +222,48 @@ public class RecSet {
     }
   }
 
+  private RecSet() {
+
+    this.recs = new ArrayList();
+    this.state = RecSetState.RECSET_CREATED;
+
+  }
+
+  // Retrieves a list of unique features from the record set
+  public RecSet getFeatures() {
+
+    Set<String> features = new HashSet<String>();
+
+    boolean exists = false;
+
+    for (Rec rec : this.recs) {// loop through each record
+      for (Clause clause : rec.clauses) {// and each clause
+        for (LocSpec spec : clause.locspecs) { // and each spec
+          // add the featurename string, set will prevent duplicates
+          features.add(spec.featurename);
+        }
+      }
+    }
+
+    RecSet recset = new RecSet();
+    Rec rec;
+    for (String feature : features) {
+      rec = new Rec();
+      rec.clauses.add(new Clause());
+      rec.clauses.get(0).locspecs.add(new LocSpec());
+      rec.clauses.get(0).locspecs.get(0).featurename = feature;
+      rec.clauses.get(0).locType = "F";
+      rec.clauses.get(0).uLocality = feature;
+      rec.clauses.get(0).iLocality = feature;
+      rec.uFullLocality = feature;
+      recset.recs.add(rec);
+    }
+
+    System.out.println(recset.toString());
+
+    return recset; // return feature list
+  }
+
   /**
    * load()
    * 
@@ -210,7 +308,6 @@ public class RecSet {
       }
       // System.out.println("...................................");
     }
-
   }
 
   public String toMarkup() {
@@ -289,14 +386,14 @@ public class RecSet {
   }
 
   private boolean load() throws RecSet.RecSetException { // load a file from
-                                                          // disk
+    // disk
     if (delineator.equalsIgnoreCase("tab") || delineator.equalsIgnoreCase("\t"))
       delineator = "\t";
     else if (delineator.equalsIgnoreCase("comma"))
       delineator = ",";
 
     try { // opening file
-    // BufferedReader reader = new BufferedReader(new FileReader(this.file));
+      // BufferedReader reader = new BufferedReader(new FileReader(this.file));
       BufferedReader reader = new BufferedReader(new InputStreamReader(
           new FileInputStream(this.file), "UTF-8"));
       Pattern delineation = Pattern.compile(this.delineator);
@@ -304,10 +401,10 @@ public class RecSet {
       String line = reader.readLine(); // read header definition from file
 
       if (lineTerminators.matcher(line.subSequence(0, line.length())).matches()) { // get
-                                                                                    // rid
-                                                                                    // of
-                                                                                    // control
-                                                                                    // characters
+        // rid
+        // of
+        // control
+        // characters
         line = lineTerminators.matcher(line.subSequence(0, line.length()))
             .replaceAll("");
       }
@@ -319,7 +416,7 @@ public class RecSet {
       // for (String name : header)
       // System.out.println("Header: " + name);
       for (int i = 0; i < header.length; i++) { // remove leading/trailing white
-                                                // space
+        // space
         header[i] = header[i].toLowerCase().trim();
         this.originalheader[i] = this.originalheader[i].trim();
       }
@@ -327,7 +424,7 @@ public class RecSet {
       Rec rec;
       int rowcount = 0;
       while ((line = reader.readLine()) != null) { // load each row of file
-                                                    // data
+        // data
         if (lineTerminators.matcher(line.subSequence(0, line.length()))
             .matches()) { // get rid of control characters
           line = lineTerminators.matcher(line.subSequence(0, line.length()))
@@ -342,13 +439,13 @@ public class RecSet {
             // remove leading/trailing white space
             row[i] = row[i].trim();
             if (row[i].startsWith("\"") && row[i].endsWith("\"")) // row value
-                                                                  // is
-                                                                  // surrounded
-                                                                  // by double
-                                                                  // quotes
+              // is
+              // surrounded
+              // by double
+              // quotes
               rec.put(header[i], row[i].substring(1, row[i].length() - 1)); // remove
-                                                                            // double
-                                                                            // quotes
+            // double
+            // quotes
             else
               rec.put(header[i], row[i]);
           } else
