@@ -99,9 +99,9 @@ public class RecSet {
 
           // Grab test data from bg.config and create RecSet from it.
           String localData, remoteData, downloadData = null;
-          localData = gm.props.getProperty("testdata.local.georefmanager");
-          remoteData = gm.props.getProperty("testdata.remote.georefmanager");
-          downloadData = gm.props.getProperty("downloads");
+          localData = gm.getProperty("testdata.local.georefmanager");
+          remoteData = gm.getProperty("testdata.remote.georefmanager");
+          downloadData = gm.getProperty("downloads");
           if (localData != null) {
             rs = new RecSet(localData, "tab");
           } else if (remoteData != null) {

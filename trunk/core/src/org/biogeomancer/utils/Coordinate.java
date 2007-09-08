@@ -210,7 +210,16 @@ public class Coordinate extends Point2D.Double {
     return error;
   }
 
-  public double getLatDistanceInMetersToCoordinate(Coordinate c) {
+	// This calculation is not rigorously correct, especially over large distances 
+	// in non-cardinal directions. Use with caution.
+	public double getDistanceInMetersToCoordinate(Coordinate c){
+		double d = 0;
+		d = Math.pow(Math.pow(this.getLatDistanceInMetersToCoordinate(c),2.0)+
+		Math.pow(this.getLngDistanceInMetersToCoordinate(c),2.0), 0.5);
+		return d;
+	}
+
+	public double getLatDistanceInMetersToCoordinate(Coordinate c) {
     double d = 0;
     // TODO: reproject if the same datum isn't used
     d = this.getLatMetersPerDegree() * (this.y - c.y);

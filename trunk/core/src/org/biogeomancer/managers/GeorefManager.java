@@ -196,6 +196,9 @@ public class GeorefManager extends BGManager {
     case NEW_GEOREF:
       System.out.println("***NEWGEOREFERENCE test***");
       gm.newGeoreference(gp);
+      for(Rec r : gm.recset.recs){
+    	  System.out.println(r.getSummary("  "));
+      }
       break;
     case SINGLE_GEOREF:
       System.out.println("***SINGLE GEOREFERENCE test***");
@@ -553,6 +556,10 @@ public class GeorefManager extends BGManager {
     return true;
   }
 
+  public String getProperty(String p){
+	  return this.props.getProperty(p);
+  }
+  
   public void interpretTulane() throws bg_geolocate_Exception {
     if (this.recset == null)
       return;

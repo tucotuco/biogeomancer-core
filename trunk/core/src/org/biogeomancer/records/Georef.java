@@ -313,7 +313,20 @@ public class Georef {
     setState();
   }
 
-  public void addFeatureInfo(FeatureInfo f) {
+  public double getDistanceToGeorefCentroid(Georef g){
+		double d = 0;
+		d=this.pointRadius.getDistanceInMetersToCoordinate(g.pointRadius);
+		return d;
+	}
+
+	public String getSummary(String prefix){
+		String s = new String("\n"+prefix+"Uninterpreted: "+uLocality+"\n"+prefix+"Interpreted: "+iLocality);
+		s=s.concat("\n"+prefix+"Latitude: "+pointRadius.y+" Longitude: "+pointRadius.x+" Uncertainty: "+pointRadius.extent);
+//		s=s.concat("\n"+prefix+"Geometry: "+geometry.toText());
+		return s;
+	}
+
+	public void addFeatureInfo(FeatureInfo f) {
     FeatureInfo newfeature = new FeatureInfo(f);
     featureinfos.add(newfeature);
   }
