@@ -188,7 +188,7 @@ public class Rec extends HashMap<String, String> {
 
     t = this.get("locality");
     if (t != null)
-      s = s.concat(t);
+        s = s.concat("; " + t);
 
     t = this.get("minimumelevationinmeters");
     if (t != null)
