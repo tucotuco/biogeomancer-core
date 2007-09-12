@@ -1,0 +1,49 @@
+#summary How to parse Latitude and Longitude strings.
+
+= Introduction =
+
+We wish to parse latitude and longitude from String format to decimal format. There are two starting cases. One is two strings, one of which is Latitude, the other is Longitude (in some order). The other case is a string containing both Latitude and Longitude.
+
+In order to make these two tasks into one task, we must join them together.
+
+= Cases ==
+
+== C1 (Starting case) One string ==
+
+Goal: _determine how to separate the string_
+  * PROBLEM: where to separate?
+  * SOLUTION #1: separate by direction marker
+    * even after separating by direction marker, check to make sure each String contains a number
+    * if successful, then goto: C3 with extra info: directions
+  * Case: no direction markers: SOLUTION #2: use other separators
+    * this technique will produce a success if:
+      # This results in two Strings ONLY
+      # Each string has at least one valid number in it
+    * try comma first
+    * MAYBE try space. problem is space can be fairly arbitrary.
+    * if successful, then goto: C2.
+
+== C2 (Starting case) Separate strings, latitude string is unknown ==
+
+Goal: _determine which is which_
+  * PROBLEM: these two strings are COUPLED, i.e. there is no function that can take in only one of the string and determine which is lat,which is long
+  * SOLUTION #1: we use a function that only takes in one anyway and try to determine which is lat. this function will also return the direction and the original string.
+    * this will search for direction markers, i.e. "NnSs" for latitude, "EeWw" for longitude
+      * however, this must be the first or last character in the string, because we could find "e" in the middle of "west".
+  * Case: cannot determine each one independently: SOLTUION #2: try solutions that involve both
+    # if one has magnitude greater than 90, then it must be longitude
+    # we default to the first string being latitude(?)
+  * then we know: latitude, longitude, directions
+  * goto: C3 with info: directions
+
+== C3 Separate strings, latitude string is known ==
+
+* latitude string with direction,longitude string with direction
+  * determine magnitude of latitude string
+  * determine magnitude of longitude string
+
+
+
+
+
+
