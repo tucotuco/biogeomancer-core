@@ -489,11 +489,11 @@ public class Georef {
                                                                         // pointradius.
     Coordinate[] coordinates = new Coordinate[nodecount + 1];
     coordinates[nodecount] = new Coordinate(x + e
-        / pointRadius.getLatMetersPerDegree(), y);
+        / pointRadius.getLngMetersPerDegree(), y);
     for (int i = 0; i < nodecount; i++) {
       double a = i * 2 * Math.PI / nodecount;
       coordinates[i] = new Coordinate(x + e * Math.cos(a)
-          / pointRadius.getLatMetersPerDegree(), y + e * Math.sin(a)
+          / pointRadius.getLngMetersPerDegree(), y + e * Math.sin(a)
           / pointRadius.getLatMetersPerDegree());
     } // now there are coordinates for a complete closed LinerRing approximating
       // a circle
