@@ -521,20 +521,17 @@ public class SpatialDescriptionManager extends BGManager {
 				else combos*=viablegeorefcount;
 			}
 		}
-		gcounts=new int[viableclausecount];
-		int clausecountsofar = 0;
+		gcounts=new int[clausecount];
 		for(int j=0;j<clausecount;j++){
 			int viablegeorefs = r.clauses.get(j).viableGeorefCount(); 
-			if(viablegeorefs>0){
-				gcounts[clausecountsofar]=viablegeorefs;
-				clausecountsofar++;
-			}
+			gcounts[j] = viablegeorefs;
 		}
 		
 	    // find the max number of combos
 	    int size = 1;
 	    for (int k = 0; k < gcounts.length; k++) {
-	      size = size * gcounts[k];
+	    	if(gcounts[k] != 0)
+	    		size = size * gcounts[k];
 	    }
 
 		// Create an array to hold the combinations of georef indexes to do intersections on.
@@ -545,36 +542,55 @@ public class SpatialDescriptionManager extends BGManager {
 
 	    // populate the new array with 0's for the beginning
 	    for (int k = 0; k < gcounts.length; k++) {
+	    	if(gcounts[k] == 0){
+	    		curr[k] = -1;
+	    		continue;
+	    	}
 	      curr[k] = 0;
 	    }
 
 	    // loop through each combo
 	    for (int x = 0; x < geoCombos.length; x++) {
+    	
 	      geoCombos[x] = curr.clone(); // add the new combo to the list
 
 	      // loop through each location in the current combo
 	      // essentially works like a backwards mileage counter with each number
 	      // place having a different base
 	      for (int j = 0; j < curr.length; j++) {
-	        curr[j] = curr[j] + 1;// increase the value of current location
-	        if (curr[j] == gcounts[j]) {
-	          curr[j] = 0; // if current location is too big, drop it to zero and
-	          // move to next
-	          continue;
-	        }
-	        break;// otherwise break and add this new unique combo
-	      }
+	    	  //check for invalid clauses
+	    	  if(curr[j] == -1){
+	    		  continue;
+	    	  }
+		        curr[j] = curr[j] + 1;// increase the value of current location
+		        if (curr[j] == gcounts[j]) {
+		          curr[j] = 0; // if current location is too big, drop it to zero and
+		          // move to next
+		          continue;
+		        }
+		        break;// otherwise break and add this new unique combo
+		      }
 
 	    }
+	    
 
 	    Georef g1 = null, intersection = null;
 		double distancebetweencenters=0, sumofradii=0;
+		boolean foundFirstValid = false;
 		for(int m=0;m<combos;m++) {
 			g1=intersection=null;
 			for(int i=0;i<clausecount;i++) { // for every clause in the Rec
+				if(i == 0){
+					foundFirstValid = false;
+				}
+				
+				if(geoCombos[m][i] == -1){
+					continue;
+				}
 					g1=r.clauses.get(i).georefs.get(geoCombos[m][i]);
-					if( i==0 ){ // first clause, intersection is just that clause
+					if( !foundFirstValid){ // first VALID clause, intersection is just that clause
 						intersection=g1;
+						foundFirstValid = true;
 					} else{ // clause beyond the first, may have real intersection, or not
 						// Check to see if the distances between points is greater
 						// than the sum of the radii of the features. If so, there is no overlap. 
