@@ -4,7 +4,7 @@
 
 We wish to parse latitude and longitude from String format to decimal format. There are two starting cases. One is two strings, one of which is Latitude, the other is Longitude (in some order). The other case is a string containing both Latitude and Longitude.
 
-In order to make these two tasks into one task, we must join them together.
+In order to make these two tasks into one task, we must join them together as they reach common cases.  However, we don't wish to waste the work we already did in finding some info out, so it should pass the extra information it found (perhaps we SHOULDN'T do that, for simplification's sake).
 
 = Cases ==
 
@@ -41,7 +41,6 @@ Goal: _determine which is which_
 * latitude string with direction,longitude string with direction
   * determine magnitude of latitude string
   * determine magnitude of longitude string
-
 
 
 
