@@ -17,7 +17,9 @@
 package org.biogeomancer.records;
 
 import java.util.ArrayList;
+import java.util.Dictionary;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 import org.biogeomancer.managers.DatumManager;
@@ -219,6 +221,12 @@ public class Georef {
   public double geometrySpatialFit; // A measure of how well the geometry
                                     // matches the original representation of
                                     // the georeference.
+  
+  //
+  // The follow Dictionary is intended for use only with the 
+
+  public Hashtable<Integer, String> featureIdLoctypes;
+  
   // Confidence can be done in a number of ways. Here are some things to
   // consider:
   // 1) Exact string matching between verbatim original and interpretation
@@ -330,6 +338,14 @@ public class Georef {
     FeatureInfo newfeature = new FeatureInfo(f);
     featureinfos.add(newfeature);
   }
+	
+	public void addFeatureLoctype(int featureId, String locType){
+		featureIdLoctypes.put(featureId, locType);
+	}
+	
+	public String getFeatureLoctype(int featureID){
+		return featureIdLoctypes.get(featureID);
+	}
 
   public boolean equals(Georef g) {
     // May want to get more rigorous than calling georefs equal if their
@@ -606,6 +622,7 @@ public class Georef {
     this.state = GeorefState.GEOREF_CREATED;
     this.envData = new HashMap();
     this.featureinfos = new ArrayList<FeatureInfo>();
+    this.featureIdLoctypes = new Hashtable();
     this.confidence = -1;
     this.pointRadiusNodes = 32;
     this.pointRadiusSpatialFit = -1; // Use -1 for undefined
