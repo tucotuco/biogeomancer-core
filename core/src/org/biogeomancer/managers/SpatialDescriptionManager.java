@@ -19,12 +19,15 @@ package org.biogeomancer.managers;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
+import java.util.Hashtable;
 import java.util.Properties;
 import org.apache.log4j.Logger;
 import org.biogeomancer.records.*;
 import org.biogeomancer.records.RecSet.RecSetException;
 import org.biogeomancer.utils.PointRadius;
 import org.biogeomancer.managers.ADLGazetteer;
+import org.biogeomancer.managers.DatumManager.Datum;
 
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
@@ -577,6 +580,8 @@ public class SpatialDescriptionManager extends BGManager {
 	    Georef g1 = null, intersection = null;
 		double distancebetweencenters=0, sumofradii=0;
 		boolean foundFirstValid = false;
+		String loctype;
+		int featureid;
 		for(int m=0;m<combos;m++) {
 			g1=intersection=null;
 			for(int i=0;i<clausecount;i++) { // for every clause in the Rec
@@ -588,6 +593,7 @@ public class SpatialDescriptionManager extends BGManager {
 					continue;
 				}
 					g1=r.clauses.get(i).georefs.get(geoCombos[m][i]);
+					loctype = r.clauses.get(i).locType;
 					if( !foundFirstValid){ // first VALID clause, intersection is just that clause
 						intersection=g1;
 						foundFirstValid = true;
@@ -604,6 +610,9 @@ public class SpatialDescriptionManager extends BGManager {
 								try{
 									if(intersection!=null){
 										intersection.addFeatureInfo(f);
+										featureid = f.featureID;
+										intersection.addFeatureLoctype(f.featureID,loctype);
+										
 									}
 								} catch (Exception e) {
 									System.out.println(f.toXML(true));
@@ -632,6 +641,83 @@ public class SpatialDescriptionManager extends BGManager {
 				}
 			}
 		}
+		
+		//Double check the intersection based on actual geometry
+		String locType;
+		GeometryFactory gf = new GeometryFactory();
+		WKTReader wktreader = new WKTReader(gf);	
+		Georef newGeo = null;
+		Georef g;
+		Geometry geom;
+		String encodedG;
+		Georef newIntersection;
+		ArrayList<Georef> newIntersections = new ArrayList<Georef>();
+		boolean invalidLocType = false;
+		Hashtable<Integer, Georef> featureIdGeometry = new Hashtable<Integer, Georef>(); 
+		
+		//Go through each found intersection from previous section
+		for(int i = 0; i < r.georefs.size(); i++){
+			g = r.georefs.get(i);
+			newIntersection = g; //set it to the new intersection
+			for(FeatureInfo f : g.featureinfos){
+				
+				if(featureIdGeometry.contains(f.featureID)){
+					newGeo = featureIdGeometry.get(f.featureID);
+				}
+				else{
+					//Query for the real geometry
+					locType = g.getFeatureLoctype(f.featureID);
+					if(locType.equalsIgnoreCase("ADM")){
+						 encodedG = gaz.lookupFootprint(gadm, f.featureID);
+					}
+					else if(locType.equalsIgnoreCase("F")){
+						encodedG = gaz.lookupFootprint(worldplaces, f.featureID);
+					}
+					//TODO change this to be roads or rivers when they get added to the Gazetteer
+					else if(locType.equalsIgnoreCase("P")){
+						encodedG = gaz.lookupFootprint(worldplaces, f.featureID);
+					}
+					else if(locType.equalsIgnoreCase("TRS")){
+						encodedG = gaz.lookupFootprint(plss, f.featureID);
+					}
+					else{
+						invalidLocType = true;
+						break;
+					}
+					
+					try {
+						//Test the old intersection against the real geometries
+						geom = wktreader.read(encodedG);
+						newGeo = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
+						featureIdGeometry.put(f.featureID, newGeo);
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+				}
+				
+				newIntersection = newGeo.intersect(newIntersection);			
+				//if the new intersection becomes null, just break
+				//since it's no longer valid
+				if(newIntersection == null){
+					break;
+				}
+
+				
+			}
+			
+			if(invalidLocType){
+				invalidLocType = false;
+				newIntersections.add(r.georefs.get(i));
+				continue;
+			}
+			//If there is a new valid intersection, replace the old one,
+			//otherwise do nothing since there was no intersection
+			if(newIntersection != null){
+				newIntersections.add(newIntersection);
+			}
+		}
+		r.georefs = newIntersections;
 	}
 }
 
