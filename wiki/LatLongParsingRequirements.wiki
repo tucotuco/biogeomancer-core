@@ -6,7 +6,33 @@ We wish to parse latitude and longitude from String format to decimal format. Th
 
 In order to make these two tasks into one task, we must join them together as they reach common cases.  However, we don't wish to waste the work we already did in finding some info out, so it should pass the extra information it found (perhaps we SHOULDN'T do that, for simplification's sake).
 
-= Cases ==
+= Cases (conquer each case one at a time style) (easier!) =
+In order to even start thing, you must do a regex matching to figure if it matches this case.  Thus, for each case, I will specify the regex necessary to match the case.
+== Common cases! ==
+=== 10D  36M N, 95D  39M E ===
+Regex: "[0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw],
+        [0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw]"
+How to solve:
+  * parse by "," into two directions.
+  * search for direction marker in each one, i.e.
+{{{
+direction = regexFind("[NnSsEeWw]",string);
+}}}
+  * then you know what direction each on is.
+  * then determine the degrees, i.e.
+{{{
+degrees = regexFind("beforeD",string);
+}}}
+  * determine the minutes, i.e.
+{{{
+minutes = regexFind("beforeM",string);
+}}}
+  * fill in the values
+  * return them
+
+
+
+= Cases (conquer all cases at once style)=
 
 == C1 (Starting case) One string ==
 {{{
@@ -70,6 +96,7 @@ if (isDecimal(string)) {
 
 
 
+ 
  
  
  
