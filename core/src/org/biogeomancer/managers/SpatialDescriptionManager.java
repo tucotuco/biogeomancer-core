@@ -580,6 +580,7 @@ public class SpatialDescriptionManager extends BGManager {
 	    Georef g1 = null, intersection = null;
 		double distancebetweencenters=0, sumofradii=0;
 		boolean foundFirstValid = false;
+		ArrayList<FeatureInfo> tempFeatureinfos;
 		String loctype;
 		int featureid;
 		for(int m=0;m<combos;m++) {
@@ -714,7 +715,7 @@ public class SpatialDescriptionManager extends BGManager {
 			//If there is a new valid intersection, replace the old one,
 			//otherwise do nothing since there was no intersection
 			if(newIntersection != null){
-				newIntersections.add(newIntersection);
+				newIntersections.add(r.georefs.get(i));
 			}
 		}
 		r.georefs = newIntersections;
