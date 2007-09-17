@@ -109,7 +109,7 @@ public class SpatialDescriptionManager extends BGManager {
 		}
 	}
 	public void doSpatialDescription(Rec r){
-		String version = new String("doSpatialDescription(Rec):20070513");
+		String version = new String("doSpatialDescription(Rec):20070916");
 		String process = new String("SpatialDescriptionManager");
 		if( r == null ) return;
 		if( r.clauses == null || r.clauses.size() == 0) {
@@ -377,7 +377,7 @@ public class SpatialDescriptionManager extends BGManager {
 
 			if(gdb!=null){ // do other lookup types if the database is defined
 				for(LocSpec locspec:clause.locspecs) { 
-/*
+					/*
 					if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
 						ProcessStep ps = new ProcessStep(process, version, "");
 						locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename, "contains-all-words", null);
@@ -421,7 +421,7 @@ public class SpatialDescriptionManager extends BGManager {
 						ps.endtimestamp=System.currentTimeMillis();
 						r.metadata.addStep(ps);
 					}
-*/
+					 */
 					// contains phrase didn't work, try other method,
 					// such as a pattern query replacing vowels with wildcard characters
 					if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
@@ -489,7 +489,7 @@ public class SpatialDescriptionManager extends BGManager {
 		 * Now that georefs have been generated for the clauses, remove any duplicate georefs within a given clause. 
 		 * TODO: Determined that this is probably not necessary.
 		 */
-/*
+		
 		for( Clause clause : r.clauses) { // do feature lookups for all locspecs for every clause
 			for(int i=0;i<clause.georefs.size();i++){
 				for(int j=0;j<clause.georefs.size();j++){
@@ -502,7 +502,7 @@ public class SpatialDescriptionManager extends BGManager {
 				}
 			}
 		}
-*/
+		
 		/*
 		 * Point-radius creation has been attempted for all Clauses in the Rec. 
 		 * Now do a spatial intersection on all combinations of georefs across clauses. 
@@ -529,104 +529,182 @@ public class SpatialDescriptionManager extends BGManager {
 			int viablegeorefs = r.clauses.get(j).viableGeorefCount(); 
 			gcounts[j] = viablegeorefs;
 		}
-		
-	    // find the max number of combos
-	    int size = 1;
-	    for (int k = 0; k < gcounts.length; k++) {
-	    	if(gcounts[k] != 0)
-	    		size = size * gcounts[k];
-	    }
+
+		// find the max number of combos
+		int size = 1;
+		for (int k = 0; k < gcounts.length; k++) {
+			if(gcounts[k] != 0)
+				size = size * gcounts[k];
+		}
 
 		// Create an array to hold the combinations of georef indexes to do intersections on.
-	    int[][] geoCombos = new int[size][gcounts.length];
+		int[][] geoCombos = new int[size][gcounts.length];
 
-	    // create a array to store the current combo
-	    int[] curr = new int[ gcounts.length];
+		// create a array to store the current combo
+		int[] curr = new int[ gcounts.length];
 
-	    // populate the new array with 0's for the beginning
-	    for (int k = 0; k < gcounts.length; k++) {
-	    	if(gcounts[k] == 0){
-	    		curr[k] = -1;
-	    		continue;
-	    	}
-	      curr[k] = 0;
-	    }
+		// populate the new array with 0's for the beginning
+		for (int k = 0; k < gcounts.length; k++) {
+			if(gcounts[k] == 0){
+				curr[k] = -1;
+				continue;
+			}
+			curr[k] = 0;
+		}
 
-	    // loop through each combo
-	    for (int x = 0; x < geoCombos.length; x++) {
-    	
-	      geoCombos[x] = curr.clone(); // add the new combo to the list
+		// loop through each combo
+		for (int x = 0; x < geoCombos.length; x++) {
 
-	      // loop through each location in the current combo
-	      // essentially works like a backwards mileage counter with each number
-	      // place having a different base
-	      for (int j = 0; j < curr.length; j++) {
-	    	  //check for invalid clauses
-	    	  if(curr[j] == -1){
-	    		  continue;
-	    	  }
-		        curr[j] = curr[j] + 1;// increase the value of current location
-		        if (curr[j] == gcounts[j]) {
-		          curr[j] = 0; // if current location is too big, drop it to zero and
-		          // move to next
-		          continue;
-		        }
-		        break;// otherwise break and add this new unique combo
-		      }
+			geoCombos[x] = curr.clone(); // add the new combo to the list
 
-	    }
-	    
+			// loop through each location in the current combo
+			// essentially works like a backwards mileage counter with each number
+			// place having a different base
+			for (int j = 0; j < curr.length; j++) {
+				//check for invalid clauses
+				if(curr[j] == -1){
+					continue;
+				}
+				curr[j] = curr[j] + 1;// increase the value of current location
+				if (curr[j] == gcounts[j]) {
+					curr[j] = 0; // if current location is too big, drop it to zero and
+					// move to next
+					continue;
+				}
+				break;// otherwise break and add this new unique combo
+			}
 
-	    Georef g1 = null, intersection = null;
+		}
+
+
+		GeometryFactory gf = new GeometryFactory();
+		WKTReader wktreader = new WKTReader(gf);	
+		Georef newGeoref = null;
+		Georef g;
+		Geometry geom;
+		String encodedG = null;
+
+		Georef g1 = null, intersection = null;
 		double distancebetweencenters=0, sumofradii=0;
 		boolean foundFirstValid = false;
 		ArrayList<FeatureInfo> tempFeatureinfos;
 		String loctype;
 		int featureid;
-		for(int m=0;m<combos;m++) {
+		for(int m=0;m<combos;m++) { // For every combo of Clause Georefs
 			g1=intersection=null;
-			for(int i=0;i<clausecount;i++) { // for every clause in the Rec
+			for(int i=0;i<clausecount;i++) { // For every Clause in the Rec
 				if(i == 0){
 					foundFirstValid = false;
 				}
-				
+
 				if(geoCombos[m][i] == -1){
 					continue;
 				}
-					g1=r.clauses.get(i).georefs.get(geoCombos[m][i]);
-					loctype = r.clauses.get(i).locType;
-					if( !foundFirstValid){ // first VALID clause, intersection is just that clause
-						intersection=g1;
-						foundFirstValid = true;
-					} else{ // clause beyond the first, may have real intersection, or not
-						// Check to see if the distances between points is greater
-						// than the sum of the radii of the features. If so, there is no overlap. 
-						distancebetweencenters = g1.getDistanceToGeorefCentroid(intersection);
-						sumofradii = g1.pointRadius.extent+intersection.pointRadius.extent;
-						if(distancebetweencenters<=sumofradii){ // there is a non-point intersection
-							intersection=g1.intersect(intersection);
-							// copy the featureinfos used in the intersecting georef
-							// to the georef for the resulting intersection
-							for(FeatureInfo f: g1.featureinfos){
-								try{
-									if(intersection!=null){
-										intersection.addFeatureInfo(f);
-										featureid = f.featureID;
-										intersection.addFeatureLoctype(f.featureID,loctype);
-										
-									}
-								} catch (Exception e) {
-									System.out.println(f.toXML(true));
-									System.out.println(intersection.toXML(true));
-									e.printStackTrace();
-								}
+				g1=r.clauses.get(i).georefs.get(geoCombos[m][i]);
+				loctype = r.clauses.get(i).locType;
+				if(!foundFirstValid){ 
+					// first VALID clause, intersection is just that clause or
+					// the geometry for the feature if the loctype is one of the
+					// feature-only loctypes.
+					foundFirstValid=true;
+					if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM") ||
+							loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
+						// Use the actual shape for the intersection instead of the point-radius.
+						featureid = g1.featureinfos.get(0).featureID;
+						if(loctype.equalsIgnoreCase("ADM")){
+							encodedG = new String(gaz.lookupFootprint(gadm, featureid));
+						}
+						else if(loctype.equalsIgnoreCase("F")){
+							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
+						}
+						//TODO change this to be roads or rivers when they get added to the Gazetteer
+						else if(loctype.equalsIgnoreCase("P")){
+							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
+						}
+						else if(loctype.equalsIgnoreCase("TRS")){
+							encodedG = new String(gaz.lookupFootprint(plss, featureid));
+						}
+						try {
+							geom = wktreader.read(encodedG);
+							if(geom.getDimension()==0){ 
+								// feature is a point in the gazetteer
+								intersection = g1;
+							} else {
+								// feature has a footprint inthe gazetteer
+								intersection = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
+								intersection.iLocality=new String(g1.iLocality);
 							}
-						} else { // there is no intersection between g1 and g2
-							intersection=null;
-							i=clausecount; // no reason to even try other clauses, because there is already an inconsistency
+						} catch (ParseException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
 						}
 					}
+				} else{ 
+					// clause beyond the first, may have real intersection
+					// Check to see if the distances between points is greater
+					// than the sum of the radii of the features. If so, there is no overlap. 
+					distancebetweencenters = g1.getDistanceToGeorefCentroid(intersection);
+					sumofradii = g1.pointRadius.extent+intersection.pointRadius.extent;
+					if(distancebetweencenters<=sumofradii){
+						// there is a non-point intersection 
+						// For any of the feature-only loctypes
+						if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM") ||
+								loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
+							// Use the actual shape for the intersection instead of the point-radius.
+							featureid = g1.featureinfos.get(0).featureID;
+							if(loctype.equalsIgnoreCase("ADM")){
+								encodedG = new String(gaz.lookupFootprint(gadm, featureid));
+							}
+							else if(loctype.equalsIgnoreCase("F")){
+								encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
+							}
+							//TODO change this to be roads or rivers when they get added to the Gazetteer
+							else if(loctype.equalsIgnoreCase("P")){
+								encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
+							}
+							else if(loctype.equalsIgnoreCase("TRS")){
+								encodedG = new String(gaz.lookupFootprint(plss, featureid));
+							}
+							try {
+								// Test the old intersection against the real geometries
+								geom = wktreader.read(encodedG);
+								if(geom.getDimension()==0){ 
+									// feature is a point in the gazetteer, use the point-radius
+									newGeoref = g1;
+								} else {
+									// feature has a footprint in the gazetteer
+									newGeoref = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
+									newGeoref.iLocality=new String(g1.iLocality);
+								}
+							} catch (ParseException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+						}
+						intersection=intersection.intersect(newGeoref);
+						// copy the featureinfos used in the intersecting georef
+						// to the georef for the resulting intersection
+						for(FeatureInfo f: g1.featureinfos){
+							try{
+								if(intersection!=null){
+									intersection.addFeatureInfo(f);
+//									featureid = f.featureID;
+//									intersection.addFeatureLoctype(f.featureID,loctype);
+								}
+							} catch (Exception e) {
+								System.out.println("Problem with addFeatureInfo to intersection for the following feature:\n"+f.toXML(true));
+								System.out.println("from the following intersection:\n"+intersection.toXML(true));
+								e.printStackTrace();
+							}
+						}
+					} else { 
+						// there is no intersection between g1 and g2 based on distance between centers
+						// and point-radiuses
+						intersection=null;
+						i=clausecount; // no reason to even try other clauses, because there is already an inconsistency
+					}
 				}
+			}
 			if( intersection != null) {
 				r.georefs.add(intersection);
 			}
@@ -642,71 +720,72 @@ public class SpatialDescriptionManager extends BGManager {
 				}
 			}
 		}
-		
+	}
+}
+//		***
+/*
 		//Double check the intersection based on actual geometry
 		String locType;
-		GeometryFactory gf = new GeometryFactory();
-		WKTReader wktreader = new WKTReader(gf);	
-		Georef newGeo = null;
-		Georef g;
-		Geometry geom;
-		String encodedG;
-		Georef newIntersection;
+		Georef newIntersection = null;
 		ArrayList<Georef> newIntersections = new ArrayList<Georef>();
 		boolean invalidLocType = false;
 		Hashtable<Integer, Georef> featureIdGeometry = new Hashtable<Integer, Georef>(); 
-		
+
+
 		//Go through each found intersection from previous section
 		for(int i = 0; i < r.georefs.size(); i++){
 			g = r.georefs.get(i);
 			newIntersection = g; //set it to the new intersection
 			for(FeatureInfo f : g.featureinfos){
-				
 				if(featureIdGeometry.contains(f.featureID)){
-					newGeo = featureIdGeometry.get(f.featureID);
+					newGeoref = featureIdGeometry.get(f.featureID);
 				}
 				else{
 					//Query for the real geometry
 					locType = g.getFeatureLoctype(f.featureID);
 					if(locType.equalsIgnoreCase("ADM")){
-						 encodedG = gaz.lookupFootprint(gadm, f.featureID);
+						encodedG = new String(gaz.lookupFootprint(gadm, f.featureID));
 					}
 					else if(locType.equalsIgnoreCase("F")){
-						encodedG = gaz.lookupFootprint(worldplaces, f.featureID);
+						encodedG = new String(gaz.lookupFootprint(worldplaces, f.featureID));
 					}
 					//TODO change this to be roads or rivers when they get added to the Gazetteer
 					else if(locType.equalsIgnoreCase("P")){
-						encodedG = gaz.lookupFootprint(worldplaces, f.featureID);
+						encodedG = new String(gaz.lookupFootprint(worldplaces, f.featureID));
 					}
 					else if(locType.equalsIgnoreCase("TRS")){
-						encodedG = gaz.lookupFootprint(plss, f.featureID);
+						encodedG = new String(gaz.lookupFootprint(plss, f.featureID));
 					}
 					else{
 						invalidLocType = true;
 						break;
 					}
-					
+
 					try {
 						//Test the old intersection against the real geometries
 						geom = wktreader.read(encodedG);
-						newGeo = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
-						featureIdGeometry.put(f.featureID, newGeo);
+						if(geom.getDimension()==0){ // feature is a point in the gazetteer
+							newGeoref = g;
+						} else {
+							newGeoref = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
+						}
+						featureIdGeometry.put(f.featureID, newGeoref);
 					} catch (ParseException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
-				
-				newIntersection = newGeo.intersect(newIntersection);			
-				//if the new intersection becomes null, just break
+				if(newIntersection==null){
+					newIntersection=newGeoref;
+				} else{
+					newIntersection = newGeoref.intersect(newIntersection);			
+				}//if the new intersection becomes null, just break
 				//since it's no longer valid
 				if(newIntersection == null){
 					break;
 				}
-
-				
 			}
-			
+
 			if(invalidLocType){
 				invalidLocType = false;
 				newIntersections.add(r.georefs.get(i));
@@ -720,8 +799,9 @@ public class SpatialDescriptionManager extends BGManager {
 		}
 		r.georefs = newIntersections;
 	}
+//	***
 }
-
+*/
 /*
 for(int i=0;i<locspec.featureinfos.size();i++){
 	FeatureInfo f = locspec.featureinfos.get(i);
