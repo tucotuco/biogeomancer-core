@@ -341,23 +341,10 @@ public class ShapeManager extends BGManager {
       // maxerrordistance += getMapScaleError();
       // maxerrordistance += getCoordPrecisionError();
       if (locspec.isOffset(locspec.ioffsetew, locspec.ioffsetewunit) == false
-          || locspec.isOffset(locspec.ioffsetns, locspec.ioffsetnsunit) == false) { // If
-                                                                                    // the
-                                                                                    // orthogonal
-                                                                                    // offsets
-                                                                                    // aren't
-                                                                                    // interpretable
-                                                                                    // as
-                                                                                    // valid
-                                                                                    // offsets
-                                                                                    // with
-                                                                                    // understood
-                                                                                    // units,
-                                                                                    // set
-                                                                                    // the
-                                                                                    // locspec.state
-                                                                                    // and
-                                                                                    // end
+          || locspec.isOffset(locspec.ioffsetns, locspec.ioffsetnsunit) == false) { 
+    	  // If the orthgonal offsets aren't interpretable as valid offsets with
+    	  // understood units, set the locspec.state and end.
+    	  
       // locspec.state = LocSpecState.LOCSPEC_MALFORMED_OFFSET_ERROR;
         return null;
       }
