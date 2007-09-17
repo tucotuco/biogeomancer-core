@@ -23,9 +23,11 @@ import java.io.Writer;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.biogeomancer.records.Clause;
 import org.biogeomancer.records.Georef;
 import org.biogeomancer.records.Rec;
 import org.biogeomancer.records.RecSet;
+import org.biogeomancer.utils.PointRadius;
 import org.biogeomancer.utils.SupportedLanguages;
 
 import edu.tulane.bg_geolocate;
@@ -398,8 +400,75 @@ public class GeorefManager extends BGManager {
     }
     return true;
   }
+  
+  public boolean geoPredoneCheck(Rec rec){
+	  //Check if these headers already have values:
+	  
+	  //DecimalLatitude, DecimalLongitude, 
+	  //GeodeticDatum, CoordinateUncertaintyInMeters
+	  if(rec.containsKey("decimallatitude") &&
+			  rec.containsKey("decimallongitude") &&
+			  rec.containsKey("geodeticdatum") &&
+			  rec.containsKey("coordinateuncertaintyinmeters")){
+		  if((rec.get("decimallatitude") != null) &&
+				  (rec.get("decimallongitude") != null) &&
+				  (rec.get("coordinateuncertaintyinmeters")) != null){
+			  if((!rec.get("decimallatitude").equals("")) &&
+					  (!rec.get("decimallongitude").equals("")) &&
+					  (!rec.get("coordinateuncertaintyinmeters").equals(""))){
+				  return true;
+			  }
+			  return false;
+		  }
+		  return false;
+	  }
+	  return false;
+	  
+  }
+  
+  public boolean populateGeoref(Rec rec){
+	  String lat = rec.get("decimallatitude");
+	  String lng = rec.get("decimallongitude");
+	  String extent = rec.get("coordinateuncertaintyinmeters");
+	  double dlat = 0;
+	  double dlng = 0;
+	  double dextent = 0;
+	  
+	  try{
+		  dlat = Double.parseDouble(lat);
+	  }catch(NumberFormatException e){
+		  return false;
+	  }try{
+		  dlng = Double.parseDouble(lng);
+	  }catch(NumberFormatException e){
+		  return false;
+	  }try{
+		  dextent = Double.parseDouble(extent);
+	  }catch(NumberFormatException e){
+		  return false;
+	  }
+	  PointRadius pr = new PointRadius(dlat,dlng,dextent);
+	  Georef g = new Georef(pr);
+	  
+	  String uLocality = "";
+	  String iLocality = "";
+	  
+	  for(Clause c : rec.clauses){
+		uLocality = uLocality + c.uLocality + "; ";  
+	  }
+	  iLocality = uLocality + lat + "; " + lng + "; " + extent + " m";
+	  g.iLocality = iLocality;
+	  g.uLocality = uLocality;
+	  rec.georefs.add(g);
+	  
+	  return true;
+  }
+  
 
   public boolean georeference(Rec rec, GeorefPreferences prefs) {
+   
+
+  
     if (rec == null)
       return false;
     // String s = new String("RecSet: ");
@@ -407,7 +476,6 @@ public class GeorefManager extends BGManager {
       // long interpstarttime = 0, interpendtime = 0;
       if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
         // interpstarttime = System.currentTimeMillis();
-        this.yaleLocInterp.doParsing(rec, "locality");
         this.yaleLocInterp.doParsing(rec, "highergeography", true);
         this.yaleLocInterp.doParsing(rec, "continent", true);
         this.yaleLocInterp.doParsing(rec, "waterbody", true);
@@ -416,6 +484,7 @@ public class GeorefManager extends BGManager {
         this.yaleLocInterp.doParsing(rec, "country", true);
         this.yaleLocInterp.doParsing(rec, "stateprovince", true);
         this.yaleLocInterp.doParsing(rec, "county", true);
+        this.yaleLocInterp.doParsing(rec, "locality");
         this.yaleLocInterp.doParsing(rec, "verbatimlatitude");
         this.yaleLocInterp.doParsing(rec, "verbatimlongitude");
         this.yaleLocInterp.doParsing(rec, "verbatimcoordinates");
@@ -459,6 +528,13 @@ public class GeorefManager extends BGManager {
     } catch (Exception e) {
       System.out.println("Error in GeorefManager.georeference()");
     }
+
+	if(geoPredoneCheck(rec)){
+		if(populateGeoref(rec)){
+			return true;
+		}
+	}
+
     // long sdstarttime = System.currentTimeMillis();
     // log.info("Doing Spatial Description for rec.");
     // *** Comment next line for testing while not connected
