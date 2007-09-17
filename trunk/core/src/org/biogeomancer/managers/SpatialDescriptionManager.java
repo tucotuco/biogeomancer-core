@@ -638,6 +638,9 @@ public class SpatialDescriptionManager extends BGManager {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
+					} 
+					else{
+						intersection=g1;
 					}
 				} else{ 
 					// clause beyond the first, may have real intersection
@@ -680,8 +683,11 @@ public class SpatialDescriptionManager extends BGManager {
 								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
+							intersection=intersection.intersect(newGeoref);
+						} 
+						else{
+							intersection=intersection.intersect(g1);
 						}
-						intersection=intersection.intersect(newGeoref);
 						// copy the featureinfos used in the intersecting georef
 						// to the georef for the resulting intersection
 						for(FeatureInfo f: g1.featureinfos){
