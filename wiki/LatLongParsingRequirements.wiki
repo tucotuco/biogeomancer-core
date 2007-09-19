@@ -10,8 +10,11 @@ In order to make these two tasks into one task, we must join them together as th
 In order to even start thing, you must do a regex matching to figure if it matches this case.  Thus, for each case, I will specify the regex necessary to match the case.
 == Common cases! ==
 === 10D  36M N, 95D  39M E ===
-Regex: "[0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw],
-        [0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw]"
+Regex: 
+{{{
+"[0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw],
+[0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw]"
+}}}
 How to solve:
   * parse by "," into two directions.
   * search for direction marker in each one, i.e.
@@ -96,6 +99,7 @@ if (isDecimal(string)) {
 
 
 
+ 
  
  
  
