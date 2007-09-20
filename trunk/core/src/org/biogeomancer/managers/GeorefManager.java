@@ -23,6 +23,7 @@ import java.io.Writer;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
+import org.biogeomancer.managers.DatumManager.Datum;
 import org.biogeomancer.records.Clause;
 import org.biogeomancer.records.Georef;
 import org.biogeomancer.records.Rec;
@@ -84,6 +85,7 @@ public class GeorefManager extends BGManager {
     final int NEW_GEOREF = 14; // interpreter ("yale", "uiuc", "tulane")
     final int SINGLE_GEOREF = 15; // interpreter ("yale", "uiuc", "tulane")
     final int INTERP_NEWYALE = 16; // fieldname or "all", language
+    final int CREATE_USERFEATURES = 18; // interpreter
     if (args.length > 0) {
       Integer z = new Integer(args[0]);
       test = z.intValue();
@@ -209,6 +211,13 @@ public class GeorefManager extends BGManager {
         System.out.println(r.toXML(false));
       }
       break;
+    case CREATE_USERFEATURES:
+        System.out.println("***CREATE_USERFEATURE test***");
+        gm.newGeoreference(gp);
+        for(Rec r : gm.recset.recs){
+        	gm.loadUserFeatures(r);
+        }
+        break;
     default:
       System.out.println("***GEOREFERENCE test***");
       gm.georeference(gp);
@@ -261,7 +270,6 @@ public class GeorefManager extends BGManager {
       Writer out = new BufferedWriter(new OutputStreamWriter(System.out,
           "UTF-8"));
     } catch (UnsupportedEncodingException e1) {
-      // TODO Auto-generated catch block
       e1.printStackTrace();
     }
     // Set up output stream
@@ -408,7 +416,7 @@ public class GeorefManager extends BGManager {
 	  //GeodeticDatum, CoordinateUncertaintyInMeters
 	  if(rec.containsKey("decimallatitude") &&
 			  rec.containsKey("decimallongitude") &&
-			  rec.containsKey("geodeticdatum") &&
+//			  rec.containsKey("geodeticdatum") &&
 			  rec.containsKey("coordinateuncertaintyinmeters")){
 		  if((rec.get("decimallatitude") != null) &&
 				  (rec.get("decimallongitude") != null) &&
@@ -430,6 +438,16 @@ public class GeorefManager extends BGManager {
 	  String lat = rec.get("decimallatitude");
 	  String lng = rec.get("decimallongitude");
 	  String extent = rec.get("coordinateuncertaintyinmeters");
+	  Datum datum = null;
+	  if( rec.get("geodeticdatum")!=null ){
+		  // Get the datum form the string provided in the geodeticdatum
+		  // field in the Rec, if it exists.
+		  datum=DatumManager.getInstance().getDatum(rec.get("geodeticdatum"));
+	  }
+	  else {
+		  // Assume the datum is WGS84 if not provided
+		  datum = DatumManager.getInstance().getDatum("WGS84"); 
+	  }
 	  double dlat = 0;
 	  double dlng = 0;
 	  double dextent = 0;
@@ -447,7 +465,7 @@ public class GeorefManager extends BGManager {
 	  }catch(NumberFormatException e){
 		  return false;
 	  }
-	  PointRadius pr = new PointRadius(dlat,dlng,dextent);
+	  PointRadius pr = new PointRadius(dlng, dlat, datum, -1, dextent);
 	  Georef g = new Georef(pr);
 	  
 	  String uLocality = "";
@@ -545,7 +563,11 @@ public class GeorefManager extends BGManager {
     // log.info(s);
     return true;
   }
-
+  public void loadUserFeatures(Rec rec){
+	  if(rec==null) return;
+	  spatialDescriptionManager.addUserFeature(rec, "tuco (tuco@berkeley.edu)", -1);
+  }
+  
   public boolean georeference(Rec rec, int featureid) {
     // In this method we are going to add a single georeference
     // to the rec based solely on the feature referenced by featureid

@@ -768,4 +768,32 @@ public class Georef {
 
 		return s;
 	}
+	public double getMinLat(){
+		double miny = 90;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(miny>geometry.getCoordinates()[i].y) miny=geometry.getCoordinates()[i].y;
+		}
+		return miny;
+	}
+	public double getMaxLat(){
+		double maxy = -90;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(maxy<geometry.getCoordinates()[i].y) maxy=geometry.getCoordinates()[i].y;
+		}
+		return maxy;
+	}
+	public double getMinLng(){
+		double minx = 180;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(minx>geometry.getCoordinates()[i].x) minx=geometry.getCoordinates()[i].x;
+		}
+		return minx;
+	}
+	public double getMaxLng(){
+		double maxx = -180;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(maxx<geometry.getCoordinates()[i].x) maxx=geometry.getCoordinates()[i].x;
+		}
+		return maxx;
+	}
 }

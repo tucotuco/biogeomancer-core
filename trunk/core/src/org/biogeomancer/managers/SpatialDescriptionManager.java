@@ -78,6 +78,26 @@ public class SpatialDescriptionManager extends BGManager {
 		gaz.shutdown();
 	}
 
+	public void addUserFeature(Rec r, String user, int scheme_term_id){
+		if(r.georefs.size()!=1){
+			// There can be only one Georef for a user Feature 
+			// to be loaded into the gazetteer. If there is more than 
+			// one, something isn't a it should be.
+			return;
+		}
+		Clause featureclause = null;
+		for( Clause c : r.clauses){
+			if(c.locType.equalsIgnoreCase("f")){
+				featureclause = c;
+			}
+		}
+		if(featureclause==null) return;
+		try {
+			gaz.insertFeature(userplaces, r.georefs.get(0), user, featureclause.uLocality, scheme_term_id);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	public void doSpatialDescription(Rec rec, int featureid){
 		String version = new String("doSpatialDescription(Rec, int):20070513");
 		String process = new String("SpatialDescriptionManager)");
@@ -514,7 +534,7 @@ public class SpatialDescriptionManager extends BGManager {
 			return;
 		}
 		int clausecount=r.clauses.size(); // Total number of Clauses in the Rec.
-		int viableclausecount = r.getGeorefedClauseCount(); // Number of Clauses that have at least one viable georef.
+//		int viableclausecount = r.getGeorefedClauseCount(); // Number of Clauses that have at least one viable georef.
 		int combos=0; // Total number of combinations of viable Clauses.
 		int[] gcounts=null; // Number of Georefs for the Clause at each index
 		for(int n=0;n<clausecount;n++) {
@@ -580,14 +600,14 @@ public class SpatialDescriptionManager extends BGManager {
 		GeometryFactory gf = new GeometryFactory();
 		WKTReader wktreader = new WKTReader(gf);	
 		Georef newGeoref = null;
-		Georef g;
+//		Georef g;
 		Geometry geom;
 		String encodedG = null;
 
 		Georef g1 = null, intersection = null;
 		double distancebetweencenters=0, sumofradii=0;
 		boolean foundFirstValid = false;
-		ArrayList<FeatureInfo> tempFeatureinfos;
+//		ArrayList<FeatureInfo> tempFeatureinfos;
 		String loctype;
 		int featureid;
 		for(int m=0;m<combos;m++) { // For every combo of Clause Georefs
@@ -611,7 +631,11 @@ public class SpatialDescriptionManager extends BGManager {
 							loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
 						// Use the actual shape for the intersection instead of the point-radius.
 						featureid = g1.featureinfos.get(0).featureID;
-						if(loctype.equalsIgnoreCase("ADM")){
+						String csource = new String(g1.featureinfos.get(0).coordSource);
+						if(csource != null && csource.equalsIgnoreCase("usersdb")){
+							encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
+						} 
+						else if(loctype.equalsIgnoreCase("ADM")){
 							encodedG = new String(gaz.lookupFootprint(gadm, featureid));
 						}
 						else if(loctype.equalsIgnoreCase("F")){
@@ -630,12 +654,11 @@ public class SpatialDescriptionManager extends BGManager {
 								// feature is a point in the gazetteer
 								intersection = g1;
 							} else {
-								// feature has a footprint inthe gazetteer
+								// feature has a footprint in the gazetteer
 								intersection = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
 								intersection.iLocality=new String(g1.iLocality);
 							}
 						} catch (ParseException e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					} 
@@ -655,7 +678,11 @@ public class SpatialDescriptionManager extends BGManager {
 								loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
 							// Use the actual shape for the intersection instead of the point-radius.
 							featureid = g1.featureinfos.get(0).featureID;
-							if(loctype.equalsIgnoreCase("ADM")){
+							String csource = new String(g1.featureinfos.get(0).coordSource);
+							if(csource != null && csource.equalsIgnoreCase("usersdb")){
+								encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
+							} 
+							else if(loctype.equalsIgnoreCase("ADM")){
 								encodedG = new String(gaz.lookupFootprint(gadm, featureid));
 							}
 							else if(loctype.equalsIgnoreCase("F")){
@@ -680,7 +707,6 @@ public class SpatialDescriptionManager extends BGManager {
 									newGeoref.iLocality=new String(g1.iLocality);
 								}
 							} catch (ParseException e) {
-								// TODO Auto-generated catch block
 								e.printStackTrace();
 							}
 							intersection=intersection.intersect(newGeoref);

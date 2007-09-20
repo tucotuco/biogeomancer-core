@@ -21,14 +21,14 @@ import org.biogeomancer.managers.DatumManager;
 public class PointRadius extends Coordinate { // point radius inner class
   public double extent; // maximum uncertainty radius
 
-  public PointRadius(Coordinate c) { // constructor
+  public PointRadius(Coordinate c) {
     super(c.x, c.y);
     this.datum = c.getDatum();
     this.precision = c.precision;
     this.extent = 0.0;
   }
 
-  public PointRadius(Coordinate c, double extent) { // constructor
+  public PointRadius(Coordinate c, double extent) {
     super(c.x, c.y);
     this.datum = c.getDatum();
     this.precision = c.precision;
@@ -36,32 +36,31 @@ public class PointRadius extends Coordinate { // point radius inner class
     TruncateExtent();
   }
 
-  public PointRadius(double lng, double lat, DatumManager.Datum datum) { // constructor
+  public PointRadius(double lng, double lat, DatumManager.Datum datum) {
     super(lng, lat, datum);
     this.extent = 0.0;
   }
 
   public PointRadius(double lng, double lat, DatumManager.Datum datum,
-      double precision) { // constructor
+      double precision) {
     super(lng, lat, datum, precision);
     this.extent = 0.0;
   }
 
   public PointRadius(double lng, double lat, DatumManager.Datum datum,
-      double precision, double extent) { // constructor
+      double precision, double extent) {
     super(lng, lat, datum, precision);
     this.extent = extent;
     TruncateExtent();
   }
 
-  public PointRadius(double lng, double lat, double extent) { // constructor
+  public PointRadius(double lng, double lat, double extent) {
     super(lng, lat);
     this.extent = extent;
     TruncateExtent();
   }
 
-  // public PointRadius() {} // nothing
-  private PointRadius(double lng, double lat) { // constructor
+  private PointRadius(double lng, double lat) {
     super(lng, lat);
     this.extent = 0.0;
   }

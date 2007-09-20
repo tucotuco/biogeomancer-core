@@ -17,9 +17,12 @@
 package org.biogeomancer.managers;
 
 import java.sql.Connection;
+import java.sql.Date;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -42,8 +45,8 @@ import com.vividsolutions.jts.io.WKTReader;
 public class ADLGazetteer extends BGManager {
   private class IFeatureName {
     private final static String SEPARATORS = " ;";
-    private final static String AND = "&";
-    private final static String OR = "|";
+//    private final static String AND = "&";
+//    private final static String OR = "|";
 
     public boolean addFeaturesByName(Connection gdb,
         ArrayList<FeatureInfo> features, String feature, String querytype) {
@@ -564,8 +567,9 @@ public class ADLGazetteer extends BGManager {
       if (gdb == null || feature == null || querytype == null)
         return null;
       String searchname = new String(feature.replace("'", "\\'"));
-      double lat = 90, lng = 0, radius = -1;
-      String displayname = null;
+//      double lat = 90, lng = 0;
+//      double radius = -1;
+//      String displayname = null;
       String query =
       /*
        * "SELECT" + " i_feature_footprint.feature_id," + " geom_y,"+ " geom_x,"+ "
@@ -1362,7 +1366,8 @@ public class ADLGazetteer extends BGManager {
     // degrees specified by ddlimit. Unfortunately, this search is too slow to
     // be practical.
     int featureid = -1;
-    double lat = 90, lng = 0, radius = 0, distanceindd = 0, withindist = 0;
+    double lat = 90, lng = 0, radius = 0;
+    double distanceindd = 0, withindist = 0;
     String query = " SELECT" + " feature_id," + " geom_y," + " geom_x,"
         + " radius,"
         + " Distance(centroid(geom),GeomFromEWKT('SRID=4326;POINT("
@@ -1436,7 +1441,7 @@ public class ADLGazetteer extends BGManager {
   }
 
   public void lookupPointRadiusAttributes(Connection gdb, FeatureInfo fi) {
-    String wktGeometry = null;
+//    String wktGeometry = null;
     double lat = 90, lng = 0, radius = 0;
     String query = " SELECT" + " geom_y," + " geom_x," + " radius"
         + " FROM i_feature_footprint " + " WHERE feature_id=" + fi.featureID
@@ -1462,13 +1467,13 @@ public class ADLGazetteer extends BGManager {
   }
 
   public void lookupQuickAttributes(Connection gdb, FeatureInfo fi) {
-    String wktGeometry = null;
+//    String wktGeometry = null;
     double lat = 90, lng = 0, radius = 0;
-    double acc = 1000; // Use default 1000 meter map accuracy if not given
+//    double acc = 1000; // Use default 1000 meter map accuracy if not given
                         // explictly.
-    double prec = 0; // Use 0 coordinate precision if not explicitly given.
+//    double prec = 0; // Use 0 coordinate precision if not explicitly given.
     String s = null;
-    String src = null;
+//    String src = null;
 
     String query = " SELECT"
         + " geom_y,"
@@ -1534,18 +1539,18 @@ public class ADLGazetteer extends BGManager {
       ArrayList<FeatureInfo> fis) {
     // if( gdb == null || fis == null || fis.isEmpty()) return;
     // Get the rest of the information for the featureinfos.
-    GeometryFactory gf = new GeometryFactory();
-    WKTReader wktreader = null;
-    Geometry g = null;
-    Georef georef = null;
-    PointRadius pr = null;
+//    GeometryFactory gf = new GeometryFactory();
+//    WKTReader wktreader = null;
+//    Geometry g = null;
+//    Georef georef = null;
+//    PointRadius pr = null;
     FeatureInfo fi = null;
     for (int i = 0; i < fis.size(); i++) {
       fi = fis.get(i);
       // try {
       lookupQuickAttributes(gdb, fi);
-      pr = new PointRadius(fi.longitude, fi.latitude, DatumManager
-          .getInstance().getDatum("WGS84"), fi.extentInMeters);
+//      pr = new PointRadius(fi.longitude, fi.latitude, DatumManager
+//          .getInstance().getDatum("WGS84"), fi.extentInMeters);
       /*
        * if(fi.encodedGeometry==null ||
        * fi.encodedGeometry.toLowerCase().contains("empty")){ // Get the extent
@@ -1566,7 +1571,8 @@ public class ADLGazetteer extends BGManager {
        * (ParseException e) {
        * fi.state=FeatureInfoState.FEATUREINFO_CREATION_ERROR;
        * e.printStackTrace(); }
-       */}
+       */
+      }
   }
 
   public double lookupRadius(Connection gdb, int featureID) {
@@ -1611,4 +1617,194 @@ public class ADLGazetteer extends BGManager {
       e.printStackTrace();
     }
   }
+	/*
+	 * Need to insert details into: g_feature g_feature_name g_feature_displayname
+	 * i_feature_footprint
+	 * 
+	 */
+	public void insertFeature(Connection gdb, Georef g, String user, String featurename, int scheme_term_id) throws SQLException {
+		if(g==null) return;
+		int featureId = insertGFeature(gdb, user, g);
+		insertGFeatureDisplayName(gdb, featurename, featureId);
+		insertGFeatureName(gdb, featurename, featureId);
+		insertIFeatureFootprint(gdb, g, featureId);
+		insertIClassification(gdb, featureId, scheme_term_id);
+	}
+
+	private int insertGFeature(Connection gdb, String user, Georef g) throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO g_feature VALUES (nextval('public.g_feature_feature_id_seq'), ?, ?, ?, ?, ?, ?)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, -1);
+			ps.setBoolean(2, false);
+			ps.setInt(3, -1);
+			ps.setDate(4, new Date(new java.util.Date().getTime()));
+			ps.setNull(5, Types.DATE);
+			ps.setString(6, user);
+//			ps.setString(6, user == null ? "-1" : user.getNickName() + " ("
+//					+ user.getEmail() + ")");
+//			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+
+			// Obtain a feature_id from generating a g_feature record
+			q = "SELECT last_value FROM g_feature_feature_id_seq";
+			ResultSet rs = gdb.createStatement().executeQuery(q);
+			rs.next();
+			int featureId = rs.getInt("last_value");
+			return featureId;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private void insertGFeatureDisplayName(Connection gdb, String name, int featureId)
+	throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO g_feature_displayname VALUES ( ?, ?, ?)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+			ps.setString(2, name.trim());
+			ps.setString(3, "null");
+			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private int insertGFeatureName(Connection gdb, String name, int featureId)
+	throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO g_feature_name VALUES ( ?, true, ?, null, null, null)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+			ps.setString(2, name.trim());
+//			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+
+			// Generate a g_feature_name_id and return it
+			q = "SELECT nextval('g_feature_name_feature_name_id_seq')";
+			ResultSet rs = gdb.createStatement().executeQuery(q);
+			rs.next();
+			int featureNameId = rs.getInt("nextval");
+			return featureNameId;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private void insertIClassification(Connection gdb, int featureId, int scheme_term_id) throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO i_classification VALUES ( ?, ?)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+			ps.setInt(2, scheme_term_id);
+//			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private void insertIFeatureFootprint(Connection gdb, Georef g, int featureId)
+	throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			/*
+			 * Arguments to insert a row into i_feature_footprint 
+			 * 1. feature_id 
+			 * 2. footprint (MULTIPOLYGON) 
+			 * 3. min x 
+			 * 4. min y 
+			 * 5. max y 
+			 * 6. max x 
+			 * 7. radius
+			 * 8. x center 
+			 * 9. y center 
+			 * 10. envelope (null) 
+			 * 11. geom (POLYGON)
+			 */
+			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
+			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
+//			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
+//			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+			
+			ps.setDouble(2, g.getMinLng());
+			ps.setDouble(3, g.getMinLat());
+			ps.setDouble(4, g.getMaxLat());
+			ps.setDouble(5, g.getMinLng());
+
+			ps.setDouble(6, g.pointRadius.extent);
+			ps.setDouble(7, g.pointRadius.x);
+			ps.setDouble(8, g.pointRadius.y);
+
+//			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	/*
+	 * Produces a MULTIPOLYGON of the uncertainty radius
+	 * 
+	 */
+	private String makeFootprintEwkt(Georef g) {
+		return "GeomFromEWKT('SRID=4326;MULTIPOLYGON(((" + makeRadiusEwkt(g)
+		+ ")))')";
+	}
+
+	/*
+	 * Produces a POLYGON for use in the Geom field
+	 * 
+	 */
+	private String makeGeomEwkt(Georef g) {
+		return "GeomFromEWKT('SRID=4326;POLYGON((" + makeRadiusEwkt(g) + "))')";
+	}
+
+	/*
+	 * Creates an uncertainty radius in Ewkt string format
+	 * 
+	 */
+	private String makeRadiusEwkt(Georef g) {
+		String result = "";
+		double x = g.pointRadius.x;
+		double y = g.pointRadius.y;
+		double e = g.pointRadius.extent/Math.cos(Math.PI/g.pointRadiusNodes); // extend the extent so that the geometric is a circumscription of the pointradius.
+		double ix=0, iy=0, a, cx, cy;
+		for(int i=0;i<g.pointRadiusNodes;i++){
+			a = i*2*Math.PI/g.pointRadiusNodes;
+			cx = x+e*Math.cos(a)/g.pointRadius.getLngMetersPerDegree();
+			cy = y+e*Math.sin(a)/g.pointRadius.getLatMetersPerDegree();
+			if(i==0){
+				ix=cx; iy=cy;
+				result = result + cx + " " + cy;
+			} else {
+				result = result + ", " + cx + " " + cy;
+			}
+		}
+		result = result + ", " + ix + " " + iy;
+		return result;
+	}
 }
