@@ -87,12 +87,21 @@ final class StateFinish extends ParsingState {
           .trim();
     } else if (localityType == "TRS" || localityType == "TRSS") {
       // pd.clause=reOrderTrss(parser, pd.clause);
-      String[] trss = pd.clause.split(parser.regx_TRSS_MASK);
+     /* String[] trss = pd.clause.split(parser.regx_TRSS_MASK);
       li.town = trss[1].trim();
       li.range = trss[2].trim();
-      li.section = trss[3].trim();
-      if (pd.posH1 >= 0)
-        li.subdivision = parser.buildString(pd.posH1, pd.words, " ");
+      li.section = trss[3].trim();*/
+    	
+    	li.town = pd.words[1].trim();
+    	li.towndir = pd.words[2].trim();
+    	li.range = pd.words[4].trim();
+    	li.rangedir = pd.words[5].trim();
+        li.section = pd.words[7].trim();
+        if(pd.words.length > 8){
+        	li.subdivision = parser.buildString(8, pd.words, " ");
+        }
+   //   if (pd.posH1 >= 0)
+   //     li.subdivision = parser.buildString(pd.posH1, pd.words, " ");
     } else if (localityType == "UTM") {
       String[] utm = pd.clause.replace(",", "").split(parser.regx_TRSS_MASK);
       li.utmz = utm[1];
