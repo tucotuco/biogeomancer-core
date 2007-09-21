@@ -19,6 +19,7 @@ package edu.yale.GBI.interp;
 import org.biogeomancer.managers.GeorefDictionaryManager;
 import org.biogeomancer.utils.SupportedLanguages;
 
+import edu.yale.GBI.BGI;
 import edu.yale.GBI.BGMUtil;
 import edu.yale.GBI.LocalityInfo;
 import edu.yale.GBI.LocalityRec;
@@ -28,7 +29,6 @@ public class Parser {
   private static Parser englishInstance;
   private static Parser spanishInstance;
   private static Parser frenchInstance;
-
   private static Parser portugueseInstance;
 
   public static Parser getInstance(GeorefDictionaryManager gdm,
@@ -208,22 +208,74 @@ public class Parser {
   final public String[] preprocess(String queryString) {
     String qs = queryString.trim().replaceAll("\\sal\\s|^Al\\s", " ").replace(
         "&", " " + keyword_AND + " ").trim();
-
+    String s = "";
+    if(qs.matches(".*\\d[\\D\\w].*")){
+    	String[] t = qs.split("");
+    	qs = "";
+        for(int i = 1; i < t.length - 1; i++){
+        	    if(isNum(t[i]) && t[i+1].matches("[a-zA-Z]")){
+        	    	qs = qs + t[i] + " ";
+        	    }
+        	    else{
+        	    	qs = qs + t[i];
+        	    }
+        }
+        qs = qs + t[t.length-1];
+    }
+   
+    //TODO: This will break this and similar cases:
+    //		50,000KM West, 40,000KM South of California
     String[] words = qs.split(" ");
+
+    //Combining numbers and what not... lets add a unit check above this
     for (int i = 0; i < words.length - 1; i++) {
-      if (isNum(words[i]) && words[i].contains(",")) {
-
-        words[i] = words[i].replaceAll(",", "");
-
+    	
+      if (isNum(words[i])) {
+    	  
+    	  if(lng.equals(SupportedLanguages.english)){
+    		  if(words[i].contains(","))
+    			  words[i] = words[i].replaceAll(",", "");
+    	  }
+    	  else{
+    		  if(words[i].contains(".")){
+    			  words[i] = words[i].replaceAll("\\.", "");
+    		  }
+    		  if(words[i].contains(",")){
+    			  words[i] = words[i].replaceAll(",", ".");
+    		  }
+    	  }
       }
-      String s = words[i] + "," + words[i + 1];
+      
+      s = words[i] + words[i + 1];
       if (isNum(s)) {
         words[i] = s;
         words[i + 1] = "";
+        i++;
       }
 
     }
     qs = buildString(0, words, " ");
+    
+    
+    //CHECK FOR THE NEAR MASKS AND REBUILD IF APPROPRIATE
+    //Specifically this is checking for "<Feature>, <near>"
+    //Designed also so that: "<Feature1>, <Feature2>, <near>" parses as "<Feature1>, <near> <Feature2>"
+    if(qs.matches(".*,"+regx_NEAR_MASK)){
+    	String tokens[] = qs.split(",");
+    	qs = "";
+    	if(tokens.length>1){
+    		for(int i = 0; i < tokens.length; i++){
+    			if(i + 1 < tokens.length && tokens[i+1].matches(regx_NEAR_MASK)){
+    				tokens[i] = " " + tokens[i+1].trim() + " " + tokens[i].trim();
+    				qs = qs + tokens[i] + ",";
+    				i++;
+    				continue;
+    			}
+    			qs = qs + tokens[i] + ",";
+    		}
+    	}
+    	qs = qs.substring(0,qs.length()-1);
+    }
 
     /*
      * String [] phases=qs.trim().split(", "); for(int i=0;i<phases.length-1;i++){
@@ -234,6 +286,7 @@ public class Parser {
      * 
      * qs=buildString(0,phases,", ");
      */
+    
     return BGMUtil.recoverClauses(qs.trim().split("[;,:]\\s"));
 
   }

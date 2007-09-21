@@ -39,6 +39,7 @@ public class LocalityInfo {
   // String coodinates="";
   public String evelation = "";
   public String unit = "";
+  public String unit2 = "";
   public String lat = "";
   public String lng = "";
   public String town = "";
