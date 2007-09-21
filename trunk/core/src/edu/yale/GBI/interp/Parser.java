@@ -209,22 +209,33 @@ public class Parser {
     String qs = queryString.trim().replaceAll("\\sal\\s|^Al\\s", " ").replace(
         "&", " " + keyword_AND + " ").trim();
     String s = "";
+    
+    //Make sure all numbers and letters are separated from eachother
     if(qs.matches(".*\\d[\\D\\w].*")){
     	String[] t = qs.split("");
     	qs = "";
         for(int i = 1; i < t.length - 1; i++){
-        	    if(isNum(t[i]) && t[i+1].matches("[a-zA-Z]")){
-        	    	qs = qs + t[i] + " ";
-        	    }
-        	    else{
-        	    	qs = qs + t[i];
-        	    }
-        }
+        		
+        		//Remove any periods after letters, since they are unneccessary
+        		if(t[i].matches("[a-zA-Z]") && t[i+1].matches("\\.")){
+        			t[i+1] = t[i];
+        			continue;
+        		}
+            	//put a space between letter and number, such as 1A -> A 1
+        		else if(isNum(t[i]) && t[i+1].matches("[a-zA-Z]")){
+            	   	qs = qs + t[i] + " ";
+            	   	}
+            	//put a space between letter and number, such as A1 -> A 1
+            	else if(isNum(t[i+1]) && t[i].matches("[a-zA-Z]")){
+            	    	qs = qs + t[i] + " ";
+            	    	}
+            	else{
+            	    	qs = qs + t[i];
+            	}
+        	}
         qs = qs + t[t.length-1];
     }
    
-    //TODO: This will break this and similar cases:
-    //		50,000KM West, 40,000KM South of California
     String[] words = qs.split(" ");
 
     //Combining numbers and what not... lets add a unit check above this
@@ -248,9 +259,9 @@ public class Parser {
       
       s = words[i] + words[i + 1];
       if (isNum(s)) {
-        words[i] = s;
-        words[i + 1] = "";
-        i++;
+    	  words[i] = s;
+    	  words[i + 1] = "";
+    	  i++;
       }
 
     }
