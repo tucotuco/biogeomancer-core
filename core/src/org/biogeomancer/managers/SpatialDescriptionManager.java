@@ -98,6 +98,13 @@ public class SpatialDescriptionManager extends BGManager {
 			e.printStackTrace();
 		}
 	}
+	public void removeUserFeature(int featureid){
+		try {
+			gaz.removeUserFeature(featureid);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
 	public void doSpatialDescription(Rec rec, int featureid){
 		String version = new String("doSpatialDescription(Rec, int):20070513");
 		String process = new String("SpatialDescriptionManager)");
@@ -631,6 +638,7 @@ public class SpatialDescriptionManager extends BGManager {
 							loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
 						// Use the actual shape for the intersection instead of the point-radius.
 						featureid = g1.featureinfos.get(0).featureID;
+						
 						String csource = new String(g1.featureinfos.get(0).coordSource);
 						if(csource != null && csource.equalsIgnoreCase("usersdb")){
 							encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
@@ -639,7 +647,8 @@ public class SpatialDescriptionManager extends BGManager {
 							encodedG = new String(gaz.lookupFootprint(gadm, featureid));
 						}
 						else if(loctype.equalsIgnoreCase("F")){
-							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
+							encodedG = new String(gaz.lookupConvexHull(worldplaces, featureid));
+//							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
 						}
 						//TODO change this to be roads or rivers when they get added to the Gazetteer
 						else if(loctype.equalsIgnoreCase("P")){
@@ -678,6 +687,7 @@ public class SpatialDescriptionManager extends BGManager {
 								loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
 							// Use the actual shape for the intersection instead of the point-radius.
 							featureid = g1.featureinfos.get(0).featureID;
+
 							String csource = new String(g1.featureinfos.get(0).coordSource);
 							if(csource != null && csource.equalsIgnoreCase("usersdb")){
 								encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
@@ -754,86 +764,6 @@ public class SpatialDescriptionManager extends BGManager {
 		}
 	}
 }
-//		***
-/*
-		//Double check the intersection based on actual geometry
-		String locType;
-		Georef newIntersection = null;
-		ArrayList<Georef> newIntersections = new ArrayList<Georef>();
-		boolean invalidLocType = false;
-		Hashtable<Integer, Georef> featureIdGeometry = new Hashtable<Integer, Georef>(); 
-
-
-		//Go through each found intersection from previous section
-		for(int i = 0; i < r.georefs.size(); i++){
-			g = r.georefs.get(i);
-			newIntersection = g; //set it to the new intersection
-			for(FeatureInfo f : g.featureinfos){
-				if(featureIdGeometry.contains(f.featureID)){
-					newGeoref = featureIdGeometry.get(f.featureID);
-				}
-				else{
-					//Query for the real geometry
-					locType = g.getFeatureLoctype(f.featureID);
-					if(locType.equalsIgnoreCase("ADM")){
-						encodedG = new String(gaz.lookupFootprint(gadm, f.featureID));
-					}
-					else if(locType.equalsIgnoreCase("F")){
-						encodedG = new String(gaz.lookupFootprint(worldplaces, f.featureID));
-					}
-					//TODO change this to be roads or rivers when they get added to the Gazetteer
-					else if(locType.equalsIgnoreCase("P")){
-						encodedG = new String(gaz.lookupFootprint(worldplaces, f.featureID));
-					}
-					else if(locType.equalsIgnoreCase("TRS")){
-						encodedG = new String(gaz.lookupFootprint(plss, f.featureID));
-					}
-					else{
-						invalidLocType = true;
-						break;
-					}
-
-					try {
-						//Test the old intersection against the real geometries
-						geom = wktreader.read(encodedG);
-						if(geom.getDimension()==0){ // feature is a point in the gazetteer
-							newGeoref = g;
-						} else {
-							newGeoref = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
-						}
-						featureIdGeometry.put(f.featureID, newGeoref);
-					} catch (ParseException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				}
-				if(newIntersection==null){
-					newIntersection=newGeoref;
-				} else{
-					newIntersection = newGeoref.intersect(newIntersection);			
-				}//if the new intersection becomes null, just break
-				//since it's no longer valid
-				if(newIntersection == null){
-					break;
-				}
-			}
-
-			if(invalidLocType){
-				invalidLocType = false;
-				newIntersections.add(r.georefs.get(i));
-				continue;
-			}
-			//If there is a new valid intersection, replace the old one,
-			//otherwise do nothing since there was no intersection
-			if(newIntersection != null){
-				newIntersections.add(r.georefs.get(i));
-			}
-		}
-		r.georefs = newIntersections;
-	}
-//	***
-}
-*/
 /*
 for(int i=0;i<locspec.featureinfos.size();i++){
 	FeatureInfo f = locspec.featureinfos.get(i);

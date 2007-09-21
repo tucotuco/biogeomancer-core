@@ -986,8 +986,7 @@ public class ADLGazetteer extends BGManager {
           if (fis.get(i).featureID == fis.get(j).featureID) {
             // Two features may have the same id if they came from different
             // databases (e.g., userplaces and worldplaces), so check if the
-            // names
-            // are also the same.
+            // names are also the same.
             if (fis.get(i).name.equalsIgnoreCase(fis.get(j).name)) {
               fis.remove(j);
               j--;
@@ -1741,6 +1740,8 @@ public class ADLGazetteer extends BGManager {
 			 * 10. envelope (null) 
 			 * 11. geom (POLYGON)
 			 */
+			String fp = new String(makeFootprintEwkt(g));
+			String gp = new String(makeGeomEwkt(g));
 			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
 			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
 //			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
@@ -1757,7 +1758,7 @@ public class ADLGazetteer extends BGManager {
 			ps.setDouble(7, g.pointRadius.x);
 			ps.setDouble(8, g.pointRadius.y);
 
-//			System.out.println(ps.toString());
+			System.out.println(ps.toString());
 			ps.execute();
 			ps.close();
 		} catch (SQLException e) {
@@ -1806,5 +1807,83 @@ public class ADLGazetteer extends BGManager {
 		}
 		result = result + ", " + ix + " " + iy;
 		return result;
+	}
+	public void removeUserFeature(int featureid) throws SQLException {
+		PreparedStatement ps;
+		String q = null;
+		if(featureid==-1){
+			// Use -1 to clear the whole user database
+			try {
+				q = new String("DELETE FROM i_classification");
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+
+				q = new String("DELETE FROM i_feature_footprint");
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+				
+				q = new String("DELETE FROM g_feature_name");
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+				
+				q = new String("DELETE FROM g_feature_displayname");
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+
+				q = new String("DELETE FROM g_feature");
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw e;
+			}
+		}
+		else{
+			// clear all of the tables of the record with the feature_id provided.
+			try {
+				q = new String("DELETE FROM i_classification WHERE feature_id="+featureid);
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+
+				q = new String("DELETE FROM i_feature_footprint WHERE feature_id="+featureid);
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+				
+				q = new String("DELETE FROM g_feature_name WHERE feature_id="+featureid);
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+				
+				q = new String("DELETE FROM g_feature_displayname WHERE feature_id="+featureid);
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+
+				q = new String("DELETE FROM g_feature WHERE feature_id="+featureid);
+				ps = userplaces.prepareStatement(q);
+				System.out.println(ps.toString());
+				ps.execute();
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				throw e;
+			}
+		}
 	}
 }
