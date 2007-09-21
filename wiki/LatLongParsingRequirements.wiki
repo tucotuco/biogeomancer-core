@@ -12,7 +12,7 @@ In order to even start thing, you must do a regex matching to figure if it match
 === 10D  36M N, 95D  39M E ===
 Regex: 
 {{{
-"[0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw],
+"[0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw],[\s]*
 [0-9]+[Dd\degsymbol][\s]*[0-9]+[Mm'][\s]*[NnSsEeWw]"
 }}}
 How to solve:
@@ -99,6 +99,7 @@ if (isDecimal(string)) {
 
 
 
+ 
  
  
  
