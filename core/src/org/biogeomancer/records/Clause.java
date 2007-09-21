@@ -47,6 +47,18 @@ public class Clause // represents information about one atomic interpretable
 		if(g.state!=GeorefState.GEOREF_COMPLETED) georefs.remove(g);
 	}
   }
+	public String getFeatures(){
+		String s = new String("");
+//		int n=0;
+		for( LocSpec l: this.locspecs) {
+			if(l.featurename != null && l.featurename.trim().length()!=0){
+				s=s.concat(l.featurename+"\n");
+//				n++;
+			}
+		}
+		return s;
+	}
+
 	public String getSummary(String prefix){
 		String s = new String("\n"+prefix+"Uninterpreted: "+uLocality+"\n"+prefix+"Interpreted: "+iLocality+"\n"+prefix+"LocType: "+locType);
 		s=s.concat("\n"+prefix+"Language: "+interpretedInLanguage);
