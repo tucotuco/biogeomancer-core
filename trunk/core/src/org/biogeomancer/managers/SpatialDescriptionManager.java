@@ -647,8 +647,8 @@ public class SpatialDescriptionManager extends BGManager {
 							encodedG = new String(gaz.lookupFootprint(gadm, featureid));
 						}
 						else if(loctype.equalsIgnoreCase("F")){
-							encodedG = new String(gaz.lookupConvexHull(worldplaces, featureid));
-//							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
+//							encodedG = new String(gaz.lookupConvexHull(worldplaces, featureid));
+							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
 						}
 						//TODO change this to be roads or rivers when they get added to the Gazetteer
 						else if(loctype.equalsIgnoreCase("P")){

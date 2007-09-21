@@ -143,6 +143,17 @@ public class Rec extends HashMap<String, String> {
     return value;
   }
 
+	public String getFeatures(){
+		String s = new String("");
+		int n=0;
+		for( Clause c: this.clauses) {
+//			if(n>0) s=s.concat("\n");
+			s=s.concat(c.getFeatures());
+			n++;
+		}
+		return s;
+		}
+		
 	public int getGeorefedClauseCount(){
 		int count=0;
 		for(Clause c : this.clauses){

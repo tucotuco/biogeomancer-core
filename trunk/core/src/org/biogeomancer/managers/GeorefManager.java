@@ -85,6 +85,7 @@ public class GeorefManager extends BGManager {
 		final int NEW_GEOREF = 14; // interpreter ("yale", "uiuc", "tulane")
 		final int SINGLE_GEOREF = 15; // interpreter ("yale", "uiuc", "tulane")
 		final int INTERP_NEWYALE = 16; // fieldname or "all", language
+		final int INTERP_FORFEATURENAMES = 17; // interpreter
 		final int CREATE_USERFEATURES = 18; // interpreter
 		final int REMOVE_USERFEATURES = 19; // feature_id (-1 for all features)
 		if (args.length > 0) {
@@ -211,6 +212,10 @@ public class GeorefManager extends BGManager {
 				gm.georeference(r, gp);
 				System.out.println(r.toXML(false));
 			}
+			break;
+		case INTERP_FORFEATURENAMES:
+			System.out.println("***FEATURENAMES test***");
+			gm.getFeatureNames(gp);
 			break;
 		case CREATE_USERFEATURES:
 			System.out.println("***CREATE_USERFEATURE test***");
@@ -970,6 +975,72 @@ public class GeorefManager extends BGManager {
 			// throw new GeorefManager.GeorefManagerException(e.toString(), e);
 		}
 	}
+	public boolean getFeatureNames(GeorefPreferences prefs)
+	throws GeorefManager.GeorefManagerException {
+		for (Rec rec : this.recset.recs) {
+			interpretForFeatureNames(rec, prefs);
+		}
+		return true;
+	}
+
+	public void interpretForFeatureNames(Rec rec, GeorefPreferences prefs){	
+		try {
+//		long interpstarttime = 0, interpendtime = 0;
+		if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
+//			interpstarttime = System.currentTimeMillis();
+			this.yaleLocInterp.doParsing(rec, "locality");
+			this.yaleLocInterp.doParsing(rec, "highergeography", true);
+			this.yaleLocInterp.doParsing(rec, "continent", true);
+			this.yaleLocInterp.doParsing(rec, "waterbody", true);
+			this.yaleLocInterp.doParsing(rec, "islandgroup", true);
+			this.yaleLocInterp.doParsing(rec, "island", true);
+			this.yaleLocInterp.doParsing(rec, "country", true);
+			this.yaleLocInterp.doParsing(rec, "stateprovince", true);
+			this.yaleLocInterp.doParsing(rec, "county", true);   
+			this.yaleLocInterp.doParsing(rec, "verbatimlatitude");   
+			this.yaleLocInterp.doParsing(rec, "verbatimlongitude");   
+			this.yaleLocInterp.doParsing(rec, "verbatimcoordinates");
+			this.yaleLocInterp.doParsing(rec, "verbatimelevation");
+
+//			interpendtime = System.currentTimeMillis();
+//			s = s.concat(" (default) Yale interpreter elapsed time: "
+//					+ (interpendtime - interpstarttime) + "(ms)");
+		} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
+//			interpstarttime = System.currentTimeMillis();
+			this.uiucLocInterp.doParsing(rec, "Locality");
+			this.uiucLocInterp.doParsing(rec, "HigherGeography");
+			this.uiucLocInterp.doParsing(rec, "Continent");
+			this.uiucLocInterp.doParsing(rec, "WaterBody");
+			this.uiucLocInterp.doParsing(rec, "IslandGroup");
+			this.uiucLocInterp.doParsing(rec, "Island");
+			this.uiucLocInterp.doParsing(rec, "Country");
+			this.uiucLocInterp.doParsing(rec, "StateProvince");
+			this.uiucLocInterp.doParsing(rec, "County");
+			this.uiucLocInterp.doParsing(rec, "VerbatimLatitude");
+			this.uiucLocInterp.doParsing(rec, "VerbatimLongitude");
+			this.uiucLocInterp.doParsing(rec, "VerbatimCoordinates");
+			this.uiucLocInterp.doParsing(rec, "VerbatimElevation");
+//			interpendtime = System.currentTimeMillis();
+//			s = s.concat(" UIUC interpreter elapsed time: "
+//					+ (interpendtime - interpstarttime) + "(ms)");
+		} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
+//			interpstarttime = System.currentTimeMillis();
+			this.TULocInterp.doParsing(rec, "Locality", "Highergeography", "Country", "State", "County");
+			System.out.println(rec);
+//			interpendtime = System.currentTimeMillis();
+//			s = s.concat(" Tulane interpreter elapsed time: "
+//					+ (interpendtime - interpstarttime) + "(ms)");
+		}
+	} catch (BGIHmm.BGIHmmException e) {
+		e.printStackTrace();
+	} catch (BGI.BGIException e) {
+		e.printStackTrace();
+	} catch (Exception e) {
+		System.out.println("Error in GeorefManager.georeference()");
+	}
+	System.out.print(rec.getFeatures());
+	}
+	
 }
 /*
  * public boolean georeference(GeorefPreferences prefs) throws
