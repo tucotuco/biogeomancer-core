@@ -1,5 +1,5 @@
 #summary Project vision, requirements, and scope
-#labels Phase-Requirements,Featured
+#labels Phase-Requirements
 
 = BioGeomancer Web Service Project =
 
@@ -44,3 +44,4 @@ The team will start with a Project Manager and 3 programmers from U.C. Berkeley 
 
 
 
+ 
