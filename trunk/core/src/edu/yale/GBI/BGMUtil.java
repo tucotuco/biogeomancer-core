@@ -18,6 +18,8 @@ package edu.yale.GBI;
 
 import java.util.Hashtable;
 
+import edu.yale.GBI.interp.Parser;
+
 public class BGMUtil {
 
   /**
@@ -596,7 +598,7 @@ public class BGMUtil {
     // n*
     if (tokens[0].matches("vic.|vicinity|near|area|above|below|off"
         .toUpperCase())
-        || tokens[0].matches("vic.|vicinity|near|area|above|below|off")
+        || tokens[0].matches("vic.|vicinity|near|area|above|below|off") 
         || tokens[tokens.length - 1].toLowerCase()
             .matches("vic.|vicinity|area")) {
       // nj
@@ -819,6 +821,22 @@ public class BGMUtil {
    */
   static int isNUH(String s) {
     s = s.replace(",", " ");
+    
+
+    if (s.matches(".*\\d+[a-zA-Z]+.*")) {
+        String[] token = s.split("\\s+");
+        s = "";
+        for (int k = 0; k < token.length; k++) {
+          if (token[k].trim().matches(".*\\d+[a-zA-Z]+.*")) {
+            String n = token[k].replaceAll("\\d?\\.?\\,?\\d+", "").trim();
+            if (inTable(BGI.units, n))
+              token[k] = token[k].replace(n, "") + " " + n;
+          }
+          s += token[k] + " ";
+        }
+        s.trim();
+    }
+        
     String[] tokens = s.split("\\s+");
     if (tokens.length < 3)
       return -1;

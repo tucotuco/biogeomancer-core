@@ -16,6 +16,9 @@
 
 package edu.yale.GBI.interp;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import edu.yale.GBI.LocalityInfo;
 
 final class StateFinish extends ParsingState {
@@ -34,6 +37,8 @@ final class StateFinish extends ParsingState {
   String localityType;
 
   LocalityInfo li;
+  
+  String s;
 
   public StateFinish(ClauseData data, String locType, Parser p) {
     li = new LocalityInfo();
@@ -57,7 +62,7 @@ final class StateFinish extends ParsingState {
       if (pd.words.length == 1) {
         String[] es = pd.clause.split("\\d+");
         li.unit = es[es.length - 1];
-        li.evelation = pd.clause.replace(li.unit, "");
+        li.evelation = pd.clause.replace(li.unit+" ", "");
       } else {
         li.evelation = pd.words[0];
         li.unit = pd.words[1];
@@ -137,8 +142,18 @@ final class StateFinish extends ParsingState {
       li.offset = pd.words[pd.posN1];
       li.unit = pd.words[pd.posU1];
       li.heading = pd.words[pd.posH1];
-      li.feature1 = pd.clause.replace(li.offset, " ").replace(li.unit, " ")
-          .replace(li.heading, " ").replaceAll(parser.regx_OF, " ").trim();
+      
+      // Testing using regex to pull out the feature as opposed to just flat replacement
+      s = pd.clause;
+      s = s.replaceAll("\\s"+li.heading+"(\\s|$)", " ");
+      s = s.replaceAll("[\\d\\s]" + li.unit + "(\\s|$)"," ");
+      s = s.replaceAll("(^|\\s)"+li.offset+"(\\s|$)"," ");
+      s = s.replaceAll(parser.regx_OF, " ");
+      s = s.trim();
+      li.feature1 = s;
+      
+     // li.feature1 = pd.clause.replace(li.offset, " ").replace(" "+li.unit+" ", " ")
+      //    .replace(" "+li.heading+" ", " ").replaceAll(parser.regx_OF, " ").trim();
       if (localityType == "JOH") {
         String[] joh = li.feature1.split(parser.regx_J_MASK);
         li.feature1 = (joh[0].length() == 0 ? joh[1] : joh[0]);
@@ -146,6 +161,7 @@ final class StateFinish extends ParsingState {
       }
     } else if (localityType == "FOO" || localityType == "JOO") {
       li.unit = pd.words[pd.posU1];
+      li.unit2 = pd.words[pd.posU2];
       if (pd.words[pd.posH1].toUpperCase().matches(parser.regx_HEADING_EW)) {
         li.offsetEW = pd.words[pd.posN1];
         li.headingEW = pd.words[pd.posH1];
@@ -157,10 +173,22 @@ final class StateFinish extends ParsingState {
         li.offsetEW = pd.words[pd.posN2];
         li.headingEW = pd.words[pd.posH2];
       }
-      li.feature1 = pd.clause.replace(li.offsetEW, "").replace(li.unit, "")
-          .replace(li.headingEW, "").replace(li.offsetNS, "").replace(li.unit,
-              "").replace(li.headingNS, "").replaceAll(parser.regx_OF, " ")
-          .replaceAll(parser.regx_AND, " ").trim();
+      s = pd.clause;
+      s = s.replaceAll("\\s"+li.headingEW+"(\\s|$)", " ");
+      s = s.replaceAll("[\\d\\s]" + li.unit + "(\\s|$)"," ");
+      s = s.replaceAll("(^|\\s)"+li.offsetEW+"(\\s|$)"," ");
+      s = s.replaceAll("\\s"+li.headingNS+"(\\s|$)", " ");
+      s = s.replaceAll("[\\d\\s]" + li.unit2 + "(\\s|$)"," ");
+      s = s.replaceAll("(^|\\s)"+li.offsetNS+"(\\s|$)"," ");
+      s = s.replaceAll(parser.regx_OF, " ");
+      s = s.replaceAll(parser.regx_AND, " ");
+      s = s.trim();
+      li.feature1 = s;
+      
+     // li.feature1 = pd.clause.replace(li.offsetEW, "").replace(" "+li.unit+" ", "").replace(" "+li.unit2+" ", "")
+     //     .replace(li.headingEW, "").replace(li.offsetNS, "").replace(" "+li.unit+" ",
+     //         "").replace(li.headingNS, "").replaceAll(parser.regx_OF, " ")
+     //     .replaceAll(parser.regx_AND, " ").trim();
       if (localityType == "JOO") {
         String[] joh = (" " + parser.buildString(pd.posH2 + 1, pd.words, " "))
             .replaceAll(parser.regx_OF, " ").trim().split(parser.regx_J_MASK);

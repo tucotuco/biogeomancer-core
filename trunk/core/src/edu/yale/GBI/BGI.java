@@ -49,6 +49,8 @@ public class BGI {
   static Hashtable<String, String> units;
 
   static Hashtable<String, String> headings;
+  
+  public String language;
 
   static Hashtable<String, String> path;
   static {
@@ -130,7 +132,13 @@ public class BGI {
       LocalityRec rc = new LocalityRec();
       // System.out.println(fieldName+"= " + verbatimLocality);
       rc.localityString = verbatimLocality.trim().replaceAll("\"", "");
-      BGMUtil.parseLocality(rc);
+      //BGMUtil.parseLocality(rc);
+      
+      //set the language of the parser
+      
+      Parser.getInstance(GeorefDictionaryManager.getInstance(),
+    		  SupportedLanguages.english).process(rc);
+
       for (int i = 0; i < rc.results.length; i++) {
         Clause cl = new Clause();
         r.clauses.add(cl);
@@ -290,7 +298,7 @@ public class BGI {
         if (rc.results[i].offsetEW != null
             && rc.results[i].offsetEW.length() > 0) {
           ls.voffsetew = rc.results[i].offsetEW;
-          ls.voffsetewunit = rc.results[i].unit;
+          ls.voffsetewunit = rc.results[i].unit2;
         }
         if (rc.results[i].offsetNS != null
             && rc.results[i].offsetNS.length() > 0) {
