@@ -377,6 +377,12 @@ public class Parser {
   }
 
   final boolean isNum(String s) {
+	  if(s==null){
+		  return false;
+	  }
+	  if(s.length()==0){
+		  return false;
+	  }
     if (s.charAt(0) == ',' | s.charAt(s.length() - 1) == ',')
       return false;
     s = s.replaceAll(",", "").replace("/", "");
