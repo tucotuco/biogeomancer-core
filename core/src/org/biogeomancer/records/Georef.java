@@ -554,16 +554,25 @@ public class Georef {
 		int nc = coordinates.length;
 		double maxx = -180.0;
 		double minx = 180.0;
+		double miny = 90.0;
+		double maxy = -90.0;
 		for (int i = 0; i < nc; i++) {
 			if (coordinates[i].x > maxx)
 				maxx = coordinates[i].x;
 			if (coordinates[i].x < minx)
 				minx = coordinates[i].x;
+			if (coordinates[i].y > maxy)
+				maxy = coordinates[i].y;
+			if (coordinates[i].y < miny)
+				miny = coordinates[i].y;
 		}
 		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
 			Georef.shiftLongitude(ng, 360.0);
 		}
-		Point p = ng.getCentroid();
+// 		Geometry.getCentroid() returns a weighted mean centroid, not a geographic one.
+//		Point p = ng.getCentroid();
+		Coordinate c = new Coordinate((minx+maxx)/2, (miny+maxy)/2);
+		Point p = gf.createPoint(c);
 		if (p == null) {
 			return null; // Can't make a point-radius if there is no centroid.
 		}
@@ -686,6 +695,14 @@ public class Georef {
 		} else
 			s = s.concat(pointRadiusSpatialFit + "\n");
 
+		s = s.concat("Geometry bounding box coordinates:\n");
+		if (geometry!=null) {
+			s = s.concat("UL: ("+getMaxLat()+", "+getMinLng()+")\n");
+			s = s.concat("LR: ("+getMinLat()+", "+getMaxLng()+")\n");
+			s = s.concat("Center: ("+(getMinLat()+getMaxLat())/2+", "+(getMinLng()+getMaxLng())/2);
+		} else
+			s = s.concat("not given\n");
+
 		s = s.concat("<GEOMETRY>\n");
 		if (geometry != null) {
 			s = s.concat(geometry.toString() + "\n");
@@ -795,5 +812,11 @@ public class Georef {
 			if(maxx<geometry.getCoordinates()[i].x) maxx=geometry.getCoordinates()[i].x;
 		}
 		return maxx;
+	}
+	public double getCentroidLat(){
+		return (getMinLat()+getMaxLat())/2;
+	}
+	public double getCentroidLng(){
+		return (getMinLng()+getMaxLng())/2;
 	}
 }

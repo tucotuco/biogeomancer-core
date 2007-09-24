@@ -203,7 +203,8 @@ public class GeorefManager extends BGManager {
 			System.out.println("***NEWGEOREFERENCE test***");
 			gm.newGeoreference(gp);
 			for(Rec r : gm.recset.recs){
-				System.out.println(r.getSummary("  "));
+				System.out.println(r.toString());
+//				System.out.println(r.getSummary("  "));
 			}
 			break;
 		case SINGLE_GEOREF:
