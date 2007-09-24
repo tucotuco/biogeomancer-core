@@ -607,14 +607,12 @@ public class SpatialDescriptionManager extends BGManager {
 		GeometryFactory gf = new GeometryFactory();
 		WKTReader wktreader = new WKTReader(gf);	
 		Georef newGeoref = null;
-//		Georef g;
 		Geometry geom;
 		String encodedG = null;
 
 		Georef g1 = null, intersection = null;
 		double distancebetweencenters=0, sumofradii=0;
 		boolean foundFirstValid = false;
-//		ArrayList<FeatureInfo> tempFeatureinfos;
 		String loctype;
 		int featureid;
 		for(int m=0;m<combos;m++) { // For every combo of Clause Georefs
@@ -647,7 +645,6 @@ public class SpatialDescriptionManager extends BGManager {
 							encodedG = new String(gaz.lookupFootprint(gadm, featureid));
 						}
 						else if(loctype.equalsIgnoreCase("F")){
-//							encodedG = new String(gaz.lookupConvexHull(worldplaces, featureid));
 							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
 						}
 						//TODO change this to be roads or rivers when they get added to the Gazetteer
@@ -715,7 +712,7 @@ public class SpatialDescriptionManager extends BGManager {
 									// feature has a footprint in the gazetteer
 									newGeoref = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
 									newGeoref.iLocality=new String(g1.iLocality);
-								}
+								}							
 							} catch (ParseException e) {
 								e.printStackTrace();
 							}
@@ -730,8 +727,6 @@ public class SpatialDescriptionManager extends BGManager {
 							try{
 								if(intersection!=null){
 									intersection.addFeatureInfo(f);
-//									featureid = f.featureID;
-//									intersection.addFeatureLoctype(f.featureID,loctype);
 								}
 							} catch (Exception e) {
 								System.out.println("Problem with addFeatureInfo to intersection for the following feature:\n"+f.toXML(true));
@@ -764,47 +759,3 @@ public class SpatialDescriptionManager extends BGManager {
 		}
 	}
 }
-/*
-for(int i=0;i<locspec.featureinfos.size();i++){
-	FeatureInfo f = locspec.featureinfos.get(i);
-	if(f.extentInMeters < 1){ 
-		// TODO: This same work is being done by the gazetteer. Doesn't
-		// hurt to keep it here for now.
-		// Try making a PointRadius from the encoded Geometry in the event
-		// that the radius given in the database is less than a meter.
-//		log.error("SpatialDescriptionManager found feature extent < 1. Check database for "+f.featureID);
-		GeometryFactory gf = new GeometryFactory();
-		WKTReader wktreader = new WKTReader(gf);
-		Geometry g=null;
-		try {
-			g = wktreader.read(f.encodedGeometry);
-			Georef georef = new Georef(g, DatumManager.getInstance().getDatum("WGS84"));
-			PointRadius pr = georef.makePointRadius(g, DatumManager.getInstance().getDatum("WGS84"));
-			if(pr.extent>=1) f.extentInMeters=pr.extent;
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		if(f.extentInMeters < 1){
-			// Try getting the best guess uncertainty for the feature based
-			// on its feature type.
-			double d =gaz.lookupBestGuessUncertainty(gdb, f.featureID); 
-			if(d>=1) f.extentInMeters=d;
-		}
-		if(f.extentInMeters < 1){
-			// Try getting the i_feature_footprint.radius of this feature
-//			log.error("Should never have to look up i_feature_footprint.radius. Feature_id: "+f.featureID);
-			// on its feature type.
-			double d =gaz.lookupRadius(gdb, f.featureID); 
-			if(d>=1) f.extentInMeters=d;
-		}
-		if(f.extentInMeters < 1){
-			// The extent is still less than a meter. This feature is a candidate
-			// for correction, supplementation, or removal from the database.
-			log.error("Feature removed for lack of extent: "+f.name+"(FeatureID="+f.featureID+", ExtentInMeters="+f.extentInMeters+") ");
-			locspec.featureinfos.remove(f);
-			i--;
-		}
-	}
-}
- */

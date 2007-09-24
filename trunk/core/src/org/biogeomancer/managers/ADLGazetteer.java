@@ -65,11 +65,12 @@ public class ADLGazetteer extends BGManager {
           + " radius,"
           + " displayname,"
           + " g_feature_name.name,"
-          + " asText(footprint),"
           + " i_scheme_term.term,"
           + " g_collection.name,"
           + " g_collection.mapaccuracyinmeters,"
           + " g_collection.coordprecision"
+//          + " g_collection.coordprecision,"
+//        + " asText(footprint)"
           + " FROM"
           + " i_feature_footprint,"
           + " g_feature,"
@@ -168,11 +169,11 @@ public class ADLGazetteer extends BGManager {
           if (namefound.equalsIgnoreCase(fi.name) == false) {
             fi.name = new String(namefound + " (=" + rs.getString(5) + ")");
           }
-          fi.encodedGeometry = new String(rs.getString(7));
-          fi.classificationTerm = new String(rs.getString(8));
-          fi.coordSource = new String(rs.getString(9));
-          fi.mapAccuracyInMeters = rs.getDouble(10);
-          fi.coordPrecision = rs.getDouble(11);
+          fi.classificationTerm = new String(rs.getString(7));
+          fi.coordSource = new String(rs.getString(8));
+          fi.mapAccuracyInMeters = rs.getDouble(9);
+          fi.coordPrecision = rs.getDouble(10);
+//        fi.encodedGeometry = new String(rs.getString(11));
           features.add(fi);
           featureadded = true;
         }
@@ -199,11 +200,12 @@ public class ADLGazetteer extends BGManager {
           + " geom_x,"
           + " radius,"
           + " displayname,"
-          + " asText(footprint),"
           + " i_scheme_term.term,"
           + " g_collection.name,"
           + " g_collection.mapaccuracyinmeters,"
           + " g_collection.coordprecision"
+//          + " g_collection.coordprecision,"
+//        + " asText(footprint)"
           + " FROM"
           + " i_feature_footprint,"
           + " g_feature,"
@@ -217,7 +219,6 @@ public class ADLGazetteer extends BGManager {
           + " AND i_feature_footprint.feature_id=i_classification.feature_id"
           + " AND i_classification.classification_term_id=i_scheme_term.scheme_term_id"
           + " AND g_feature.collection_id=g_collection.collection_id";
-      // " AND g_feature.feature_id = " + featureid;
 
       if (querytype.equalsIgnoreCase("equals-ignore-case")) {
         // Make sure database is indexed on lower(name)
@@ -296,11 +297,11 @@ public class ADLGazetteer extends BGManager {
           fi.extentInMeters = rs.getDouble(4);
           fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
           fi.name = new String(rs.getString(5));
-          fi.encodedGeometry = new String(rs.getString(6));
-          fi.classificationTerm = new String(rs.getString(7));
-          fi.coordSource = new String(rs.getString(8));
-          fi.mapAccuracyInMeters = rs.getDouble(9);
-          fi.coordPrecision = rs.getDouble(10);
+          fi.classificationTerm = new String(rs.getString(6));
+          fi.coordSource = new String(rs.getString(7));
+          fi.mapAccuracyInMeters = rs.getDouble(8);
+          fi.coordPrecision = rs.getDouble(9);
+//        fi.encodedGeometry = new String(rs.getString(10));
           features.add(fi);
           featureadded = true;
         }
@@ -424,11 +425,12 @@ public class ADLGazetteer extends BGManager {
           + " geom_x,"
           + " radius,"
           + " displayname,"
-          + " asText(footprint),"
           + " i_scheme_term.term,"
           + " g_collection.name,"
           + " g_collection.mapaccuracyinmeters,"
           + " g_collection.coordprecision"
+//          + " g_collection.coordprecision,"
+//        + " asText(footprint)"
           + " FROM"
           + " i_feature_footprint,"
           + " g_feature,"
@@ -459,11 +461,11 @@ public class ADLGazetteer extends BGManager {
           fi.extentInMeters = rs.getDouble(4);
           fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
           fi.name = new String(rs.getString(5));
-          fi.encodedGeometry = new String(rs.getString(6));
-          fi.classificationTerm = new String(rs.getString(7));
-          fi.coordSource = new String(rs.getString(8));
-          fi.mapAccuracyInMeters = rs.getDouble(9);
-          fi.coordPrecision = rs.getDouble(10);
+          fi.classificationTerm = new String(rs.getString(6));
+          fi.coordSource = new String(rs.getString(7));
+          fi.mapAccuracyInMeters = rs.getDouble(8);
+          fi.coordPrecision = rs.getDouble(9);
+//        fi.encodedGeometry = new String(rs.getString(10));
         }
         rs.close();
         st.close();
@@ -588,8 +590,9 @@ public class ADLGazetteer extends BGManager {
           + " g_collection.name,"
           + " g_collection.coordprecision,"
           + " g_collection.mapaccuracyinmeters,"
-          + " i_scheme_term.term,"
-          + " asText(footprint)"
+          + " i_scheme_term.term"
+//          + " i_scheme_term.term,"
+//          + " asText(footprint)"
           + " FROM"
           + " i_feature_footprint,"
           + " g_feature,"
@@ -689,7 +692,7 @@ public class ADLGazetteer extends BGManager {
           fi.coordPrecision = rs.getDouble(7);
           fi.mapAccuracyInMeters = rs.getDouble(8);
           fi.classificationTerm = new String(rs.getString(9));
-          fi.encodedGeometry = new String(rs.getString(10));
+//          fi.encodedGeometry = new String(rs.getString(10));
           fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
           features.add(fi);
         }
@@ -1378,23 +1381,6 @@ public class ADLGazetteer extends BGManager {
         + fromfi.longitude + " " + fromfi.latitude + ")')) >= " + ddlimit
         + " ORDER BY distanceindd ASC LIMIT 1";
 
-    // " SELECT"+
-    // " feature_id,"+
-    // " geom_y,"+
-    // " geom_x,"+
-    // " radius,"+
-    // "
-    // Distance(centroid(geom),GeomFromEWKT('SRID=4326;POINT("+fromfi.longitude+"
-    // "+fromfi.latitude+")')) as distanceindd,"+
-    // " Distance(centroid(geom),GeomFromEWKT("+withingeomEWKT+")) as
-    // withindist"+
-    // " FROM i_feature_footprint "+
-    // " WHERE"+
-    // " Distance(centroid(geom),GeomFromEWKT("+withingeomEWKT+")) = 0"+
-    // " AND
-    // Distance(centroid(geom),GeomFromEWKT('SRID=4326;POINT("+fromfi.longitude+"
-    // "+fromfi.latitude+")')) >= "+ddlimit+
-    // " ORDER BY distanceindd ASC LIMIT 1";
     /*
      * Example: SELECT feature_id, geom_y, geom_x, radius,
      * Distance(centroid(geom),GeomFromEWKT('SRID=4326;POINT(-113.9930596
@@ -1440,7 +1426,6 @@ public class ADLGazetteer extends BGManager {
   }
 
   public void lookupPointRadiusAttributes(Connection gdb, FeatureInfo fi) {
-//    String wktGeometry = null;
     double lat = 90, lng = 0, radius = 0;
     String query = " SELECT" + " geom_y," + " geom_x," + " radius"
         + " FROM i_feature_footprint " + " WHERE feature_id=" + fi.featureID
@@ -1466,7 +1451,6 @@ public class ADLGazetteer extends BGManager {
   }
 
   public void lookupQuickAttributes(Connection gdb, FeatureInfo fi) {
-//    String wktGeometry = null;
     double lat = 90, lng = 0, radius = 0;
 //    double acc = 1000; // Use default 1000 meter map accuracy if not given
                         // explictly.
@@ -1483,7 +1467,7 @@ public class ADLGazetteer extends BGManager {
         // TODO: There is no assurrance that a collection record exists for the
         // feature.
         // Should check that the database does have this, but also avoid the
-        // problem by not doing the jopin here.
+        // problem by not doing the join here.
         // " coordprecision, " +
         // " mapaccuracyinmeters," +
         // " g_collection.name," +
@@ -1536,41 +1520,11 @@ public class ADLGazetteer extends BGManager {
 
   public void lookupQuickFeatureDetails(Connection gdb,
       ArrayList<FeatureInfo> fis) {
-    // if( gdb == null || fis == null || fis.isEmpty()) return;
-    // Get the rest of the information for the featureinfos.
-//    GeometryFactory gf = new GeometryFactory();
-//    WKTReader wktreader = null;
-//    Geometry g = null;
-//    Georef georef = null;
-//    PointRadius pr = null;
     FeatureInfo fi = null;
     for (int i = 0; i < fis.size(); i++) {
       fi = fis.get(i);
       // try {
       lookupQuickAttributes(gdb, fi);
-//      pr = new PointRadius(fi.longitude, fi.latitude, DatumManager
-//          .getInstance().getDatum("WGS84"), fi.extentInMeters);
-      /*
-       * if(fi.encodedGeometry==null ||
-       * fi.encodedGeometry.toLowerCase().contains("empty")){ // Get the extent
-       * from convex hull if it exists. fi.encodedGeometry=lookupConvexHull(gdb,
-       * fi.featureID);
-       * fi.geodeticDatum=DatumManager.getInstance().getDatum("WGS84"); } if(
-       * fi.encodedGeometry!=null){ wktreader = new WKTReader(gf); //
-       * System.out.println(fi.featureID+":"+fi.encodedGeometry); g =
-       * wktreader.read(fi.encodedGeometry); georef = new Georef(g,
-       * fi.geodeticDatum); pr = georef.makePointRadius(g, fi.geodeticDatum);
-       * if(pr!=null){ fi.latitude=pr.y; fi.longitude=pr.x;
-       * fi.extentInMeters=pr.extent; if(fi.extentInMeters<1){ // The
-       * PointRadius representation of the geometry has a miniscule radius.
-       * fi.extentInMeters=lookupBestGuessUncertainty(gdb, fi.featureID); }
-       * lookupFeatureTypeAttributes(gdb, fi); lookupCollectionAttributes(gdb,
-       * fi); fi.state=FeatureInfoState.FEATUREINFO_COMPLETED; }else{
-       * fis.remove(fi); i--; } }else{ fis.remove(fi); i--; } } catch
-       * (ParseException e) {
-       * fi.state=FeatureInfoState.FEATUREINFO_CREATION_ERROR;
-       * e.printStackTrace(); }
-       */
       }
   }
 

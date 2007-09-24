@@ -91,9 +91,7 @@ public class Clause // represents information about one atomic interpretable
         iLocality = null;
         return null;
       }
-      // iLocality = new String(fi1.name+" ("+fi1.classificationTerm+")");
-      iLocality = new String(fi1.name + " (" + fi1.featureID + ")");
-      // iLocality = new String(fi1.name);
+      iLocality = new String(fi1.name + " ("+fi1.coordSource+":"+fi1.featureID+")");
     } else if (locType.equalsIgnoreCase("FOH")
         || locType.equalsIgnoreCase("POH")) {
       if (fi1.name == null) {
@@ -102,14 +100,13 @@ public class Clause // represents information about one atomic interpretable
       }
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of " + fi1.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")");
+          + " of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")");
     } else if (locType.equalsIgnoreCase("NF") || locType.equalsIgnoreCase("NP")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("near " + fi1.name);
+      iLocality = new String("near " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")");
     } else if (locType.equalsIgnoreCase("FS")
         || locType.equalsIgnoreCase("TRSS") || locType.equalsIgnoreCase("PS")) {
       if (fi1.name == null) {
@@ -117,8 +114,7 @@ public class Clause // represents information about one atomic interpretable
         return null;
       }
       iLocality = new String(locspecs.get(0).isubdivision
-          + " (subdivision of) " + fi1.name);
-      // " (subdivision of) "+fi1.name+" ("+fi1.classificationTerm+")");
+          + " (subdivision of) " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")");
     } else if (locType.equalsIgnoreCase("FOO")) {
       if (fi1.name == null) {
         iLocality = null;
@@ -128,32 +124,26 @@ public class Clause // represents information about one atomic interpretable
           + locspecs.get(0).ioffsetewunit + " " + locspecs.get(0).iheadingew
           + " and " + locspecs.get(0).ioffsetns + " "
           + locspecs.get(0).ioffsetnsunit + " " + locspecs.get(0).iheadingns
-          + " of " + fi1.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")");
+          + " of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")");
     } else if (locType.equalsIgnoreCase("BF") || locType.equalsIgnoreCase("BP")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("between " + fi1.name + " and " + fi2.name);
-      // iLocality = new String("between "+fi1.name+"
-      // ("+fi1.classificationTerm+")"+" and "+fi2.name+"
-      // ("+fi2.classificationTerm+")");
+      iLocality = new String("between " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("FH") || locType.equalsIgnoreCase("PH")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String(locspecs.get(0).iheading + " of " + fi1.name);
-      // fi1.name+" ("+fi1.classificationTerm+")");
+      iLocality = new String(locspecs.get(0).iheading + " of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")");
     } else if (locType.equalsIgnoreCase("FO") || locType.equalsIgnoreCase("PO")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
       iLocality = new String(locspecs.get(0).ioffset + " "
-          + locspecs.get(0).ioffsetunit + " from " + fi1.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")");
+          + locspecs.get(0).ioffsetunit + " from " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")");
     } else if (locType.equalsIgnoreCase("FPOH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
@@ -161,17 +151,13 @@ public class Clause // represents information about one atomic interpretable
       }
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of " + fi1.name + " along " + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" along "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+          + " of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " along " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("J")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("intersection of " + fi1.name + " and " + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" and "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+      iLocality = new String("intersection of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("JO")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
@@ -179,18 +165,14 @@ public class Clause // represents information about one atomic interpretable
       }
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " from the intersection of "
-          + fi1.name + " and " + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" and "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+          + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("JH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
       iLocality = new String(locspecs.get(0).iheading
-          + " of the intersection of " + fi1.name + " and " + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" and "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+          + " of the intersection of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("JOH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
@@ -198,9 +180,7 @@ public class Clause // represents information about one atomic interpretable
       }
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of the intersection of " + fi1.name + " and " + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" and "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+          + " of the intersection of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("JOO")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
@@ -210,9 +190,7 @@ public class Clause // represents information about one atomic interpretable
           + locspecs.get(0).ioffsetewunit + " " + locspecs.get(0).iheadingew
           + " and " + locspecs.get(0).ioffsetns + " "
           + locspecs.get(0).ioffsetnsunit + " " + locspecs.get(0).iheadingns
-          + " of the intersection of " + fi1.name + " and " + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" and "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+          + " of the intersection of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("JPOH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
@@ -220,17 +198,15 @@ public class Clause // represents information about one atomic interpretable
       }
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of the intersection of " + fi1.name + " and  " + fi2.name
+          + " of the intersection of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and  " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")"
           + " along  " + fi2.name);
     } else if (locType.equalsIgnoreCase("NJ")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("near the intersection of " + fi1.name + " and "
-          + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" and "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+      iLocality = new String("near the intersection of " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " and "
+          + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("ADDR")) {
       if (fi1.name == null) {
         iLocality = null;
@@ -257,15 +233,13 @@ public class Clause // represents information about one atomic interpretable
         iLocality = null;
         return null;
       }
-      iLocality = new String("near the marker " + fi1.name + " on " + fi2.name);
-      // +fi1.name+" ("+fi1.classificationTerm+")"+" on "
-      // +fi2.name+" ("+fi2.classificationTerm+")");
+      iLocality = new String("near the marker " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " on " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("POM")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("at the marker " + fi1.name + " on " + fi2.name);
+      iLocality = new String("at the marker " + fi1.name+" ("+fi1.coordSource+":"+fi1.featureID+")" + " on " + fi2.name+" ("+fi2.coordSource+":"+fi2.featureID+")");
     } else if (locType.equalsIgnoreCase("UTM")) {
       if (locspecs.get(0).iutmzone == null || locspecs.get(0).iutme == null
           || locspecs.get(0).iutmn == null) {
