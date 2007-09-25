@@ -32,19 +32,23 @@ import java.util.Properties;
  * associated with it. That's why we use the propertyMap.
  */
 public class BGManager {
-  protected static Connection gadm; // GADM Administrative boundaries
-  protected static Connection plss; // PLSS township geometries
-  protected static Connection gn; // GeonetNames gazetteer data
-  protected static Connection conustigerplaces; // Tiger Census shapes for S
-                                                // populated places
-  protected static Connection gnispopulatedplaces; // GNIS populated place
-                                                    // gazetteer data
-  protected static Connection worldplaces; // Combined gadm, gn,
-                                            // conustigerplaces,
-                                            // gnispopulatedplaces gazetteer
-                                            // data
-  protected static Connection userplaces; // Features entered by users through
-                                          // the BioGeomancer Workbench
+//  GADM Administrative boundaries
+  protected static Connection gadm; 
+//  PLSS township geometries
+  protected static Connection plss; 
+//  GeonetNames gazetteer data
+  protected static Connection gn; 
+//  Tiger Census shapes for US populated places  
+  protected static Connection conustigerplaces; 
+//  GNIS populated place gazetteer data  
+  protected static Connection gnispopulatedplaces;
+//  Combined gadm, gn, conustigerplaces, gnispopulatedplaces, 
+//  protectedplaces gazetteer, but not roads, rivers, or plss
+  protected static Connection worldplaces; 
+//  Features entered by users through the BioGeomancer Workbench
+  protected static Connection userplaces; 
+//  Protected places shape data
+  protected static Connection protectedplaces; 
 
   protected static Properties properties;
 
@@ -118,38 +122,4 @@ public class BGManager {
       e.printStackTrace();
     }
   }
-
-  /**
-   * Starts the log.
-   */
-  // protected static Logger getLog(Class theClass, String logfile) {
-  // Logger log;
-  // try {
-  // log = Logger.getLogger(theClass);
-  // startlogfile(log, logfile);
-  // return log;
-  // }
-  // catch(Exception e){
-  // System.out.println(e.toString());
-  // }
-  // return null;
-  // }
-  /**
-   * Add log file appender.
-   */
-  // private static void startlogfile(Logger log, String logfile) {
-  // try {
-  // TTCCLayout layout = new TTCCLayout();
-  // layout.setCategoryPrefixing(true);
-  // layout.setContextPrinting(true);
-  // layout.setThreadPrinting(true);
-  // FileAppender appender = new FileAppender(layout, logfile, true);
-  // appender.setEncoding("UTF-8");
-  // appender.setName("bgmanagerLogger");
-  // log.addAppender(appender);
-  // }
-  // catch (Exception e) {
-  // System.out.println("could not create log file: " + e.toString());
-  // }
-  // }
 }
