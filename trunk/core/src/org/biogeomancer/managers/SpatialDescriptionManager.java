@@ -384,12 +384,12 @@ public class SpatialDescriptionManager extends BGManager {
 				}
 				ps.endtimestamp=System.currentTimeMillis();
 				r.metadata.addStep(ps);
-			} else if(clause.locType.equalsIgnoreCase("LL") || clause.locType.equalsIgnoreCase("TRSS")){
+			} else if(clause.locType.equalsIgnoreCase("LL")){
 				if(clause.locspecs.size()>0){
 					clause.locspecs.get(0).interpretLatLng(clause.locspecs.get(0));
 					gdb=null;
 				}
-			} else if(clause.locType.equalsIgnoreCase("UTM") || clause.locType.equalsIgnoreCase("TRSS")){
+			} else if(clause.locType.equalsIgnoreCase("UTM")){
 				if(clause.locspecs.size()>0){
 					clause.locspecs.get(0).interpretUTM();
 					gdb=null;
@@ -636,7 +636,7 @@ public class SpatialDescriptionManager extends BGManager {
 							loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
 						// Use the actual shape for the intersection instead of the point-radius.
 						featureid = g1.featureinfos.get(0).featureID;
-						
+
 						String csource = new String(g1.featureinfos.get(0).coordSource);
 						if(csource != null && csource.equalsIgnoreCase("usersdb")){
 							encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
@@ -721,6 +721,7 @@ public class SpatialDescriptionManager extends BGManager {
 						else{
 							intersection=intersection.intersect(g1);
 						}
+						if(intersection!=null && !intersection.geometry.isEmpty()){
 						// copy the featureinfos used in the intersecting georef
 						// to the georef for the resulting intersection
 						for(FeatureInfo f: g1.featureinfos){
@@ -733,6 +734,12 @@ public class SpatialDescriptionManager extends BGManager {
 								System.out.println("from the following intersection:\n"+intersection.toXML(true));
 								e.printStackTrace();
 							}
+						}
+						}
+						else{
+							// there is no intersection between g1 and the previously calculated intersection based on geometry
+							intersection=null;
+							i=clausecount; // no reason to even try other clauses, because there is already an inconsistency
 						}
 					} else { 
 						// there is no intersection between g1 and g2 based on distance between centers

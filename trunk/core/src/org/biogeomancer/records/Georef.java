@@ -699,7 +699,7 @@ public class Georef {
 		if (geometry!=null) {
 			s = s.concat("UL: ("+getMaxLat()+", "+getMinLng()+")\n");
 			s = s.concat("LR: ("+getMinLat()+", "+getMaxLng()+")\n");
-			s = s.concat("Center: ("+(getMinLat()+getMaxLat())/2+", "+(getMinLng()+getMaxLng())/2);
+			s = s.concat("Center: ("+(getMinLat()+getMaxLat())/2+", "+(getMinLng()+getMaxLng())/2+")\n");
 		} else
 			s = s.concat("not given\n");
 

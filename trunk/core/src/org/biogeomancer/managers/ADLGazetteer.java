@@ -727,14 +727,6 @@ public class ADLGazetteer extends BGManager {
 		int featureid = z.intValue();
 		String db = argv[0];
 
-		double lat =11.123456789;
-		double lng = -111.123456789;
-		double tlat = Math.round(lat*10000000);
-		tlat /= 10000000;
-		  double tlng = Math.round(lng*10000000)/10000000;
-
-		
-		
 		ADLGazetteer adl = null;
 		try {
 			adl = new ADLGazetteer();
@@ -754,7 +746,8 @@ public class ADLGazetteer extends BGManager {
 			} else if (argv[0].equalsIgnoreCase("protectedplaces")) {
 				con = protectedplaces;
 			}
-			adl.setIFeatureFootprintRadii(con, featureid);
+			adl.selectIFeatureFootprint(con, featureid);
+//			adl.setIFeatureFootprintRadii(con, featureid);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -2069,5 +2062,31 @@ public class ADLGazetteer extends BGManager {
 			pr = new PointRadius(newp.getX(), newp.getY(), maxdist);
 		}
 		return pr;
+	}
+	private void selectIFeatureFootprint(Connection gdb, int featureid) throws SQLException {
+		if(gdb==null) return;
+		GeometryFactory gf = new GeometryFactory();
+		WKTReader wktreader = new WKTReader(gf);	
+		Geometry geom = null;
+		String encodedG = null;
+		PreparedStatement ps = null;
+		String q = null;
+		PointRadius pr = null;
+		FeatureInfo fi=null;
+		double radius;
+		fi = iFeatureName.selectFeatureById(gdb, featureid);
+//		lookupQuickAttributes(gdb,fi);
+		encodedG = lookupFootprint(gdb, featureid);
+		try {
+			geom = wktreader.read(encodedG);
+		} catch (ParseException e) {
+			e.printStackTrace();
+		}
+		if(geom!=null){
+			pr = getPointRadiusFromGeometry(geom);
+			if(pr!=null){
+					System.out.println(pr.toString()+"\n"+fi.toString());
+			}
+		}
 	}
 }
