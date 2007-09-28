@@ -59,23 +59,24 @@ final class StatenNUSpecial extends ParsingState {
       pd = null;
       return state;
 
-    } else if (pd.posH1 >= 0
-        && pd.clause.toUpperCase().trim().matches(parser.regx_TRS + ".*")) {
-      pd.state = "TRSS";
-      StateFinish state = new StateFinish(pd, "TRSS", parser);
-      pd = null;
-      return state;
+    } 
 
-    }
-
-    else if (pd.clause.toUpperCase().trim().matches(parser.regx_TRS)) {
+    else if (pd.clause.toUpperCase().trim().matches(parser.regx_TRS + parser.regx_TRSS + "?")) {
       pd.state = "TRS";
       StateFinish state = new StateFinish(pd, "TRS", parser);
       pd = null;
       return state;
 
     }
+    
+    else if (pd.clause.toUpperCase().trim().matches(parser.regx_TRS + parser.regx_TRSS + ".*")) {
+        pd.state = "TRSS";
+        StateFinish state = new StateFinish(pd, "TRSS", parser);
+        pd = null;
+        return state;
 
+      }
+    
     else if (pd.clause.toUpperCase().trim().matches(parser.regx_UTM)) {
       pd.state = "UTM";
       StateFinish state = new StateFinish(pd, "UTM", parser);

@@ -96,10 +96,13 @@ final class StateFinish extends ParsingState {
     	li.towndir = pd.words[2].trim();
     	li.range = pd.words[4].trim();
     	li.rangedir = pd.words[5].trim();
-        li.section = pd.words[7].trim();
-        if(pd.words.length > 8){
-        	li.subdivision = parser.buildString(8, pd.words, " ");
-        }
+    	if(pd.words.length > 6){
+    		li.section = pd.words[7].trim();
+    	}
+	    if(pd.words.length > 8 && localityType == "TRSS"){
+	        li.subdivision = parser.buildString(8, pd.words, " ");
+	    }
+    	
    //   if (pd.posH1 >= 0)
    //     li.subdivision = parser.buildString(pd.posH1, pd.words, " ");
     } else if (localityType == "UTM") {
