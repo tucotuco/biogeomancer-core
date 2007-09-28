@@ -97,7 +97,7 @@ public class Parser {
   // final String regx_JH;
   final String regx_JH_NJ;
   final String regx_TRS;
-  // final String regx_TRSS;
+  final String regx_TRSS;
   final String regx_UTM;
 
   final String regx_Q;
@@ -154,7 +154,7 @@ public class Parser {
     // regx_JH=mgr.lookup("regxs_JH", lng, Concepts.regxs, false);
     regx_JH_NJ = mgr.lookup("regx_JH_NJ", lng);
     regx_TRS = mgr.lookup("regx_TRS", lng);
-    // regx_TRSS=mgr.lookup("regxs_TRSS", lng, Concepts.regxs, false);
+    regx_TRSS=mgr.lookup("regx_TRSS",lng);
     regx_UTM = mgr.lookup("regx_UTM", lng);
     regx_Q = mgr.lookup("regx_Q", lng);
     regx_PBF = mgr.lookup("regx_PBF", lng);
@@ -207,7 +207,8 @@ public class Parser {
 
   final public String[] preprocess(String queryString) {
     String qs = queryString.trim().replaceAll("\\sal\\s|^Al\\s", " ").replace(
-        "&", " " + keyword_AND + " ").trim();
+        "&", " " + keyword_AND + " ").trim().replaceAll("\\[", 
+        		"").trim().replaceAll("\\]","").trim();
     String s = "";
     
     //Make sure all numbers and letters are separated from eachother
@@ -241,7 +242,22 @@ public class Parser {
     //Combining numbers and what not... lets add a unit check above this
     for (int i = 0; i < words.length - 1; i++) {
     	
-      if (isNum(words[i])) {
+
+    	if(words[i].equals("")){
+    		continue;
+    	}
+    	
+    	if(isNum(words[i])){
+    		if(words[i].matches(".*,\\d\\d$") || words[i].matches(".*\\.\\d\\d\\d.*")){
+    			words[i] = words[i].replaceAll("\\.", "");
+    			words[i] = words[i].replaceAll(",", ".");
+    		}
+    		else{
+    			words[i] = words[i].replaceAll(",", "");
+    		}
+    	}
+    	
+    	/*if (isNum(words[i])) {
     	  
     	  if(lng.equals(SupportedLanguages.english)){
     		  if(words[i].contains(","))
@@ -255,13 +271,13 @@ public class Parser {
     			  words[i] = words[i].replaceAll(",", ".");
     		  }
     	  }
-      }
+      }*/
       
       s = words[i] + words[i + 1];
       if (isNum(s)) {
-    	  words[i] = s;
-    	  words[i + 1] = "";
-    	  i++;
+    	  words[i] = "";
+    	  words[i + 1] = s;
+    	  //i++;
       }
 
     }
@@ -298,12 +314,13 @@ public class Parser {
      * qs=buildString(0,phases,", ");
      */
     
-    return BGMUtil.recoverClauses(qs.trim().split("[;,:]\\s"));
+    return BGMUtil.recoverClauses(qs.trim().split("[;,:]\\s"), this);
 
   }
 
   public final void process(LocalityRec rc) {
 
+	  //separate the clauses from the locality
     rc.clauseSet = preprocess(rc.localityString);
     rc.results = new LocalityInfo[rc.clauseSet.length];
     int count = 0;
@@ -372,7 +389,7 @@ public class Parser {
     return cd.posH1 > 0;
   }
 
-  final boolean isHeading(String s) {
+  final public boolean isHeading(String s) {
     return mgr.lookupConcept(s, lng) == "heading";
   }
 
@@ -403,7 +420,7 @@ public class Parser {
    * 
    * final boolean isPartialKeyword(String s) { return false; }
    */
-  final boolean isUnit(String s) {
+  final public boolean isUnit(String s) {
     return mgr.lookupConcept(s, lng) == "unit";
 
   }

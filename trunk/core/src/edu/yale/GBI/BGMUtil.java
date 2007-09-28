@@ -30,7 +30,7 @@ public class BGMUtil {
    * @param LocalityRec
    *          the locality record.
    */
-  public static void parseLocality(LocalityRec r) {
+  public static void parseLocality(LocalityRec r, Parser p) {
     try {
       String s = r.localityString;
       s = s.replace("(by air)", "").replace("(BY AIR)", "");
@@ -46,7 +46,7 @@ public class BGMUtil {
         clauses[i] = nmlClause(clauses[i]);
       }
       if (clauses.length > 1)
-        clauses = recoverClauses(clauses);
+        clauses = recoverClauses(clauses,p);
       r.clauseSet = clauses;
       LocalityInfo[] li = new LocalityInfo[clauses.length];
       if (s.length() > 0)
@@ -67,7 +67,7 @@ public class BGMUtil {
    * @param clauses
    *          string array of clauses
    */
-  public static String[] recoverClauses(String[] clauses) {
+  public static String[] recoverClauses(String[] clauses, Parser parser) {
     int clauseCount = clauses.length;
     for (int i = 0; i < clauses.length; i++) {
 
@@ -110,12 +110,12 @@ public class BGMUtil {
         clauses[i] = "NULL";
         clauseCount--;
         i++;
-      } else if (isNUH(clauses[i]) == 0) {
+      } else if (isNUH(clauses[i],parser) == 0) {
         if (i == clauses.length - 1) {
           clauses[i - 1] += " " + clauses[i];
           clauses[i] = "NULL";
           clauseCount--;
-        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1]) == 0) {
+        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1],parser) == 0) {
           if (i == 0) {
             clauses[i] += " " + clauses[i + 1];
             clauses[i] += " " + clauses[i + 2];
@@ -131,7 +131,7 @@ public class BGMUtil {
             clauses[i + 1] = "NULL";
             clauseCount--;
           }
-        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1]) == 1) {
+        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1],parser) == 1) {
           clauses[i] += " " + clauses[i + 1];
           clauses[i + 1] = "NULL";
           clauseCount--;
@@ -160,7 +160,7 @@ public class BGMUtil {
         for (int k = 0; k < token.length; k++) {
           if (token[k].trim().matches(".*\\d+[a-zA-Z]+.*")) {
             String n = token[k].replaceAll("\\d?\\.?\\,?\\d+", "").trim();
-            if (inTable(BGI.units, n))
+            if (parser.isUnit(n))
               token[k] = token[k].replace(n, "") + " " + n;
           }
           clauses[j] += token[k] + " ";
@@ -806,7 +806,6 @@ public class BGMUtil {
 
   // check if a key is exits in a hashtable
   static boolean inTable(Hashtable t, String s) {
-
     return t.containsKey(s.replaceAll("\\s|\\p{Punct}", "").toUpperCase());
   }
 
@@ -819,7 +818,7 @@ public class BGMUtil {
    * @param s
    *          input string
    */
-  static int isNUH(String s) {
+  static int isNUH(String s, Parser parser) {
     s = s.replace(",", " ");
     
 
@@ -829,7 +828,7 @@ public class BGMUtil {
         for (int k = 0; k < token.length; k++) {
           if (token[k].trim().matches(".*\\d+[a-zA-Z]+.*")) {
             String n = token[k].replaceAll("\\d?\\.?\\,?\\d+", "").trim();
-            if (inTable(BGI.units, n))
+            if (parser.isUnit(n))
               token[k] = token[k].replace(n, "") + " " + n;
           }
           s += token[k] + " ";
@@ -840,9 +839,9 @@ public class BGMUtil {
     String[] tokens = s.split("\\s+");
     if (tokens.length < 3)
       return -1;
-    if (isNum(tokens[0]) && inTable(BGI.units, tokens[1])
-        && inTable(BGI.headings, tokens[2])) {
-      if (inTable(BGI.headings, tokens[tokens.length - 1]))
+    if (isNum(tokens[0]) && parser.isUnit(tokens[1])
+        && parser.isHeading(tokens[2])) {
+      if (parser.isHeading(tokens[tokens.length - 1]))
         return 0;
       else if (tokens[tokens.length - 1].equalsIgnoreCase("of"))
         return 0;

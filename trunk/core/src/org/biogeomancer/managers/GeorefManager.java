@@ -201,6 +201,7 @@ public class GeorefManager extends BGManager {
 			break;
 		case NEW_GEOREF:
 			System.out.println("***NEWGEOREFERENCE test***");
+			gp.setLanguage(arg2);
 			gm.newGeoreference(gp);
 			for(Rec r : gm.recset.recs){
 //				System.out.println(r.toString());
@@ -512,6 +513,8 @@ public class GeorefManager extends BGManager {
 
 
 	public boolean georeference(Rec rec, GeorefPreferences prefs) {
+		
+		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
 		if (rec == null)
 			return false;
 		// String s = new String("RecSet: ");
@@ -527,11 +530,11 @@ public class GeorefManager extends BGManager {
 				this.yaleLocInterp.doParsing(rec, "country", true);
 				this.yaleLocInterp.doParsing(rec, "stateprovince", true);
 				this.yaleLocInterp.doParsing(rec, "county", true);
-				this.yaleLocInterp.doParsing(rec, "locality");
-				this.yaleLocInterp.doParsing(rec, "verbatimlatitude");
-				this.yaleLocInterp.doParsing(rec, "verbatimlongitude");
-				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates");
-				this.yaleLocInterp.doParsing(rec, "verbatimelevation");
+				this.yaleLocInterp.doParsing(rec, "locality",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimlatitude",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimlongitude",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
 
 				// interpendtime = System.currentTimeMillis();
 				// s = s.concat(" (default) Yale interpreter elapsed time: "
