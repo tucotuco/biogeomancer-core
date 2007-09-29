@@ -582,28 +582,33 @@ public class Georef {
 		if (g.getEnvelope() == null)
 			return null;
 		GeometryFactory gf = new GeometryFactory(g.getPrecisionModel(), g.getSRID());
-		Geometry ng = (Geometry) g.clone();
-		Coordinate[] coordinates = ng.getCoordinates();
+		Coordinate[] bbcoords = g.getEnvelope().getCoordinates();
+		Coordinate[] coordinates = g.getCoordinates();
 		int nc = coordinates.length;
+		int bbnc = bbcoords.length;
 		double maxx = -180.0;
 		double minx = 180.0;
 		double miny = 90.0;
 		double maxy = -90.0;
-		for (int i = 0; i < nc; i++) {
-			if (coordinates[i].x > maxx)
-				maxx = coordinates[i].x;
-			if (coordinates[i].x < minx)
-				minx = coordinates[i].x;
-			if (coordinates[i].y > maxy)
-				maxy = coordinates[i].y;
-			if (coordinates[i].y < miny)
-				miny = coordinates[i].y;
+		for (int i = 0; i < bbnc; i++) {
+			if (bbcoords[i].x > maxx)
+				maxx = bbcoords[i].x;
+			if (bbcoords[i].x < minx)
+				minx = bbcoords[i].x;
+			if (bbcoords[i].y > maxy)
+				maxy = bbcoords[i].y;
+			if (bbcoords[i].y < miny)
+				miny = bbcoords[i].y;
 		}
 		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
-			Georef.shiftLongitude(ng, 360.0);
+			Georef.shiftLongitude(g, 360.0);
 		}
-//		Geometry.getCentroid() returns a weighted mean centroid, not a geographic one.
-//		Point p = ng.getCentroid();
+		// Geometry.getCentroid() returns a weighted mean centroid, not a geographic one.
+		// Point p = g.getCentroid();
+		// TODO: Geographic centers don't necessarily produce the smallest radius either.
+		// Instead, fin the two points in the geometry furthest from each other and set that 
+		// as the center. The radius is the distance from that point to either of the two
+		// from which it was determined.
 		Coordinate c = new Coordinate((minx+maxx)/2, (miny+maxy)/2);
 		Point p = gf.createPoint(c);
 		if (p == null) {
@@ -612,15 +617,15 @@ public class Georef {
 		Point newp = (Point) p.clone();
 		double mindist = 9E12;
 		double maxdist = 0;
-		if (newp.distance(ng) > 0) { // The centroid is not in the original
-			// geometry
+		if (newp.distance(g) > 0) { 
+			// The centroid is not in the original geometry
 			for (int i = 0; i < nc; i++) {
 				Point tp = gf.createPoint(coordinates[i]);
 				double ndist = tp.distance(p);
 				if (ndist < mindist) {
 					mindist = ndist;
-					newp = (Point) tp.clone(); // set newp to the Point in g nearest
-					// centroid of g.
+					newp = (Point) tp.clone(); 
+					// set newp to the Point in g nearest to the centroid of g.
 				}
 			}
 		}
@@ -641,7 +646,7 @@ public class Georef {
 			// The value should be from the footprint if not a point
 			// else it should be the best_guessuncert based on feature type
 			// else it should be halfway to the nearest neighbor > 1000m away.
-			// return null; // can't make a point-radius without a radius
+			return null; // can't make a point-radius without a radius
 		}
 		PointRadius pr = null;
 		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
