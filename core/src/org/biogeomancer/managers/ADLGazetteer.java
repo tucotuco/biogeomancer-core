@@ -746,8 +746,8 @@ public class ADLGazetteer extends BGManager {
 			} else if (argv[0].equalsIgnoreCase("protectedplaces")) {
 				con = protectedplaces;
 			}
-			adl.selectIFeatureFootprint(con, featureid);
-//			adl.setIFeatureFootprintRadii(con, featureid);
+//			adl.selectIFeatureFootprint(con, featureid);
+			adl.setIFeatureFootprintRadii(con, featureid);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		} finally {
@@ -1046,6 +1046,237 @@ public class ADLGazetteer extends BGManager {
 			}
 		}
 		return fis;
+	}
+
+	private PointRadius getPointRadiusFromGeometry(Geometry g){		
+		if (g == null)
+			return null;
+		if (g.getEnvelope() == null)
+			return null;
+		GeometryFactory gf = new GeometryFactory(g.getPrecisionModel(), g.getSRID());
+		Geometry ng = (Geometry) g.clone();
+		Coordinate[] coordinates = ng.getCoordinates();
+		int nc = coordinates.length;
+		double maxx = -180.0;
+		double minx = 180.0;
+		double miny = 90.0;
+		double maxy = -90.0;
+		for (int i = 0; i < nc; i++) {
+			if (coordinates[i].x > maxx)
+				maxx = coordinates[i].x;
+			if (coordinates[i].x < minx)
+				minx = coordinates[i].x;
+			if (coordinates[i].y > maxy)
+				maxy = coordinates[i].y;
+			if (coordinates[i].y < miny)
+				miny = coordinates[i].y;
+		}
+		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
+			Georef.shiftLongitude(ng, 360.0);
+		}
+		//		Geometry.getCentroid() returns a weighted mean centroid, not a geographic one.
+		//		Point p = ng.getCentroid();
+		Coordinate c = new Coordinate((minx+maxx)/2, (miny+maxy)/2);
+		Point p = gf.createPoint(c);
+		if (p == null) {
+			return null; // Can't make a point-radius if there is no centroid.
+		}
+		Point newp = (Point) p.clone();
+		double mindist = 9E12;
+		double maxdist = 0;
+		if (newp.distance(ng) > 0) { 
+			// The centroid is not in the original geometry
+			for (int i = 0; i < nc; i++) {
+				Point tp = gf.createPoint(coordinates[i]);
+				double ndist = tp.distance(p);
+				if (ndist < mindist) {
+					mindist = ndist;
+					// set newp to the Point in g nearest centroid of g.
+					newp = (Point) tp.clone(); 
+				}
+			}
+		}
+		PointRadius p1 = new PointRadius(newp.getX(), newp.getY(), 1);
+		for (int i = 0; i < nc; i++) {
+			Point np = gf.createPoint(coordinates[i]);
+			PointRadius p2 = new PointRadius(np.getX(), np.getY(), 1);
+			double longdist = p1.getLngDistanceInMetersToCoordinate(p2);
+			double latdist = p1.getLatDistanceInMetersToCoordinate(p2);
+			double distanceToNode = Math.sqrt(Math.pow(longdist, 2)
+					+ Math.pow(latdist, 2));
+			if (distanceToNode > maxdist)
+				maxdist = distanceToNode;
+		}
+		if (maxdist < 1) {
+			// TODO: Make sure the database has an i_feature_footprint.radius value
+			// >=1 for every feature
+			// The value should be from the footprint if not a point
+			// else it should be the best_guessuncert based on feature type
+			// else it should be halfway to the nearest neighbor > 1000m away.
+			// return null; // can't make a point-radius without a radius
+		}
+		PointRadius pr = null;
+		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
+			pr = new PointRadius(newp.getX() - 360, newp.getY(), maxdist);
+			if (pr.x == -180)
+				pr.x = 180;
+			if (pr.y == -0)
+				pr.y = 0;
+		} else {
+			pr = new PointRadius(newp.getX(), newp.getY(), maxdist);
+		}
+		return pr;
+	}
+
+	private void insertIFeatureFootprint(Connection gdb, Georef g, int featureId)
+	throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			/*
+			 * Arguments to insert a row into i_feature_footprint 
+			 * 1. feature_id 
+			 * 2. footprint (MULTIPOLYGON) 
+			 * 3. min x 
+			 * 4. min y 
+			 * 5. max y 
+			 * 6. max x 
+			 * 7. radius
+			 * 8. x center 
+			 * 9. y center 
+			 * 10. envelope (null) 
+			 * 11. geom (POLYGON)
+			 */
+			String fp = new String(makeFootprintEwkt(g));
+			String gp = new String(makeGeomEwkt(g));
+			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
+			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
+			//			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
+			//			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+
+			ps.setDouble(2, g.getMinLng());
+			ps.setDouble(3, g.getMinLat());
+			ps.setDouble(4, g.getMaxLat());
+			ps.setDouble(5, g.getMinLng());
+
+			ps.setDouble(6, g.pointRadius.extent);
+			ps.setDouble(7, g.pointRadius.x);
+			ps.setDouble(8, g.pointRadius.y);
+
+			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private void insertIClassification(Connection gdb, int featureId, int scheme_term_id) throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO i_classification VALUES ( ?, ?)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+			ps.setInt(2, scheme_term_id);
+			//			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private int insertGFeatureName(Connection gdb, String name, int featureId)
+	throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO g_feature_name VALUES ( ?, true, ?, null, null, null)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+			ps.setString(2, name.trim());
+			//			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+
+			// Generate a g_feature_name_id and return it
+			q = "SELECT nextval('g_feature_name_feature_name_id_seq')";
+			ResultSet rs = gdb.createStatement().executeQuery(q);
+			rs.next();
+			int featureNameId = rs.getInt("nextval");
+			return featureNameId;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private void insertGFeatureDisplayName(Connection gdb, String name, int featureId)
+	throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO g_feature_displayname VALUES ( ?, ?, ?)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, featureId);
+			ps.setString(2, name.trim());
+			ps.setString(3, "null");
+			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	private int insertGFeature(Connection gdb, String user, Georef g) throws SQLException {
+		PreparedStatement ps;
+		String q;
+		try {
+			q = "INSERT INTO g_feature VALUES (nextval('public.g_feature_feature_id_seq'), ?, ?, ?, ?, ?, ?)";
+			ps = gdb.prepareStatement(q);
+			ps.setInt(1, -1);
+			ps.setBoolean(2, false);
+			ps.setInt(3, -1);
+			ps.setDate(4, new Date(new java.util.Date().getTime()));
+			ps.setNull(5, Types.DATE);
+			ps.setString(6, user);
+			//			ps.setString(6, user == null ? "-1" : user.getNickName() + " ("
+			//			+ user.getEmail() + ")");
+			//			System.out.println(ps.toString());
+			ps.execute();
+			ps.close();
+
+			// Obtain a feature_id from generating a g_feature record
+			q = "SELECT last_value FROM g_feature_feature_id_seq";
+			ResultSet rs = gdb.createStatement().executeQuery(q);
+			rs.next();
+			int featureId = rs.getInt("last_value");
+			return featureId;
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+	/*
+	 * Need to insert details into: g_feature g_feature_name g_feature_displayname
+	 * i_feature_footprint
+	 * 
+	 */
+	public void insertFeature(Connection gdb, Georef g, String user, String featurename, int scheme_term_id) throws SQLException {
+		if(g==null) return;
+		int featureId = insertGFeature(gdb, user, g);
+		insertGFeatureDisplayName(gdb, featurename, featureId);
+		insertGFeatureName(gdb, featurename, featureId);
+		insertIFeatureFootprint(gdb, g, featureId);
+		insertIClassification(gdb, featureId, scheme_term_id);
 	}
 
 	public double lookupBestGuessUncertainty(Connection gdb, int featureID) {
@@ -1599,220 +1830,103 @@ public class ADLGazetteer extends BGManager {
 		return r;
 	}
 
-	public void shutdown() {
+	private void setIFeatureFootprintRadii(Connection gdb, int featureid) throws SQLException {
+		if(gdb==null) return;
+		GeometryFactory gf = new GeometryFactory();
+		WKTReader wktreader = new WKTReader(gf);	
+		Geometry geom = null;
+		String encodedG = null;
+		PreparedStatement ps = null;
+		String q = null;
+		PointRadius pr = null;
+		double radius;
 		try {
-			if (gadm != null)
-				gadm.close();
-			if (gn != null)
-				gn.close();
-			if (plss != null)
-				plss.close();
-			if (conustigerplaces != null)
-				conustigerplaces.close();
-			if (gnispopulatedplaces != null)
-				gnispopulatedplaces.close();
-			if (worldplaces != null)
-				worldplaces.close();
-			if (userplaces != null)
-				userplaces.close();
-			if (protectedplaces != null)
-				protectedplaces.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
-	/*
-	 * Need to insert details into: g_feature g_feature_name g_feature_displayname
-	 * i_feature_footprint
-	 * 
-	 */
-	public void insertFeature(Connection gdb, Georef g, String user, String featurename, int scheme_term_id) throws SQLException {
-		if(g==null) return;
-		int featureId = insertGFeature(gdb, user, g);
-		insertGFeatureDisplayName(gdb, featurename, featureId);
-		insertGFeatureName(gdb, featurename, featureId);
-		insertIFeatureFootprint(gdb, g, featureId);
-		insertIClassification(gdb, featureId, scheme_term_id);
-	}
+			if(featureid==-1){
+				// Use -1 to set radii for the whole database
+				int min_fid=0, max_fid=0;
+				Statement st = gdb.createStatement();
+				ResultSet rs = st.executeQuery("SELECT MAX(feature_id) FROM i_feature_footprint");
+				rs.next();
+				if (rs.getRow() == 0){
+					rs.close();
+					st.close();
+					return;
+				}
+				else{
+					max_fid = new Integer(rs.getString(1)).intValue();
+				}
+				if(max_fid<1){
+					rs.close();
+					st.close();
+					return;
+				}
+				st = gdb.createStatement();
+				rs = st.executeQuery("SELECT MIN(feature_id) FROM i_feature_footprint");
+				rs.next();
+				if (rs.getRow() == 0){
+					rs.close();
+					st.close();
+					return;
+				}
+				else{
+					min_fid = new Integer(rs.getString(1)).intValue();
+					rs.close();
+					st.close();
+				}
 
-	private int insertGFeature(Connection gdb, String user, Georef g) throws SQLException {
-		PreparedStatement ps;
-		String q;
-		try {
-			q = "INSERT INTO g_feature VALUES (nextval('public.g_feature_feature_id_seq'), ?, ?, ?, ?, ?, ?)";
-			ps = gdb.prepareStatement(q);
-			ps.setInt(1, -1);
-			ps.setBoolean(2, false);
-			ps.setInt(3, -1);
-			ps.setDate(4, new Date(new java.util.Date().getTime()));
-			ps.setNull(5, Types.DATE);
-			ps.setString(6, user);
-//			ps.setString(6, user == null ? "-1" : user.getNickName() + " ("
-//			+ user.getEmail() + ")");
-//			System.out.println(ps.toString());
-			ps.execute();
-			ps.close();
-
-			// Obtain a feature_id from generating a g_feature record
-			q = "SELECT last_value FROM g_feature_feature_id_seq";
-			ResultSet rs = gdb.createStatement().executeQuery(q);
-			rs.next();
-			int featureId = rs.getInt("last_value");
-			return featureId;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-
-	private void insertGFeatureDisplayName(Connection gdb, String name, int featureId)
-	throws SQLException {
-		PreparedStatement ps;
-		String q;
-		try {
-			q = "INSERT INTO g_feature_displayname VALUES ( ?, ?, ?)";
-			ps = gdb.prepareStatement(q);
-			ps.setInt(1, featureId);
-			ps.setString(2, name.trim());
-			ps.setString(3, "null");
-			System.out.println(ps.toString());
-			ps.execute();
-			ps.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-
-	private int insertGFeatureName(Connection gdb, String name, int featureId)
-	throws SQLException {
-		PreparedStatement ps;
-		String q;
-		try {
-			q = "INSERT INTO g_feature_name VALUES ( ?, true, ?, null, null, null)";
-			ps = gdb.prepareStatement(q);
-			ps.setInt(1, featureId);
-			ps.setString(2, name.trim());
-//			System.out.println(ps.toString());
-			ps.execute();
-			ps.close();
-
-			// Generate a g_feature_name_id and return it
-			q = "SELECT nextval('g_feature_name_feature_name_id_seq')";
-			ResultSet rs = gdb.createStatement().executeQuery(q);
-			rs.next();
-			int featureNameId = rs.getInt("nextval");
-			return featureNameId;
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-
-	private void insertIClassification(Connection gdb, int featureId, int scheme_term_id) throws SQLException {
-		PreparedStatement ps;
-		String q;
-		try {
-			q = "INSERT INTO i_classification VALUES ( ?, ?)";
-			ps = gdb.prepareStatement(q);
-			ps.setInt(1, featureId);
-			ps.setInt(2, scheme_term_id);
-//			System.out.println(ps.toString());
-			ps.execute();
-			ps.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-
-	private void insertIFeatureFootprint(Connection gdb, Georef g, int featureId)
-	throws SQLException {
-		PreparedStatement ps;
-		String q;
-		try {
-			/*
-			 * Arguments to insert a row into i_feature_footprint 
-			 * 1. feature_id 
-			 * 2. footprint (MULTIPOLYGON) 
-			 * 3. min x 
-			 * 4. min y 
-			 * 5. max y 
-			 * 6. max x 
-			 * 7. radius
-			 * 8. x center 
-			 * 9. y center 
-			 * 10. envelope (null) 
-			 * 11. geom (POLYGON)
-			 */
-			String fp = new String(makeFootprintEwkt(g));
-			String gp = new String(makeGeomEwkt(g));
-			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
-			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
-//			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
-//			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
-			ps = gdb.prepareStatement(q);
-			ps.setInt(1, featureId);
-
-			ps.setDouble(2, g.getMinLng());
-			ps.setDouble(3, g.getMinLat());
-			ps.setDouble(4, g.getMaxLat());
-			ps.setDouble(5, g.getMinLng());
-
-			ps.setDouble(6, g.pointRadius.extent);
-			ps.setDouble(7, g.pointRadius.x);
-			ps.setDouble(8, g.pointRadius.y);
-
-			System.out.println(ps.toString());
-			ps.execute();
-			ps.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		}
-	}
-
-	/*
-	 * Produces a MULTIPOLYGON of the uncertainty radius
-	 * 
-	 */
-	private String makeFootprintEwkt(Georef g) {
-		return "GeomFromEWKT('SRID=4326;MULTIPOLYGON(((" + makeRadiusEwkt(g)
-		+ ")))')";
-	}
-
-	/*
-	 * Produces a POLYGON for use in the Geom field
-	 * 
-	 */
-	private String makeGeomEwkt(Georef g) {
-		return "GeomFromEWKT('SRID=4326;POLYGON((" + makeRadiusEwkt(g) + "))')";
-	}
-
-	/*
-	 * Creates an uncertainty radius in Ewkt string format
-	 * 
-	 */
-	private String makeRadiusEwkt(Georef g) {
-		String result = "";
-		double x = g.pointRadius.x;
-		double y = g.pointRadius.y;
-		double e = g.pointRadius.extent/Math.cos(Math.PI/g.pointRadiusNodes); // extend the extent so that the geometric is a circumscription of the pointradius.
-		double ix=0, iy=0, a, cx, cy;
-		for(int i=0;i<g.pointRadiusNodes;i++){
-			a = i*2*Math.PI/g.pointRadiusNodes;
-			cx = x+e*Math.cos(a)/g.pointRadius.getLngMetersPerDegree();
-			cy = y+e*Math.sin(a)/g.pointRadius.getLatMetersPerDegree();
-			if(i==0){
-				ix=cx; iy=cy;
-				result = result + cx + " " + cy;
-			} else {
-				result = result + ", " + cx + " " + cy;
+				//				for(int i=min_fid;i<=max_fid;i++){
+				for(int i=0;i<=max_fid;i++){
+					encodedG = lookupConvexHull(gdb, i);
+					if(encodedG!=null){
+						try {
+							geom = wktreader.read(encodedG);
+						} catch (ParseException e) {
+							e.printStackTrace();
+						}
+						if(geom!=null){
+							pr = getPointRadiusFromGeometry(geom);
+							if(pr!=null){
+								radius=pr.extent;
+								q = new String("UPDATE i_feature_footprint SET radius="
+										+radius+", geom_x="+pr.x+", geom_y="
+										+pr.y+" WHERE feature_id="+i);
+								ps = gdb.prepareStatement(q);
+								System.out.println(ps.toString());
+								ps.execute();
+							}
+							ps.close();
+						}
+					}
+				}
 			}
+			else {
+				// set the radius for the selected feature_id
+				encodedG = lookupConvexHull(gdb, featureid);
+				try {
+					geom = wktreader.read(encodedG);
+				} catch (ParseException e) {
+					e.printStackTrace();
+				}
+				if(geom!=null){
+					pr = getPointRadiusFromGeometry(geom);
+					if(pr!=null){
+						radius=pr.extent;
+						q = new String("UPDATE i_feature_footprint SET radius="
+								+radius+", geom_x="+pr.x+", geom_y="
+								+pr.y+" WHERE feature_id="+featureid);
+						ps = gdb.prepareStatement(q);
+						System.out.println(ps.toString());
+						ps.execute();
+						ps.close();
+					}
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			throw e;
 		}
-		result = result + ", " + ix + " " + iy;
-		return result;
 	}
+
 	public void removeUserFeature(int featureid) throws SQLException {
 		PreparedStatement ps;
 		String q = null;
@@ -1892,177 +2006,48 @@ public class ADLGazetteer extends BGManager {
 		}
 	}
 
-	private void setIFeatureFootprintRadii(Connection gdb, int featureid) throws SQLException {
-		if(gdb==null) return;
-		GeometryFactory gf = new GeometryFactory();
-		WKTReader wktreader = new WKTReader(gf);	
-		Geometry geom = null;
-		String encodedG = null;
-		PreparedStatement ps = null;
-		String q = null;
-		PointRadius pr = null;
-		double radius;
-		try {
-			if(featureid==-1){
-				// Use -1 to set radii for the whole database
-				int min_fid=0, max_fid=0;
-				Statement st = gdb.createStatement();
-				ResultSet rs = st.executeQuery("SELECT MAX(feature_id) FROM i_feature_footprint");
-				rs.next();
-				if (rs.getRow() == 0){
-					rs.close();
-					st.close();
-					return;
-				}
-				else{
-					max_fid = new Integer(rs.getString(1)).intValue();
-				}
-				if(max_fid<1){
-					rs.close();
-					st.close();
-					return;
-				}
-				st = gdb.createStatement();
-				rs = st.executeQuery("SELECT MIN(feature_id) FROM i_feature_footprint");
-				rs.next();
-				if (rs.getRow() == 0){
-					rs.close();
-					st.close();
-					return;
-				}
-				else{
-					min_fid = new Integer(rs.getString(1)).intValue();
-					rs.close();
-					st.close();
-				}
+	/*
+	 * Creates an uncertainty radius in Ewkt string format
+	 * 
+	 */
+	private String makeRadiusEwkt(Georef g) {
+		String result = "";
+		double x = g.pointRadius.x;
+		double y = g.pointRadius.y;
+		double e = g.pointRadius.extent/Math.cos(Math.PI/g.pointRadiusNodes); // extend the extent so that the geometric is a circumscription of the pointradius.
+		double ix=0, iy=0, a, cx, cy;
+		for(int i=0;i<g.pointRadiusNodes;i++){
+			a = i*2*Math.PI/g.pointRadiusNodes;
+			cx = x+e*Math.cos(a)/g.pointRadius.getLngMetersPerDegree();
+			cy = y+e*Math.sin(a)/g.pointRadius.getLatMetersPerDegree();
+			if(i==0){
+				ix=cx; iy=cy;
+				result = result + cx + " " + cy;
+			} else {
+				result = result + ", " + cx + " " + cy;
+			}
+		}
+		result = result + ", " + ix + " " + iy;
+		return result;
+	}
 
-//				for(int i=min_fid;i<=max_fid;i++){
-					for(int i=832;i<=max_fid;i++){
-					encodedG = lookupFootprint(gdb, i);
-					if(encodedG!=null){
-						try {
-							geom = wktreader.read(encodedG);
-						} catch (ParseException e) {
-							e.printStackTrace();
-						}
-						if(geom!=null){
-							pr = getPointRadiusFromGeometry(geom);
-							if(pr!=null){
-								radius=pr.extent;
-								q = new String("UPDATE i_feature_footprint SET radius="+radius+" WHERE feature_id="+i);
-								ps = gdb.prepareStatement(q);
-								System.out.println(ps.toString());
-								ps.execute();
-							}
-							ps.close();
-						}
-					}
-				}
-			}
-			else {
-				// set the radius for the selected feature_id
-				encodedG = lookupFootprint(gdb, featureid);
-				try {
-					geom = wktreader.read(encodedG);
-				} catch (ParseException e) {
-					e.printStackTrace();
-				}
-				if(geom!=null){
-					pr = getPointRadiusFromGeometry(geom);
-					if(pr!=null){
-						radius=pr.extent;
-						q = new String("UPDATE i_feature_footprint SET radius="+radius+"WHERE feature_id="+featureid);
-						ps = gdb.prepareStatement(q);
-						System.out.println(ps.toString());
-						ps.execute();
-						ps.close();
-					}
-				}
-			}
-		} catch (SQLException e) {
-			e.printStackTrace();
-			throw e;
-		}
+	/*
+	 * Produces a POLYGON for use in the Geom field
+	 * 
+	 */
+	private String makeGeomEwkt(Georef g) {
+		return "GeomFromEWKT('SRID=4326;POLYGON((" + makeRadiusEwkt(g) + "))')";
 	}
-	private PointRadius getPointRadiusFromGeometry(Geometry g){		
-		if (g == null)
-			return null;
-		if (g.getEnvelope() == null)
-			return null;
-		GeometryFactory gf = new GeometryFactory(g.getPrecisionModel(), g.getSRID());
-		Geometry ng = (Geometry) g.clone();
-		Coordinate[] coordinates = ng.getCoordinates();
-		int nc = coordinates.length;
-		double maxx = -180.0;
-		double minx = 180.0;
-		double miny = 90.0;
-		double maxy = -90.0;
-		for (int i = 0; i < nc; i++) {
-			if (coordinates[i].x > maxx)
-				maxx = coordinates[i].x;
-			if (coordinates[i].x < minx)
-				minx = coordinates[i].x;
-			if (coordinates[i].y > maxy)
-				maxy = coordinates[i].y;
-			if (coordinates[i].y < miny)
-				miny = coordinates[i].y;
-		}
-		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
-			Georef.shiftLongitude(ng, 360.0);
-		}
-//		Geometry.getCentroid() returns a weighted mean centroid, not a geographic one.
-//		Point p = ng.getCentroid();
-		Coordinate c = new Coordinate((minx+maxx)/2, (miny+maxy)/2);
-		Point p = gf.createPoint(c);
-		if (p == null) {
-			return null; // Can't make a point-radius if there is no centroid.
-		}
-		Point newp = (Point) p.clone();
-		double mindist = 9E12;
-		double maxdist = 0;
-		if (newp.distance(ng) > 0) { 
-			// The centroid is not in the original geometry
-			for (int i = 0; i < nc; i++) {
-				Point tp = gf.createPoint(coordinates[i]);
-				double ndist = tp.distance(p);
-				if (ndist < mindist) {
-					mindist = ndist;
-					// set newp to the Point in g nearest centroid of g.
-					newp = (Point) tp.clone(); 
-				}
-			}
-		}
-		PointRadius p1 = new PointRadius(newp.getX(), newp.getY(), 1);
-		for (int i = 0; i < nc; i++) {
-			Point np = gf.createPoint(coordinates[i]);
-			PointRadius p2 = new PointRadius(np.getX(), np.getY(), 1);
-			double longdist = p1.getLngDistanceInMetersToCoordinate(p2);
-			double latdist = p1.getLatDistanceInMetersToCoordinate(p2);
-			double distanceToNode = Math.sqrt(Math.pow(longdist, 2)
-					+ Math.pow(latdist, 2));
-			if (distanceToNode > maxdist)
-				maxdist = distanceToNode;
-		}
-		if (maxdist < 1) {
-			// TODO: Make sure the database has an i_feature_footprint.radius value
-			// >=1 for every feature
-			// The value should be from the footprint if not a point
-			// else it should be the best_guessuncert based on feature type
-			// else it should be halfway to the nearest neighbor > 1000m away.
-			// return null; // can't make a point-radius without a radius
-		}
-		PointRadius pr = null;
-		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
-			pr = new PointRadius(newp.getX() - 360, newp.getY(), maxdist);
-			if (pr.x == -180)
-				pr.x = 180;
-			if (pr.y == -0)
-				pr.y = 0;
-		} else {
-			pr = new PointRadius(newp.getX(), newp.getY(), maxdist);
-		}
-		return pr;
+
+	/*
+	 * Produces a MULTIPOLYGON of the uncertainty radius
+	 * 
+	 */
+	private String makeFootprintEwkt(Georef g) {
+		return "GeomFromEWKT('SRID=4326;MULTIPOLYGON(((" + makeRadiusEwkt(g)
+		+ ")))')";
 	}
+
 	private void selectIFeatureFootprint(Connection gdb, int featureid) throws SQLException {
 		if(gdb==null) return;
 		GeometryFactory gf = new GeometryFactory();
@@ -2075,7 +2060,7 @@ public class ADLGazetteer extends BGManager {
 		FeatureInfo fi=null;
 		double radius;
 		fi = iFeatureName.selectFeatureById(gdb, featureid);
-//		lookupQuickAttributes(gdb,fi);
+		//		lookupQuickAttributes(gdb,fi);
 		encodedG = lookupFootprint(gdb, featureid);
 		try {
 			geom = wktreader.read(encodedG);
@@ -2085,8 +2070,31 @@ public class ADLGazetteer extends BGManager {
 		if(geom!=null){
 			pr = getPointRadiusFromGeometry(geom);
 			if(pr!=null){
-					System.out.println(pr.toString()+"\n"+fi.toString());
+				System.out.println(pr.toString()+"\n"+fi.toString());
 			}
+		}
+	}
+
+	public void shutdown() {
+		try {
+			if (gadm != null)
+				gadm.close();
+			if (gn != null)
+				gn.close();
+			if (plss != null)
+				plss.close();
+			if (conustigerplaces != null)
+				conustigerplaces.close();
+			if (gnispopulatedplaces != null)
+				gnispopulatedplaces.close();
+			if (worldplaces != null)
+				worldplaces.close();
+			if (userplaces != null)
+				userplaces.close();
+			if (protectedplaces != null)
+				protectedplaces.close();
+		} catch (SQLException e) {
+			e.printStackTrace();
 		}
 	}
 }

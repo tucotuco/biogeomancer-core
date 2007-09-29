@@ -315,25 +315,14 @@ public class Georef {
 					double pointradiusarea = Math.PI * Math.pow(radiusinmeters, 2);
 					this.geometrySpatialFit = geometryarea / pointradiusarea;
 					// System.out.println("Radius: "+radiusinmeters+" Area:
-						// "+pointradiusarea+" G Area: "+geometryarea);
+					// "+pointradiusarea+" G Area: "+geometryarea);
 				}
 			}
 		}
 		setState();
 	}
 
-	public double getDistanceToGeorefCentroid(Georef g){
-		double d = 0;
-		d=this.pointRadius.getDistanceInMetersToCoordinate(g.pointRadius);
-		return d;
-	}
-
-	public String getSummary(String prefix){
-		String s = new String("\n"+prefix+"Uninterpreted: "+uLocality+"\n"+prefix+"Interpreted: "+iLocality);
-		s=s.concat("\n"+prefix+"Latitude: "+pointRadius.y+" Longitude: "+pointRadius.x+" Uncertainty: "+pointRadius.extent);
-//		s=s.concat("\n"+prefix+"Geometry: "+geometry.toText());
-		return s;
-	}
+	// the construction of this georef
 
 	public void addFeatureInfo(FeatureInfo f) {
 		FeatureInfo newfeature = new FeatureInfo(f);
@@ -344,14 +333,28 @@ public class Georef {
 		featureIdLoctypes.put(featureId, locType);
 	}
 
-	public String getFeatureLoctype(int featureID){
-		return featureIdLoctypes.get(featureID);
-	}
-
 	public boolean equals(Georef g) {
 		// May want to get more rigorous than calling georefs equal if their
 		// PointRadiuses are equal.
 		return this.pointRadius.equals(g.pointRadius);
+	}
+
+	public double getCentroidLat(){
+		return (getMinLat()+getMaxLat())/2;
+	}
+
+	public double getCentroidLng(){
+		return (getMinLng()+getMaxLng())/2;
+	}
+
+	public double getDistanceToGeorefCentroid(Georef g){
+		double d = 0;
+		d=this.pointRadius.getDistanceInMetersToCoordinate(g.pointRadius);
+		return d;
+	}
+
+	public String getFeatureLoctype(int featureID){
+		return featureIdLoctypes.get(featureID);
 	}
 
 	public double getGeometryArea(Geometry g) {
@@ -373,6 +376,38 @@ public class Georef {
 			return ng.getArea();
 		}
 		return g.getArea();
+	}
+
+	public double getMaxLng(){
+		double maxx = -180;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(maxx<geometry.getCoordinates()[i].x) maxx=geometry.getCoordinates()[i].x;
+		}
+		return maxx;
+	}
+
+	public double getMinLng(){
+		double minx = 180;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(minx>geometry.getCoordinates()[i].x) minx=geometry.getCoordinates()[i].x;
+		}
+		return minx;
+	}
+
+	public double getMaxLat(){
+		double maxy = -90;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(maxy<geometry.getCoordinates()[i].y) maxy=geometry.getCoordinates()[i].y;
+		}
+		return maxy;
+	}
+
+	public double getMinLat(){
+		double miny = 90;
+		for(int i=0;i<geometry.getNumPoints();i++){
+			if(miny>geometry.getCoordinates()[i].y) miny=geometry.getCoordinates()[i].y;
+		}
+		return miny;
 	}
 
 	public org.biogeomancer.utils.Coordinate getOverlappingCentroid(Geometry g) {
@@ -426,6 +461,13 @@ public class Georef {
 		return c;
 	}
 
+	public String getSummary(String prefix){
+		String s = new String("\n"+prefix+"Uninterpreted: "+uLocality+"\n"+prefix+"Interpreted: "+iLocality);
+		s=s.concat("\n"+prefix+"Latitude: "+pointRadius.y+" Longitude: "+pointRadius.x+" Uncertainty: "+pointRadius.extent);
+		//		s=s.concat("\n"+prefix+"Geometry: "+geometry.toText());
+		return s;
+	}
+
 	public Georef intersect(Georef g) { // TODO: Figure out how confidence is
 		// affected by missing intersections
 		// TODO: look at effect of PrecisionModels
@@ -466,7 +508,7 @@ public class Georef {
 			if(g2type.equalsIgnoreCase("GeometryCollection")){
 				gsecond = g2.convexHull();
 			} else gsecond = g2;
-			
+
 			intersection=gfirst.intersection(gsecond);
 		} catch (Exception e) {
 			intersection = g1.convexHull().intersection(g2.convexHull());
@@ -511,17 +553,8 @@ public class Georef {
 		double x = this.pointRadius.x;
 		double y = this.pointRadius.y;
 		double e = this.pointRadius.extent / Math.cos(Math.PI / nodecount); // extend
-		// the
-		// extent
-		// so
-		// that
-		// the
-		// geometric
-		// is a
-		// circumscription
-		// of
-		// the
-		// pointradius.
+		// the extent so that the geometry is a circumscription of
+		// the point radius.
 		Coordinate[] coordinates = new Coordinate[nodecount + 1];
 		coordinates[nodecount] = new Coordinate(x + e
 				/ pointRadius.getLngMetersPerDegree(), y);
@@ -569,7 +602,7 @@ public class Georef {
 		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
 			Georef.shiftLongitude(ng, 360.0);
 		}
-// 		Geometry.getCentroid() returns a weighted mean centroid, not a geographic one.
+//		Geometry.getCentroid() returns a weighted mean centroid, not a geographic one.
 //		Point p = ng.getCentroid();
 		Coordinate c = new Coordinate((minx+maxx)/2, (miny+maxy)/2);
 		Point p = gf.createPoint(c);
@@ -784,39 +817,5 @@ public class Georef {
 		s = s.concat("</GEOREF>\n");
 
 		return s;
-	}
-	public double getMinLat(){
-		double miny = 90;
-		for(int i=0;i<geometry.getNumPoints();i++){
-			if(miny>geometry.getCoordinates()[i].y) miny=geometry.getCoordinates()[i].y;
-		}
-		return miny;
-	}
-	public double getMaxLat(){
-		double maxy = -90;
-		for(int i=0;i<geometry.getNumPoints();i++){
-			if(maxy<geometry.getCoordinates()[i].y) maxy=geometry.getCoordinates()[i].y;
-		}
-		return maxy;
-	}
-	public double getMinLng(){
-		double minx = 180;
-		for(int i=0;i<geometry.getNumPoints();i++){
-			if(minx>geometry.getCoordinates()[i].x) minx=geometry.getCoordinates()[i].x;
-		}
-		return minx;
-	}
-	public double getMaxLng(){
-		double maxx = -180;
-		for(int i=0;i<geometry.getNumPoints();i++){
-			if(maxx<geometry.getCoordinates()[i].x) maxx=geometry.getCoordinates()[i].x;
-		}
-		return maxx;
-	}
-	public double getCentroidLat(){
-		return (getMinLat()+getMaxLat())/2;
-	}
-	public double getCentroidLng(){
-		return (getMinLng()+getMaxLng())/2;
 	}
 }

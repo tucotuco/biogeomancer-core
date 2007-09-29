@@ -26,11 +26,15 @@ import org.apache.log4j.Logger;
 import org.biogeomancer.records.*;
 import org.biogeomancer.records.RecSet.RecSetException;
 import org.biogeomancer.utils.PointRadius;
+import org.biogeomancer.utils.SupportedLanguages;
 import org.biogeomancer.managers.ADLGazetteer;
 import org.biogeomancer.managers.DatumManager.Datum;
 
+import com.vividsolutions.jts.geom.Coordinate;
 import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
+import com.vividsolutions.jts.geom.LinearRing;
+import com.vividsolutions.jts.geom.Polygon;
 import com.vividsolutions.jts.io.ParseException;
 import com.vividsolutions.jts.io.WKTReader;
 import edu.colorado.sde.*;
@@ -66,38 +70,6 @@ public class SpatialDescriptionManager extends BGManager {
 	public SpatialDescriptionManager() {
 		startup();
 	}
-	public void startup() {
-		try {
-			gaz = ADLGazetteer.getInstance();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		sm = new ShapeManager();
-	}
-	public void shutdown(){
-		gaz.shutdown();
-	}
-
-	public void addUserFeature(Rec r, String user, int scheme_term_id){
-		if(r.georefs.size()!=1){
-			// There can be only one Georef for a user Feature 
-			// to be loaded into the gazetteer. If there is more than 
-			// one, something isn't a it should be.
-			return;
-		}
-		Clause featureclause = null;
-		for( Clause c : r.clauses){
-			if(c.locType.equalsIgnoreCase("f")){
-				featureclause = c;
-			}
-		}
-		if(featureclause==null) return;
-		try {
-			gaz.insertFeature(userplaces, r.georefs.get(0), user, featureclause.uLocality, scheme_term_id);
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-	}
 	public void removeUserFeature(int featureid){
 		try {
 			gaz.removeUserFeature(featureid);
@@ -105,6 +77,7 @@ public class SpatialDescriptionManager extends BGManager {
 			e.printStackTrace();
 		}
 	}
+
 	public void doSpatialDescription(Rec rec, int featureid){
 		String version = new String("doSpatialDescription(Rec, int):20070513");
 		String process = new String("SpatialDescriptionManager)");
@@ -135,6 +108,7 @@ public class SpatialDescriptionManager extends BGManager {
 			rec.georefs.add(g);
 		}
 	}
+
 	public void doSpatialDescription(Rec r){
 		String version = new String("doSpatialDescription(Rec):20070916");
 		String process = new String("SpatialDescriptionManager");
@@ -405,49 +379,49 @@ public class SpatialDescriptionManager extends BGManager {
 			if(gdb!=null){ // do other lookup types if the database is defined
 				for(LocSpec locspec:clause.locspecs) { 
 					/*
-					if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-						ProcessStep ps = new ProcessStep(process, version, "");
-						locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename, "contains-all-words", null);
-						gaz.addFeatures(userplaces, locspec.featureinfos, locspec.featurename, "contains-all-words");
 						if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-							// TODO: other kinds of lookups
-							ps.method=ps.method.concat("Found no features matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type contains-all-words.");
-						} else{
-							ps.method=ps.method.concat("Found "+locspec.featureinfos.size()+" features matching "+locspec.featurename+" in "+dbname+" using query type contains-all-words.");
+							ProcessStep ps = new ProcessStep(process, version, "");
+							locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename, "contains-all-words", null);
+							gaz.addFeatures(userplaces, locspec.featureinfos, locspec.featurename, "contains-all-words");
+							if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
+								// TODO: other kinds of lookups
+								ps.method=ps.method.concat("Found no features matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type contains-all-words.");
+							} else{
+								ps.method=ps.method.concat("Found "+locspec.featureinfos.size()+" features matching "+locspec.featurename+" in "+dbname+" using query type contains-all-words.");
+							}
+							ps.endtimestamp=System.currentTimeMillis();
+							r.metadata.addStep(ps);
 						}
-						ps.endtimestamp=System.currentTimeMillis();
-						r.metadata.addStep(ps);
-					}
-					// contains-all-words didn't work, try other method,
-/*
-					if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-						ProcessStep ps = new ProcessStep(process, version, "");
-						locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename, "contains-any-words", null);
-						gaz.addFeatures(userplaces, locspec.featureinfos, locspec.featurename, "contains-any-words");
+						// contains-all-words didn't work, try other method,
+	/*
 						if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-							// TODO: other kinds of lookups
-							ps.method=ps.method.concat("Found no features matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type contains-any-words.");
-						} else{
-							ps.method=ps.method.concat("Found "+locspec.featureinfos.size()+" features matching "+locspec.featurename+" in "+dbname+" using query type contains-any-words.");
+							ProcessStep ps = new ProcessStep(process, version, "");
+							locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename, "contains-any-words", null);
+							gaz.addFeatures(userplaces, locspec.featureinfos, locspec.featurename, "contains-any-words");
+							if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
+								// TODO: other kinds of lookups
+								ps.method=ps.method.concat("Found no features matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type contains-any-words.");
+							} else{
+								ps.method=ps.method.concat("Found "+locspec.featureinfos.size()+" features matching "+locspec.featurename+" in "+dbname+" using query type contains-any-words.");
+							}
+							ps.endtimestamp=System.currentTimeMillis();
+							r.metadata.addStep(ps);
 						}
-						ps.endtimestamp=System.currentTimeMillis();
-						r.metadata.addStep(ps);
-					}
-/*					
-					// contains-any-words didn't work, try other method,
-					if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-						ProcessStep ps = new ProcessStep(process, version, "");
-						locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename, "contains-phrase", null);
-						gaz.addFeatures(userplaces, locspec.featureinfos, locspec.featurename, "contains-phrase");
+	/*					
+						// contains-any-words didn't work, try other method,
 						if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-							// TODO: other kinds of lookups
-							ps.method=ps.method.concat("Found no features matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type contains-phrase.");
-						} else{
-							ps.method=ps.method.concat("Found "+locspec.featureinfos.size()+" features matching "+locspec.featurename+" in "+dbname+" using query type contains-phrase.");
+							ProcessStep ps = new ProcessStep(process, version, "");
+							locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename, "contains-phrase", null);
+							gaz.addFeatures(userplaces, locspec.featureinfos, locspec.featurename, "contains-phrase");
+							if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
+								// TODO: other kinds of lookups
+								ps.method=ps.method.concat("Found no features matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type contains-phrase.");
+							} else{
+								ps.method=ps.method.concat("Found "+locspec.featureinfos.size()+" features matching "+locspec.featurename+" in "+dbname+" using query type contains-phrase.");
+							}
+							ps.endtimestamp=System.currentTimeMillis();
+							r.metadata.addStep(ps);
 						}
-						ps.endtimestamp=System.currentTimeMillis();
-						r.metadata.addStep(ps);
-					}
 					 */
 					// contains phrase didn't work, try other method,
 					// such as a pattern query replacing vowels with wildcard characters
@@ -516,7 +490,7 @@ public class SpatialDescriptionManager extends BGManager {
 		 * Now that georefs have been generated for the clauses, remove any duplicate georefs within a given clause. 
 		 * TODO: Determined that this is probably not necessary.
 		 */
-		
+
 		for( Clause clause : r.clauses) { // do feature lookups for all locspecs for every clause
 			for(int i=0;i<clause.georefs.size();i++){
 				for(int j=0;j<clause.georefs.size();j++){
@@ -529,7 +503,7 @@ public class SpatialDescriptionManager extends BGManager {
 				}
 			}
 		}
-		
+
 		/*
 		 * Point-radius creation has been attempted for all Clauses in the Rec. 
 		 * Now do a spatial intersection on all combinations of georefs across clauses. 
@@ -541,7 +515,7 @@ public class SpatialDescriptionManager extends BGManager {
 			return;
 		}
 		int clausecount=r.clauses.size(); // Total number of Clauses in the Rec.
-//		int viableclausecount = r.getGeorefedClauseCount(); // Number of Clauses that have at least one viable georef.
+		//		int viableclausecount = r.getGeorefedClauseCount(); // Number of Clauses that have at least one viable georef.
 		int combos=0; // Total number of combinations of viable Clauses.
 		int[] gcounts=null; // Number of Georefs for the Clause at each index
 		for(int n=0;n<clausecount;n++) {
@@ -632,8 +606,9 @@ public class SpatialDescriptionManager extends BGManager {
 					// the geometry for the feature if the loctype is one of the
 					// feature-only loctypes.
 					foundFirstValid=true;
-					if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM") ||
-							loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
+					if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM")
+							|| loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")
+							|| loctype.equalsIgnoreCase("TRSS")){
 						// Use the actual shape for the intersection instead of the point-radius.
 						featureid = g1.featureinfos.get(0).featureID;
 
@@ -651,7 +626,7 @@ public class SpatialDescriptionManager extends BGManager {
 						else if(loctype.equalsIgnoreCase("P")){
 							encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
 						}
-						else if(loctype.equalsIgnoreCase("TRS")){
+						else if(loctype.equalsIgnoreCase("TRS") || loctype.equalsIgnoreCase("TRSS")){
 							encodedG = new String(gaz.lookupFootprint(plss, featureid));
 						}
 						try {
@@ -661,6 +636,13 @@ public class SpatialDescriptionManager extends BGManager {
 								intersection = g1;
 							} else {
 								// feature has a footprint in the gazetteer
+								if(loctype.equalsIgnoreCase("TRS")){
+									int sec = r.clauses.get(i).locspecs.get(0).finishTRSSection();
+									if(sec>0) {
+										g1.iLocality=g1.iLocality.concat(" Section "+sec);
+										geom = getTRSectionGeometry(geom,sec);
+									}
+								}
 								intersection = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
 								intersection.iLocality=new String(g1.iLocality);
 							}
@@ -680,8 +662,9 @@ public class SpatialDescriptionManager extends BGManager {
 					if(distancebetweencenters<=sumofradii){
 						// there is a non-point intersection 
 						// For any of the feature-only loctypes
-						if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM") ||
-								loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")){
+						if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM")
+								|| loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")
+								|| loctype.equalsIgnoreCase("TRSS")){
 							// Use the actual shape for the intersection instead of the point-radius.
 							featureid = g1.featureinfos.get(0).featureID;
 
@@ -710,6 +693,13 @@ public class SpatialDescriptionManager extends BGManager {
 									newGeoref = g1;
 								} else {
 									// feature has a footprint in the gazetteer
+									if(loctype.equalsIgnoreCase("TRS")){
+										int sec = r.clauses.get(i).locspecs.get(0).finishTRSSection();
+										if(sec>0) {
+											g1.iLocality=g1.iLocality.concat(" Section "+sec);
+											geom = getTRSectionGeometry(geom,sec);
+										}
+									}
 									newGeoref = new Georef(geom, DatumManager.getInstance().getDatum("WGS84"));
 									newGeoref.iLocality=new String(g1.iLocality);
 								}							
@@ -722,19 +712,19 @@ public class SpatialDescriptionManager extends BGManager {
 							intersection=intersection.intersect(g1);
 						}
 						if(intersection!=null && !intersection.geometry.isEmpty()){
-						// copy the featureinfos used in the intersecting georef
-						// to the georef for the resulting intersection
-						for(FeatureInfo f: g1.featureinfos){
-							try{
-								if(intersection!=null){
-									intersection.addFeatureInfo(f);
+							// copy the featureinfos used in the intersecting georef
+							// to the georef for the resulting intersection
+							for(FeatureInfo f: g1.featureinfos){
+								try{
+									if(intersection!=null){
+										intersection.addFeatureInfo(f);
+									}
+								} catch (Exception e) {
+									System.out.println("Problem with addFeatureInfo to intersection for the following feature:\n"+f.toXML(true));
+									System.out.println("from the following intersection:\n"+intersection.toXML(true));
+									e.printStackTrace();
 								}
-							} catch (Exception e) {
-								System.out.println("Problem with addFeatureInfo to intersection for the following feature:\n"+f.toXML(true));
-								System.out.println("from the following intersection:\n"+intersection.toXML(true));
-								e.printStackTrace();
 							}
-						}
 						}
 						else{
 							// there is no intersection between g1 and the previously calculated intersection based on geometry
@@ -764,5 +754,90 @@ public class SpatialDescriptionManager extends BGManager {
 				}
 			}
 		}
+	}
+
+	public Geometry getTRSectionGeometry(Geometry trgeom, int section){
+		if(section<1 || section >36) return null;
+		Coordinate[] coordinates = trgeom.getEnvelope().getCoordinates();
+		int nc = coordinates.length;
+		double maxx = -180.0;
+		double minx = 180.0;
+		double miny = 90.0;
+		double maxy = -90.0;
+		for (int k = 0; k < nc; k++) {
+			if (coordinates[k].x > maxx)
+				maxx = coordinates[k].x;
+			if (coordinates[k].x < minx)
+				minx = coordinates[k].x;
+			if (coordinates[k].y > maxy)
+				maxy = coordinates[k].y;
+			if (coordinates[k].y < miny)
+				miny = coordinates[k].y;
+		}
+		// Now have the bounding coordinates for the Township
+		// Find the point-radius for the section. Assume well-
+		// behaved townships - sections of equal size, evenly
+		// distributed across the township
+		double xincrement = (maxx-minx)/6;
+		double yincrement = (maxy-miny)/6;
+		long row = Math.round(Math.floor((section-1)/6));
+		long evenrow = row%2;
+		long column = -1;
+		if(evenrow==0){
+			column = (section-1)%6;
+		} else{
+			column = 5-(section-1)%6;
+		}
+		double rx=maxx-xincrement*column;
+		double uy=maxy-yincrement*row;
+		double lx=maxx-xincrement*(column+1);
+		double ly=maxy-yincrement*(row+1);
+		Coordinate urcorner = new Coordinate(rx,uy);
+		Coordinate lrcorner = new Coordinate(rx,ly);
+		Coordinate llcorner = new Coordinate(lx,ly);
+		Coordinate ulcorner = new Coordinate(lx,uy);
+		Coordinate[] sectioncoords = new Coordinate[5];
+		sectioncoords[0]=urcorner;
+		sectioncoords[1]=lrcorner;
+		sectioncoords[2]=llcorner;
+		sectioncoords[3]=ulcorner;
+		sectioncoords[4]=urcorner;
+		LinearRing lr = new GeometryFactory().createLinearRing(sectioncoords);
+		Polygon p = new GeometryFactory().createPolygon(lr, null);
+		return p;
+	}
+
+	public void addUserFeature(Rec r, String user, int scheme_term_id){
+		if(r.georefs.size()!=1){
+			// There can be only one Georef for a user Feature 
+			// to be loaded into the gazetteer. If there is more than 
+			// one, something isn't a it should be.
+			return;
+		}
+		Clause featureclause = null;
+		for( Clause c : r.clauses){
+			if(c.locType.equalsIgnoreCase("f")){
+				featureclause = c;
+			}
+		}
+		if(featureclause==null) return;
+		try {
+			gaz.insertFeature(userplaces, r.georefs.get(0), user, featureclause.uLocality, scheme_term_id);
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void shutdown(){
+		gaz.shutdown();
+	}
+
+	public void startup() {
+		try {
+			gaz = ADLGazetteer.getInstance();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		sm = new ShapeManager();
 	}
 }
