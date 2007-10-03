@@ -208,7 +208,7 @@ public class Parser {
   final public String[] preprocess(String queryString) {
     String qs = queryString.trim().replaceAll("\\sal\\s|^Al\\s", " ").replace(
         "&", " " + keyword_AND + " ").trim().replaceAll("\\[", 
-        		"").trim().replaceAll("\\]","").trim();
+        		"").trim().replaceAll("\\]","").trim().replaceAll(" at ", ", ");
     String s = "";
     
     //Make sure all numbers and letters are separated from eachother
