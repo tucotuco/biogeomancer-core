@@ -69,6 +69,7 @@ public class GeorefManager extends BGManager {
 	public static void main(String[] args) throws Exception {
 		
 		int test = 0;
+		long starttime=0, endtime=0;
 		String arg1 = null;
 		String arg2 = null;
 
@@ -136,7 +137,6 @@ public class GeorefManager extends BGManager {
 		else
 			gp = new GeorefPreferences(arg1);
 
-		long starttime = System.currentTimeMillis();
 		switch (test) {
 		case INTERP:
 			System.out.println("***INTERPRETATION test***");
@@ -207,10 +207,13 @@ public class GeorefManager extends BGManager {
 		case NEW_GEOREF:
 			System.out.println("***NEWGEOREFERENCE test***");
 			gp.setLanguage(arg2);
+			starttime = System.currentTimeMillis();
 			gm.newGeoreference(gp);
+			endtime = System.currentTimeMillis();
 			for(Rec r : gm.recset.recs){
 //				System.out.println(r.toString());
 				System.out.println(r.getSummary("  "));
+				System.out.println("Elapsed time: "+(endtime-starttime)+" ms");
 			}
 			break;
 		case SINGLE_GEOREF:
@@ -246,8 +249,6 @@ public class GeorefManager extends BGManager {
 		gm.georeference(gp);
 		break;
 		}
-
-		long endtime = System.currentTimeMillis();
 		log.info("\nElapsed test time: " + (endtime - starttime) + " (ms)\n");
 		gm.shutdown();
 	}
@@ -493,7 +494,7 @@ public class GeorefManager extends BGManager {
 				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
 				this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
 
-				// interpendtime = System.currentTimeMillis();Ä
+				// interpendtime = System.currentTimeMillis();ï¿½
 				// s = s.concat(" (default) Yale interpreter elapsed time: "
 				// + (interpendtime - interpstarttime) + "(ms)");
 			} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
@@ -541,6 +542,7 @@ public class GeorefManager extends BGManager {
 		// long sdstarttime = System.currentTimeMillis();
 		// log.info("Doing Spatial Description for rec.");
 		// *** Comment next line for testing while not connected
+		spatialDescriptionManager.doSpatialDescription(rec);
 		// long sdendtime = System.currentTimeMillis();
 		// s = s.concat(" Spatial Description Elapsed Time: "
 		// + (sdendtime - sdstarttime) + "(ms)");
@@ -691,11 +693,11 @@ public class GeorefManager extends BGManager {
 	}
 
 	public void interpretForFeatureNames(Rec rec, GeorefPreferences prefs){	
+		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
 		try {
 			//		long interpstarttime = 0, interpendtime = 0;
 			if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
 				//			interpstarttime = System.currentTimeMillis();
-				this.yaleLocInterp.doParsing(rec, "locality");
 				this.yaleLocInterp.doParsing(rec, "highergeography", true);
 				this.yaleLocInterp.doParsing(rec, "continent", true);
 				this.yaleLocInterp.doParsing(rec, "waterbody", true);
@@ -704,10 +706,12 @@ public class GeorefManager extends BGManager {
 				this.yaleLocInterp.doParsing(rec, "country", true);
 				this.yaleLocInterp.doParsing(rec, "stateprovince", true);
 				this.yaleLocInterp.doParsing(rec, "county", true);   
-				this.yaleLocInterp.doParsing(rec, "verbatimlatitude");   
-				this.yaleLocInterp.doParsing(rec, "verbatimlongitude");   
-				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates");
-				this.yaleLocInterp.doParsing(rec, "verbatimelevation");
+//				this.yaleLocInterp.doParsing(rec, "locality");
+				this.yaleLocInterp.doParsing(rec, "locality",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimlatitude",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimlongitude",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
+				this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
 
 				//			interpendtime = System.currentTimeMillis();
 				//			s = s.concat(" (default) Yale interpreter elapsed time: "
@@ -823,7 +827,9 @@ public class GeorefManager extends BGManager {
 
 	public void loadUserFeatures(Rec rec){
 		if(rec==null) return;
-		spatialDescriptionManager.addUserFeature(rec, "tuco (tuco@berkeley.edu)", -1);
+		String DeterminedBy=rec.get("DeterminedBy");
+		spatialDescriptionManager.addUserFeature(rec, DeterminedBy, -1);
+//		spatialDescriptionManager.addUserFeature(rec, "tuco (tuco@berkeley.edu)", -1);
 	}
 
 	public void locTypeCounts(String arg1, String interpfield) {
@@ -870,6 +876,7 @@ public class GeorefManager extends BGManager {
 	public boolean newGeoreference(GeorefPreferences prefs)
 	throws GeorefManager.GeorefManagerException {
 		for (Rec rec : this.recset.recs) {
+			System.out.println("Rec: "+rec.uFullLocality);
 			georeference(rec, prefs);
 		}
 		return true;
