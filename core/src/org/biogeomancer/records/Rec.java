@@ -166,91 +166,91 @@ public class Rec extends HashMap<String, String> {
 	public String getFullLocality() {
     String s = new String("(" + this.get("id") + ") ");
     String t = this.get("highergeography");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("continent");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("waterbody");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("islandgroup");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("island");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("country");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("stateprovince");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("county");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("locality");
-    if (t != null)
+    if (t != null && t.length() > 0)
         s = s.concat("; " + t);
 
     t = this.get("minimumelevationinmeters");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("maximumelevationinmeters");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("verbatimelevation");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("verbatimcoordinates");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("verbatimcoordinatesystem");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("verbatimlatitude");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("verbatimlongitude");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("decimallatitude");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("decimallongitude");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("geodeticdatum");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("earliestdatecollected");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("latestdatecollected");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
 
     t = this.get("verbatimcollectingdate");
-    if (t != null)
+    if (t != null && t.length() > 0)
       s = s.concat("; " + t);
     if (s.length() == 0) {
       s.concat("no standard interpretable field provided");
