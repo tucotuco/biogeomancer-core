@@ -525,6 +525,14 @@ public class SpatialDescriptionManager extends BGManager {
 				else combos*=viablegeorefcount;
 			}
 		}
+
+		if(combos>1000){
+			// Optimize in this case
+			log.error("Georef abandoned, more than 1000 ("+combos+") combinations." );
+			System.out.println("Georef abandoned, more than 1000 ("+combos+") combinations." );
+			return;
+		}
+
 		gcounts=new int[clausecount];
 		for(int j=0;j<clausecount;j++){
 			int viablegeorefs = r.clauses.get(j).viableGeorefCount(); 
@@ -538,6 +546,7 @@ public class SpatialDescriptionManager extends BGManager {
 				size = size * gcounts[k];
 		}
 
+		
 		// Create an array to hold the combinations of georef indexes to do intersections on.
 		int[][] geoCombos = new int[size][gcounts.length];
 
