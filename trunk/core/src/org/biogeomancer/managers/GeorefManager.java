@@ -20,12 +20,15 @@ import java.io.BufferedWriter;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 import org.apache.log4j.Logger;
 import org.biogeomancer.managers.DatumManager.Datum;
 import org.biogeomancer.records.Clause;
 import org.biogeomancer.records.Georef;
+import org.biogeomancer.records.LocSpec;
 import org.biogeomancer.records.Rec;
 import org.biogeomancer.records.RecSet;
 import org.biogeomancer.utils.PointRadius;
@@ -57,12 +60,14 @@ public class GeorefManager extends BGManager {
 	public static String PROPS_FILE = "GeorefManager.properties";
 	private static final Logger log = Logger.getLogger(GeorefManager.class);
 	private static Properties props = new Properties();
+	private static final GeorefPreferences defaultPrefs = new GeorefPreferences();
 
 	static {
 		initProps(PROPS_FILE, props);
 	}
 
 	public static void main(String[] args) throws Exception {
+		
 		int test = 0;
 		String arg1 = null;
 		String arg2 = null;
@@ -462,6 +467,7 @@ public class GeorefManager extends BGManager {
 		}
 		return true;
 	}
+	
 
 	public boolean georeference(Rec rec, GeorefPreferences prefs) {
 
@@ -487,7 +493,7 @@ public class GeorefManager extends BGManager {
 				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
 				this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
 
-				// interpendtime = System.currentTimeMillis();
+				// interpendtime = System.currentTimeMillis();Ä
 				// s = s.concat(" (default) Yale interpreter elapsed time: "
 				// + (interpendtime - interpstarttime) + "(ms)");
 			} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
@@ -530,18 +536,41 @@ public class GeorefManager extends BGManager {
 			if(populateGeoref(rec)){
 				return true;
 			}
-		}
-
+		} 
+		
 		// long sdstarttime = System.currentTimeMillis();
 		// log.info("Doing Spatial Description for rec.");
 		// *** Comment next line for testing while not connected
-		spatialDescriptionManager.doSpatialDescription(rec);
 		// long sdendtime = System.currentTimeMillis();
 		// s = s.concat(" Spatial Description Elapsed Time: "
 		// + (sdendtime - sdstarttime) + "(ms)");
 		// log.info(s);
 		return true;
 	}
+	
+	public List<String> interpretLocalityForFeatures(String locality){
+		Rec r = new Rec();
+		List<String> features = new ArrayList<String>();
+		r.put("locality", locality);
+		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
+		
+		try{
+			this.yaleLocInterp.doParsing(r, "locality",gdm,defaultPrefs.language);
+		} catch (BGI.BGIException e) {
+			e.printStackTrace();
+		} catch (Exception e) {
+			System.out.println("Error in GeorefManager.georeference()");
+		}
+
+		for(Clause clause : r.clauses){
+			for(LocSpec loc : clause.locspecs){
+				features.add(loc.featurename);
+			}
+		}
+
+		return features;
+	}
+	
 	public boolean georeference(Rec rec, int featureid) {
 		// In this method we are going to add a single georeference
 		// to the rec based solely on the feature referenced by featureid
@@ -653,6 +682,7 @@ public class GeorefManager extends BGManager {
 			// Comment out the spatialDescriptionManager to test interpreters without
 			// connecting to the gazetteer.
 			spatialDescriptionManager = new SpatialDescriptionManager();
+			defaultPrefs.setLanguage("english");
 			// log.info("after SpatialDescriptionManager()");
 		} catch (Throwable t) {
 			log.error("Problem in GeorefManager.init()! " + t.toString());
