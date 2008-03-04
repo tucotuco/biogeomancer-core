@@ -200,7 +200,7 @@ public class GeorefManager extends BGManager {
 		case TO_MARKUP:
 			System.out
 			.println("***GEOREFERENCE MARKUP test: " + gp.locinterp + "***");
-			gm.georeference(gp);
+			gm.newGeoreference(gp);
 			String recsetstring = new String(gm.recset.toMarkup());
 			System.out.println(recsetstring);
 			break;
@@ -246,7 +246,7 @@ public class GeorefManager extends BGManager {
 			break;
 		default:
 			System.out.println("***GEOREFERENCE test***");
-		gm.georeference(gp);
+		gm.newGeoreference(gp);
 		break;
 		}
 		log.info("\nElapsed test time: " + (endtime - starttime) + " (ms)\n");
@@ -389,10 +389,9 @@ public class GeorefManager extends BGManager {
 	}
 
 	public boolean geoPredoneCheck(Rec rec){
-		//Check if these headers already have values:
-
-		//DecimalLatitude, DecimalLongitude, 
-		//GeodeticDatum, CoordinateUncertaintyInMeters
+		// Check if these headers already have values:
+		// DecimalLatitude, DecimalLongitude, 
+		// GeodeticDatum, CoordinateUncertaintyInMeters
 		if(rec.containsKey("decimallatitude") &&
 				rec.containsKey("decimallongitude") &&
 				//				rec.containsKey("geodeticdatum") &&
@@ -410,10 +409,9 @@ public class GeorefManager extends BGManager {
 			return false;
 		}
 		return false;
-
 	}
 
-	public boolean georeference(GeorefPreferences prefs)
+/*	public boolean georeference(GeorefPreferences prefs)
 	throws GeorefManager.GeorefManagerException {
 		if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("all")) {
 			// I think this won't work: Interpreters will just add more clauses to the
@@ -468,18 +466,13 @@ public class GeorefManager extends BGManager {
 		}
 		return true;
 	}
-	
+*/	
 
 	public boolean georeference(Rec rec, GeorefPreferences prefs) {
-
 		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
-		if (rec == null)
-			return false;
-		// String s = new String("RecSet: ");
+		if (rec == null) return false;
 		try {
-			// long interpstarttime = 0, interpendtime = 0;
 			if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
-				// interpstarttime = System.currentTimeMillis();
 				this.yaleLocInterp.doParsing(rec, "highergeography", true);
 				this.yaleLocInterp.doParsing(rec, "continent", true);
 				this.yaleLocInterp.doParsing(rec, "waterbody", true);
@@ -494,11 +487,7 @@ public class GeorefManager extends BGManager {
 				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
 				this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
 
-				// interpendtime = System.currentTimeMillis();�
-				// s = s.concat(" (default) Yale interpreter elapsed time: "
-				// + (interpendtime - interpstarttime) + "(ms)");
 			} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
-				// interpstarttime = System.currentTimeMillis();
 				this.uiucLocInterp.doParsing(rec, "Locality");
 				this.uiucLocInterp.doParsing(rec, "HigherGeography");
 				this.uiucLocInterp.doParsing(rec, "Continent");
@@ -512,17 +501,10 @@ public class GeorefManager extends BGManager {
 				this.uiucLocInterp.doParsing(rec, "VerbatimLongitude");
 				this.uiucLocInterp.doParsing(rec, "VerbatimCoordinates");
 				this.uiucLocInterp.doParsing(rec, "VerbatimElevation");
-				// interpendtime = System.currentTimeMillis();
-				// s = s.concat(" UIUC interpreter elapsed time: "
-				// + (interpendtime - interpstarttime) + "(ms)");
 			} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
-				// interpstarttime = System.currentTimeMillis();
-				this.TULocInterp.doParsing(rec, "Locality", "Highergeography",
+				this.TULocInterp.doParsing(rec, "Locality", "HigherGeography",
 						"Country", "State", "County");
 				System.out.println(rec);
-				// interpendtime = System.currentTimeMillis();
-				// s = s.concat(" Tulane interpreter elapsed time: "
-				// + (interpendtime - interpstarttime) + "(ms)");
 			} else
 				return false;
 		} catch (BGIHmm.BGIHmmException e) {
@@ -530,7 +512,7 @@ public class GeorefManager extends BGManager {
 		} catch (BGI.BGIException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
-			System.out.println("Error in GeorefManager.georeference()");
+			System.out.println("Error in GeorefManager.georeference(Rec, GeorefPreferences)");
 		}
 
 		if(geoPredoneCheck(rec)){
@@ -539,14 +521,9 @@ public class GeorefManager extends BGManager {
 			}
 		} 
 		
-		// long sdstarttime = System.currentTimeMillis();
-		// log.info("Doing Spatial Description for rec.");
-		// *** Comment next line for testing while not connected
-		spatialDescriptionManager.doSpatialDescription(rec);
-		// long sdendtime = System.currentTimeMillis();
-		// s = s.concat(" Spatial Description Elapsed Time: "
-		// + (sdendtime - sdstarttime) + "(ms)");
-		// log.info(s);
+		// Comment next line for testing while not connected
+		spatialDescriptionManager.doNewSpatialDescription(rec);
+//		spatialDescriptionManager.doSpatialDescription(rec);
 		return true;
 	}
 	
@@ -572,7 +549,7 @@ public class GeorefManager extends BGManager {
 
 		return features;
 	}
-	
+/*	
 	public boolean georeference(Rec rec, int featureid) {
 		// In this method we are going to add a single georeference
 		// to the rec based solely on the feature referenced by featureid
@@ -581,7 +558,7 @@ public class GeorefManager extends BGManager {
 		spatialDescriptionManager.doSpatialDescription(rec, featureid);
 		return false;
 	}
-
+*/
 	public boolean georeferenceAllYaleFirst()
 	throws GeorefManager.GeorefManagerException, BGIException,
 	BGIHmmException {

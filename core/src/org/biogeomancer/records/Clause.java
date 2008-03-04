@@ -260,6 +260,13 @@ public class Clause
 		return iLocality;
 	}
 
+	public boolean containsParentFeature(int parentFeatureID){
+		for(LocSpec l:locspecs){
+			if(l.containsParentFeature(parentFeatureID)==true) return true;
+		}
+		return false;
+	}
+
 	public String toMarkup() {
 		String s = new String("<CLAUSE>");
 		if (this.locspecs == null || this.locspecs.isEmpty()) {

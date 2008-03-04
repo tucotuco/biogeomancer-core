@@ -47,47 +47,6 @@ import com.vividsolutions.jts.io.WKTReader;
 //TODO: Implement polar boundary conditions
 //TODO: fill out iLocality, uLocality and confidence
 public class Georef {
-	public static org.biogeomancer.utils.Coordinate getMidPoint(
-			org.biogeomancer.utils.Coordinate g1, org.biogeomancer.utils.Coordinate g2) {
-		if (g1 == null || g2 == null)
-			return null;
-		double maxx = -180.0;
-		double minx = 180.0;
-		if (g1.x > maxx)
-			maxx = g1.x;
-		if (g2.x > maxx)
-			maxx = g2.x;
-		if (g1.x < minx)
-			minx = g1.x;
-		if (g2.x < minx)
-			minx = g2.x;
-		if (maxx > 90 && minx < -90) { // coordinates on opposite sides of
-			// longitude = 180
-			if (g1.x < g2.x)
-				g1.x += 360;
-			else
-				g2.x += 360;
-		}
-		double meanx = (g1.x + g2.x) / 2;
-		double meany = (g1.y + g2.y) / 2;
-
-		org.biogeomancer.utils.Coordinate midpointcoord = new org.biogeomancer.utils.Coordinate(
-				meanx, meany, g1.datum);
-		double latdist = midpointcoord.getLatDistanceInMetersToCoordinate(g1);
-		double lngdist = midpointcoord.getLngDistanceInMetersToCoordinate(g1);
-		double dist = Math.sqrt(Math.pow(latdist, 2) + Math.pow(lngdist, 2));
-		midpointcoord.precision = dist;
-		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
-			if (g1.x > g2.x)
-				g1.x -= 360;
-			else
-				g2.x -= 360;
-			if (midpointcoord.x > 180)
-				midpointcoord.x -= 360;
-		}
-		return midpointcoord;
-	}
-
 	public static void main(String[] args) {
 		try {
 			/*
@@ -157,33 +116,6 @@ public class Georef {
 			}
 		} catch (Exception ex) {
 			ex.printStackTrace();
-		}
-	}
-
-	public static Georef makeOne(String geom) {
-		Georef g = null;
-		try {
-			WKTReader r = new WKTReader();
-			// Geometry g1 = r.read("POLYGON((36 -122, 36 -120, 34 -120, 34 -122, 36
-			// -122))");
-			Geometry g1 = r.read(geom);
-			g = new Georef(g1, DatumManager.getInstance().getDatum("WGS84"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return g;
-	}
-
-	public static void shiftLongitude(Geometry g, double shiftby) {
-		// shift to remove effects of crossing longitude discontinuity
-		int nodes = g.getNumPoints();
-		Coordinate[] c = g.getCoordinates();
-		for (int i = 0; i < nodes; i++) {
-			c[i].x += shiftby;
-			if (c[i].x > 360.0)
-				c[i].x -= 360.0;
-			if (c[i].x < -180.0)
-				c[i].x += 360.0;
 		}
 	}
 
@@ -386,6 +318,47 @@ public class Georef {
 		return maxx;
 	}
 
+	public static org.biogeomancer.utils.Coordinate getMidPoint(
+			org.biogeomancer.utils.Coordinate g1, org.biogeomancer.utils.Coordinate g2) {
+		if (g1 == null || g2 == null)
+			return null;
+		double maxx = -180.0;
+		double minx = 180.0;
+		if (g1.x > maxx)
+			maxx = g1.x;
+		if (g2.x > maxx)
+			maxx = g2.x;
+		if (g1.x < minx)
+			minx = g1.x;
+		if (g2.x < minx)
+			minx = g2.x;
+		if (maxx > 90 && minx < -90) { // coordinates on opposite sides of
+			// longitude = 180
+			if (g1.x < g2.x)
+				g1.x += 360;
+			else
+				g2.x += 360;
+		}
+		double meanx = (g1.x + g2.x) / 2;
+		double meany = (g1.y + g2.y) / 2;
+	
+		org.biogeomancer.utils.Coordinate midpointcoord = new org.biogeomancer.utils.Coordinate(
+				meanx, meany, g1.datum);
+		double latdist = midpointcoord.getLatDistanceInMetersToCoordinate(g1);
+		double lngdist = midpointcoord.getLngDistanceInMetersToCoordinate(g1);
+		double dist = Math.sqrt(Math.pow(latdist, 2) + Math.pow(lngdist, 2));
+		midpointcoord.precision = dist;
+		if (maxx > 90 && minx < -90) { // geometry crosses longitude = 180
+			if (g1.x > g2.x)
+				g1.x -= 360;
+			else
+				g2.x -= 360;
+			if (midpointcoord.x > 180)
+				midpointcoord.x -= 360;
+		}
+		return midpointcoord;
+	}
+
 	public double getMinLng(){
 		double minx = 180;
 		for(int i=0;i<geometry.getNumPoints();i++){
@@ -493,8 +466,10 @@ public class Georef {
 		Geometry gsecond = null;
 		// TODO: Check what happens if the geometries cross the meridian at
 		// longitude=180
-		Georef.shiftLongitude(g1, 360.0);
-		Georef.shiftLongitude(g2, 360.0);
+		Georef.shiftLongitude(g1, 180.0);
+		Georef.shiftLongitude(g2, 180.0);
+//		Georef.shiftLongitude(g1, 360.0);
+//		Georef.shiftLongitude(g2, 360.0);
 		Geometry intersection = null;
 		try {
 			// JTS can't do intersections on GEOMETRYCOLLECTIONS.
@@ -513,7 +488,8 @@ public class Georef {
 		} catch (Exception e) {
 			intersection = g1.convexHull().intersection(g2.convexHull());
 		}
-		Georef.shiftLongitude(intersection, -360.0);
+		Georef.shiftLongitude(intersection, -180.0);
+//		Georef.shiftLongitude(intersection, -360.0);
 		// create a new Georef (including PR and SFs) and return that
 		Georef ng = new Georef(intersection, this.pointRadius.datum);
 		if (ng.pointRadius == null)
@@ -569,6 +545,20 @@ public class Georef {
 		Polygon p = new GeometryFactory().createPolygon(lr, null);
 		this.geometry = p;
 		return this.geometry;
+	}
+
+	public static Georef makeOne(String geom) {
+		Georef g = null;
+		try {
+			WKTReader r = new WKTReader();
+			// Geometry g1 = r.read("POLYGON((36 -122, 36 -120, 34 -120, 34 -122, 36
+			// -122))");
+			Geometry g1 = r.read(geom);
+			g = new Georef(g1, DatumManager.getInstance().getDatum("WGS84"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return g;
 	}
 
 	public PointRadius makePointRadius(double x, double y, double r) {
@@ -681,6 +671,19 @@ public class Georef {
 			this.state = GeorefState.GEOREF_GEOMETRY_CREATION_ERROR;
 		} else {
 			this.state = GeorefState.GEOREF_GEOMETRY_CREATED;
+		}
+	}
+
+	public static void shiftLongitude(Geometry g, double shiftby) {
+		// shift to remove effects of crossing longitude discontinuity
+		int nodes = g.getNumPoints();
+		Coordinate[] c = g.getCoordinates();
+		for (int i = 0; i < nodes; i++) {
+			c[i].x += shiftby;
+			if (c[i].x > 360.0)
+				c[i].x -= 360.0;
+			if (c[i].x < -180.0)
+				c[i].x += 360.0;
 		}
 	}
 

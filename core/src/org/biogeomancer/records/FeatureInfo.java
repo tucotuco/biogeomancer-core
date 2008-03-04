@@ -30,6 +30,8 @@ public class FeatureInfo {
     FeatureInfo fi = new FeatureInfo();
     fi.name = new String("Missoula");
     fi.featureID = -9999;
+    fi.parentFeatureID = -9999;
+    fi.parentFeatureType = -1;
     fi.classificationTerm = new String("populated place");
     fi.latitude = 35.234532;
     fi.longitude = -121.432235;
@@ -47,6 +49,8 @@ public class FeatureInfo {
   public FeatureInfoState state; // The processing state of the FeatureInfo
   public String name; // The accepted valid name of the feature
   public int featureID; // Unique identifier for the feature
+  public int parentFeatureID; // Unique identifier for the containing feature
+  public int parentFeatureType; // Type code for containing feature (e.g., 754=country)
   public String classificationTerm; // The Feature Type in which this feature is
   // classified
   public double latitude; // The decimal latitude of the snapped-to centroid of
@@ -81,6 +85,8 @@ public class FeatureInfo {
   public FeatureInfo(FeatureInfo f) {
     this.name = new String(f.name);
     this.featureID = f.featureID;
+    this.parentFeatureID = f.parentFeatureID;
+    this.parentFeatureType = f.parentFeatureType;
     if (f.classificationTerm != null) {
       this.classificationTerm = new String(f.classificationTerm);
     }
@@ -104,13 +110,15 @@ public class FeatureInfo {
     this.state = FeatureInfoState.FEATUREINFO_CREATED;
   }
 
-  public FeatureInfo(String name, int fid, String classificationterm,
+  public FeatureInfo(String name, int fid, int pid, int ptype, String classificationterm,
       double lat, double lng, String datum, double extent,
       double coordprecision, double mapaccuracyinmeters, String coordsource,
       String encodedgeometry) {
     // this.name = new String(name);
     this.name = new String(name.replaceAll(";", " "));
     this.featureID = fid;
+    this.parentFeatureID = pid;
+    this.parentFeatureType = ptype;
     this.classificationTerm = new String(classificationterm);
     this.latitude = lat;
     this.longitude = lng;
@@ -148,6 +156,9 @@ public class FeatureInfo {
       s = s.concat(classificationTerm + "\n");
     } else
       s = s.concat("not given\n");
+
+    s = s.concat("Parent FeatureID: " + parentFeatureID + "\n");
+    s = s.concat("Parent Feature Type: " + parentFeatureType + "\n");
 
     s = s.concat("DecimalLatitude: " + latitude + "\n");
     s = s.concat("DecimalLongitude: " + longitude + "\n");
@@ -188,6 +199,9 @@ public class FeatureInfo {
     } else {
       s = s.concat("<FEATURETYPE>not recorded</FEATURETYPE>\n");
     }
+
+    s = s.concat("<PARENTFEATUREID>" + parentFeatureID + "</PARENTFEATUREID>\n");
+    s = s.concat("<PARENTFEATURETYPE>" + parentFeatureType + "</PARENTFEATUREID>\n");
 
     s = s.concat("<FEATURE_LATITUDE>" + latitude + "</FEATURE_LATITUDE>\n");
     s = s.concat("<FEATURE_LONGITUDE>" + longitude + "</FEATURE_LONGITUDE>\n");
