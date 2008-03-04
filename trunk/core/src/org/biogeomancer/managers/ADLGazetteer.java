@@ -706,6 +706,125 @@ public class ADLGazetteer extends BGManager {
 			}
 			return null;
 		}
+		public ArrayList<FeatureInfo> selectFeatureParentTypeByName(Connection gdb,
+				String feature, String querytype) {
+			if (gdb == null || feature == null || querytype == null)
+				return null;
+			String searchname = new String(feature.replace("'", "\\'"));
+			double lat = 90, lng = 0, radius = 0;
+			String query =
+				"SELECT"
+				+ " g_feature_name.feature_id,"
+				+ " i_containment.parent_feature_id,"
+				+ " i_containment.classification_term_id,"
+				+ " geom_y,"
+				+ " geom_x,"
+				+ " radius,"
+				+ " g_feature_name.name"
+				+ " FROM"
+				+ " g_feature_name,"
+				+ " i_containment,"
+				+ " i_feature_footprint"
+				+ " WHERE"
+				+ " g_feature_name.feature_id=i_feature_footprint.feature_id"
+				+ " AND g_feature_name.feature_id=i_containment.feature_id";
+
+			// int fid;
+			ArrayList<FeatureInfo> features = new ArrayList<FeatureInfo>();
+			FeatureInfo fi = null;
+			Statement st = null;
+
+			// Potential query types in order of most useful execution:
+			// (all assume case is ignored and diacritical equivalence)
+			// equals
+			// contains-phrase
+			// contains-all-words
+			// contains-potential-misspelling
+			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
+				// Make sure database is indexed on lower(name)
+				query = query.concat(" AND lower(g_feature_name.name) = '"
+						+ searchname.toLowerCase().trim() + "';");
+				// select feature_id, name 
+				// from g_feature_name 
+				// where lower(name) ='santa rosa';
+				try {
+					st = gdb.createStatement();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.println(query);
+				}
+			} else if (querytype.equalsIgnoreCase("contains-phrase") /*
+			 * &&
+			 * searchname.length() >
+			 * 3
+			 */) {
+				// Make sure database is indexed properly for contains phrase
+				query = query.concat(" AND lower(g_feature_name.name) LIKE'%"
+						+ searchname.toLowerCase().trim() + "%';");
+				// select feature_id, name 
+				// from g_feature_name 
+				// where lower(name) LIKE '%santa rosa%';
+				log.info("Contains-phrase query required for feature name: "
+						+ searchname.toLowerCase().trim() + ". " + query);
+				try {
+					st = gdb.createStatement();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.println(query);
+				}
+			} else if (querytype.equalsIgnoreCase("contains-all-words")) {
+				// Make sure database is indexed properly for contains words queries
+				query = query.concat(" AND idxfti@@to_tsquery('default','"
+						+ searchname.toLowerCase().trim().replace(" ", "&") + "');");
+				// select feature_id, name, idxfti 
+				// from g_feature_name 
+				// where idxfti@@to_tsquery('default','santa&ROSA');
+				log.info("Contains-all-words query required for feature name: "
+						+ searchname.toLowerCase().trim() + ". " + query);
+				try {
+					st = gdb.createStatement();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.println(query);
+				}
+			} else if (querytype.equalsIgnoreCase("contains-any-words")) {
+				// Make sure database is indexed properly for contains words
+				query = query.concat(" AND idxfti@@to_tsquery('default','"
+						+ searchname.toLowerCase().trim().replace(" ", "|") + "');");
+				// select feature_id, name, idxfti 
+				// from g_feature_name 
+				// where idxfti@@to_tsquery('default','santa|ROSA');
+				log.info("Contains-any-words query required for feature name: "
+						+ searchname.toLowerCase().trim() + ". " + query);
+				try {
+					st = gdb.createStatement();
+				} catch (SQLException e) {
+					e.printStackTrace();
+					System.out.println(query);
+				}
+			}
+			try {
+				ResultSet rs = st.executeQuery(query);
+				while (rs.next()) {
+					fi = new FeatureInfo();
+					fi.featureID = new Integer(rs.getString(1)).intValue();
+					fi.parentFeatureID = new Integer(rs.getString(2)).intValue();
+					fi.parentFeatureType = new Integer(rs.getString(3)).intValue();
+					fi.latitude = rs.getDouble(4);
+					fi.longitude = rs.getDouble(5);
+					fi.extentInMeters = rs.getDouble(6);
+					fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
+					fi.name = rs.getString(7);
+					features.add(fi);
+				}
+				rs.close();
+				st.close();
+				return features;
+			} catch (SQLException e) {
+				log.error(e.toString() + "\n" + query);
+			}
+			return null;
+		}
 	}
 
 	private static ADLGazetteer instance;
@@ -1044,6 +1163,65 @@ public class ADLGazetteer extends BGManager {
 					}
 				}
 			}
+		}
+		return fis;
+	}
+
+	public ArrayList<FeatureInfo> featureParentLookup(Connection gdb,
+			String feature, String querytype, String logtype) {
+		if (gdb == null || feature == null || querytype == null
+				|| feature.length() == 0 || querytype.length() == 0)
+			return null;
+		ArrayList<FeatureInfo> fis = null;
+		if(logtype==null){
+			fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+		}else{
+		if (logtype.equals("log")) {
+			long starttime = System.currentTimeMillis();
+			fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+			long endtime = System.currentTimeMillis();
+			if (fis == null || fis.isEmpty()) {
+				log.info("Feature:\t" + feature + ";\tQuery type: " + querytype
+						+ ";\tCount: 0;\tElapsed Time: " + (endtime - starttime) + "(ms)");
+			} else {
+				log.info("Feature:\t" + feature + ";\tQuery type: " + querytype
+						+ ";\tCount: " + fis.size() + ";\tElapsed Time: "
+						+ (endtime - starttime) + "(ms)");
+			}
+		} else if (logtype.equals("system")) {
+			long starttime = System.currentTimeMillis();
+			fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+			long endtime = System.currentTimeMillis();
+			if (fis == null || fis.isEmpty()) {
+				System.out.println("Feature:\t" + feature + ";\tQuery type: "
+						+ querytype + ";\tCount: 0;\tLookup Time: " + (endtime - starttime)
+						+ "(ms)");
+			} else {
+				System.out.println("Feature:\t" + feature + ";\tQuery type: "
+						+ querytype + ";\tCount: " + fis.size() + ";\tLookup Time: "
+						+ (endtime - starttime) + "(ms)");
+			}
+		} else {
+				fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+		}
+		}
+		if(fis!=null){
+		// Remove duplicate features.
+		for (int i = 0; i < fis.size(); i++) {
+			for (int j = 0; j < fis.size(); j++) {
+				if (i != j) {
+					if (fis.get(i).featureID == fis.get(j).featureID) {
+						// Two features may have the same id if they came from different
+						// databases (e.g., userplaces and worldplaces), so check if the
+						// names are also the same.
+						if (fis.get(i).name.equalsIgnoreCase(fis.get(j).name)) {
+							fis.remove(j);
+							j--;
+						}
+					}
+				}
+			}
+		}
 		}
 		return fis;
 	}
@@ -1437,6 +1615,27 @@ public class ADLGazetteer extends BGManager {
 		return s;
 	}
 
+	public String lookup(Connection gdb, int featureID) {
+		String s = null;
+		String query = "SELECT displayname" + " FROM g_feature_displayname"
+		+ " WHERE feature_id=" + featureID + ";";
+		try {
+			Statement st = gdb.createStatement();
+			ResultSet rs = st.executeQuery(query);
+			rs.next();
+			if (rs.getRow() == 0) { // no rows
+				s = new String("no g_feature_displayname for feature_id " + featureID);
+			} else {
+				s = new String(rs.getString(1));
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			log.error(e.toString());
+		}
+		return s;
+	}
+
 	public void lookupFeatureDetails(Connection gdb, ArrayList<FeatureInfo> fis) {
 		// if( gdb == null || fis == null || fis.isEmpty()) return;
 		// Get the rest of the information for the featureinfos.
@@ -1579,6 +1778,25 @@ public class ADLGazetteer extends BGManager {
 		return wktGeometry;
 	}
 
+	public int lookupFootprintGeometryCount(Connection gdb, int featureID) {
+		int numgeoms=0;
+		String query = "SELECT numgeometries(footprint) " + "FROM i_feature_footprint "
+		+ "WHERE feature_id=" + featureID + ";";
+		try {
+			Statement st = gdb.createStatement();
+			ResultSet rs = st.executeQuery(query);
+			rs.next();
+			if (rs.getRow() != 0) { // no rows
+				numgeoms = rs.getInt(1);
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			log.error(e.toString());
+		}
+		return numgeoms;
+	}
+
 	public void lookupFootprintAttributes(Connection gdb, FeatureInfo fi) {
 		String wktGeometry = null;
 		double lat = 90, lng = 0, radius = 0;
@@ -1610,6 +1828,25 @@ public class ADLGazetteer extends BGManager {
 		fi.longitude = lng;
 		fi.extentInMeters = radius;
 		fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
+	}
+
+	public double lookupGeomMinx(Connection gdb, int featureID) {
+		double r = 0;
+		String query = "SELECT geom_minx " + "FROM i_feature_footprint "
+		+ "WHERE feature_id=" + featureID + ";";
+		try {
+			Statement st = gdb.createStatement();
+			ResultSet rs = st.executeQuery(query);
+			rs.next();
+			if (rs.getRow() != 0) { // has rows
+				r = rs.getDouble(1);
+			}
+			rs.close();
+			st.close();
+		} catch (SQLException e) {
+			log.error(e.toString());
+		}
+		return r;
 	}
 
 	public double lookupMapAccuracyInMeters(Connection gdb, int featureID) {
@@ -1728,6 +1965,52 @@ public class ADLGazetteer extends BGManager {
 		fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
 	}
 
+	public FeatureInfo lookupFeatureMetadata(Connection gdb, FeatureInfo fi) {
+		Statement st = null;
+		String query = "SELECT"
+			+ " displayname,"
+			+ " i_scheme_term.term,"
+			+ " g_collection.name,"
+			+ " g_collection.mapaccuracyinmeters,"
+			+ " g_collection.coordprecision,"
+			+ " g_collection.name"
+			+ " FROM"
+			+ " g_feature,"
+			+ " g_feature_displayname,"
+			+ " i_scheme_term,"
+			+ " i_classification,"
+			+ " g_collection"
+			+ " WHERE"
+			+ " g_feature.feature_id=i_classification.feature_id"
+			+ " AND g_feature.feature_id=g_feature_displayname.feature_id"
+			+ " AND i_classification.classification_term_id=i_scheme_term.scheme_term_id"
+			+ " AND g_feature.collection_id=g_collection.collection_id"
+			+ " AND g_feature.feature_id = " + fi.featureID;
+		try {
+			st = gdb.createStatement();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		try {
+			ResultSet rs = st.executeQuery(query);
+
+			while (rs.next()) {
+				fi.name = new String(rs.getString(1));
+				fi.classificationTerm = new String(rs.getString(2));
+				fi.coordSource = new String(rs.getString(3));
+				fi.mapAccuracyInMeters = rs.getDouble(4);
+				fi.coordPrecision = rs.getDouble(5);
+				fi.coordSource = rs.getString(6);
+			}
+			rs.close();
+			st.close();
+			return fi;
+		} catch (SQLException e) {
+			log.error(e.toString() + "\n" + query);
+		}
+		return null;
+	}
+	
 	public void lookupQuickAttributes(Connection gdb, FeatureInfo fi) {
 		double lat = 90, lng = 0, radius = 0;
 //		double acc = 1000; // Use default 1000 meter map accuracy if not given
@@ -1814,7 +2097,7 @@ public class ADLGazetteer extends BGManager {
 			Statement st = gdb.createStatement();
 			ResultSet rs = st.executeQuery(query);
 			rs.next();
-			if (rs.getRow() != 0) { // no rows
+			if (rs.getRow() != 0) { // has rows
 				r = rs.getDouble(1);
 				if (r <= 1) {
 					log.error("Invalid i_feature_footprint.radius (" + r

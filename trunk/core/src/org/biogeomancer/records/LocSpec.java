@@ -1217,6 +1217,12 @@ public class LocSpec {
 		return true; // for now...
 	}
 
+	public boolean containsParentFeature(int parentFeatureID){
+		for(FeatureInfo f:featureinfos){
+			if(f.parentFeatureID==parentFeatureID) return true;
+		}
+		return false;
+	}
 	/*
 	 * public LocSpecState interpretSubdivision(LocSpec locspec) { boolean
 	 * problems = false; if( locspec == null ) return null; if(
