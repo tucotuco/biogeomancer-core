@@ -75,6 +75,15 @@ public class Clause
 		}
 		return s;
 	}
+
+	public String getCounts(String prefix){
+		String s= new String("\n"+prefix+"LocSpecs: "+locspecs.size());
+		for( LocSpec ls: this.locspecs) {
+			s=s.concat(ls.getCounts(prefix+prefix));
+		}
+		return s;
+	}
+
 	public String makeInterpretedLocality(FeatureInfo fi1, FeatureInfo fi2) {
 		if (locType == null || locType.length() == 0) {
 			iLocality = null;
@@ -263,6 +272,13 @@ public class Clause
 	public boolean containsParentFeature(int parentFeatureID){
 		for(LocSpec l:locspecs){
 			if(l.containsParentFeature(parentFeatureID)==true) return true;
+		}
+		return false;
+	}
+
+	public boolean overlapsFeature(FeatureInfo f){
+		for(LocSpec l:locspecs){
+			if(l.overlapsFeature(f)==true) return true;
 		}
 		return false;
 	}

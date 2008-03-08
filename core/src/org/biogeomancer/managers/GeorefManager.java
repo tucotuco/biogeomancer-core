@@ -411,122 +411,6 @@ public class GeorefManager extends BGManager {
 		return false;
 	}
 
-/*	public boolean georeference(GeorefPreferences prefs)
-	throws GeorefManager.GeorefManagerException {
-		if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("all")) {
-			// I think this won't work: Interpreters will just add more clauses to the
-			// same Rec.
-			// Need to consider a redesign to allow multiple interpreters' georefs.
-			// ClauseSets, but for a new reason.
-			// this.yaleLocInterp.doParsing(this.recset);
-			// this.uiucLocInterp.doParsing(this.recset);
-			// this.TULocInterp.doParsing(this.recset, "Locality", "HigherGeography",
-			// "Country", "State", "County");
-		} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
-			try {
-				this.uiucLocInterp.doParsing(this.recset);
-			} catch (BGIHmm.BGIHmmException e) {
-				e.printStackTrace();
-				throw this.new GeorefManagerException(e.toString(), e);
-			}
-			for (Rec rec : this.recset.recs) {
-				if(geoPredoneCheck(rec)){
-					if(populateGeoref(rec)){
-						return true;
-					}
-				}
-
-				spatialDescriptionManager.doSpatialDescription(rec);
-			}
-		} else if (prefs.locinterp.equalsIgnoreCase("yale")) {
-			try {
-				this.yaleLocInterp.doParsing(this.recset);
-			} catch (BGI.BGIException e) {
-				e.printStackTrace();
-				throw this.new GeorefManagerException(e.toString(), e);
-			}
-			for (Rec rec : this.recset.recs) {
-				if(geoPredoneCheck(rec)){
-					if(populateGeoref(rec)){
-						return true;
-					}
-				}
-				spatialDescriptionManager.doSpatialDescription(rec);
-			}
-		} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
-			try {
-				this.TULocInterp.doParsing(this.recset, "Locality", "HigherGeography",
-						"Country", "State", "County");
-			} catch (Exception e) {
-				System.out.println("Error in GeorefManager.georeference()");
-			}
-			for (Rec rec : this.recset.recs) {
-				rec.toString();
-			}
-		}
-		return true;
-	}
-*/	
-
-	public boolean georeference(Rec rec, GeorefPreferences prefs) {
-		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
-		if (rec == null) return false;
-		try {
-			if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
-				this.yaleLocInterp.doParsing(rec, "highergeography", true);
-				this.yaleLocInterp.doParsing(rec, "continent", true);
-				this.yaleLocInterp.doParsing(rec, "waterbody", true);
-				this.yaleLocInterp.doParsing(rec, "islandgroup", true);
-				this.yaleLocInterp.doParsing(rec, "island", true);
-				this.yaleLocInterp.doParsing(rec, "country", true);
-				this.yaleLocInterp.doParsing(rec, "stateprovince", true);
-				this.yaleLocInterp.doParsing(rec, "county", true);
-				this.yaleLocInterp.doParsing(rec, "locality",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimlatitude",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimlongitude",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
-
-			} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
-				this.uiucLocInterp.doParsing(rec, "Locality");
-				this.uiucLocInterp.doParsing(rec, "HigherGeography");
-				this.uiucLocInterp.doParsing(rec, "Continent");
-				this.uiucLocInterp.doParsing(rec, "WaterBody");
-				this.uiucLocInterp.doParsing(rec, "IslandGroup");
-				this.uiucLocInterp.doParsing(rec, "Island");
-				this.uiucLocInterp.doParsing(rec, "Country");
-				this.uiucLocInterp.doParsing(rec, "StateProvince");
-				this.uiucLocInterp.doParsing(rec, "County");
-				this.uiucLocInterp.doParsing(rec, "VerbatimLatitude");
-				this.uiucLocInterp.doParsing(rec, "VerbatimLongitude");
-				this.uiucLocInterp.doParsing(rec, "VerbatimCoordinates");
-				this.uiucLocInterp.doParsing(rec, "VerbatimElevation");
-			} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
-				this.TULocInterp.doParsing(rec, "Locality", "HigherGeography",
-						"Country", "State", "County");
-				System.out.println(rec);
-			} else
-				return false;
-		} catch (BGIHmm.BGIHmmException e) {
-			e.printStackTrace();
-		} catch (BGI.BGIException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			System.out.println("Error in GeorefManager.georeference(Rec, GeorefPreferences)");
-		}
-
-		if(geoPredoneCheck(rec)){
-			if(populateGeoref(rec)){
-				return true;
-			}
-		} 
-		
-		// Comment next line for testing while not connected
-		spatialDescriptionManager.doNewSpatialDescription(rec);
-//		spatialDescriptionManager.doSpatialDescription(rec);
-		return true;
-	}
-	
 	public List<String> interpretLocalityForFeatures(String locality){
 		Rec r = new Rec();
 		List<String> features = new ArrayList<String>();
@@ -850,6 +734,62 @@ public class GeorefManager extends BGManager {
 				+ clausecount);
 	}
 
+	public boolean georeference(GeorefPreferences prefs)
+	throws GeorefManager.GeorefManagerException {
+		if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("all")) {
+			// I think this won't work: Interpreters will just add more clauses to the
+			// same Rec.
+			// Need to consider a redesign to allow multiple interpreters' georefs.
+			// ClauseSets, but for a new reason.
+			// this.yaleLocInterp.doParsing(this.recset);
+			// this.uiucLocInterp.doParsing(this.recset);
+			// this.TULocInterp.doParsing(this.recset, "Locality", "HigherGeography",
+			// "Country", "State", "County");
+		} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
+			try {
+				this.uiucLocInterp.doParsing(this.recset);
+			} catch (BGIHmm.BGIHmmException e) {
+				e.printStackTrace();
+				throw this.new GeorefManagerException(e.toString(), e);
+			}
+			for (Rec rec : this.recset.recs) {
+				if(geoPredoneCheck(rec)){
+					if(populateGeoref(rec)){
+						return true;
+					}
+				}
+	
+				spatialDescriptionManager.doSpatialDescription(rec);
+			}
+		} else if (prefs.locinterp.equalsIgnoreCase("yale")) {
+			try {
+				this.yaleLocInterp.doParsing(this.recset);
+			} catch (BGI.BGIException e) {
+				e.printStackTrace();
+				throw this.new GeorefManagerException(e.toString(), e);
+			}
+			for (Rec rec : this.recset.recs) {
+				if(geoPredoneCheck(rec)){
+					if(populateGeoref(rec)){
+						return true;
+					}
+				}
+				spatialDescriptionManager.doSpatialDescription(rec);
+			}
+		} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
+			try {
+				this.TULocInterp.doParsing(this.recset, "Locality", "HigherGeography",
+						"Country", "State", "County");
+			} catch (Exception e) {
+				System.out.println("Error in GeorefManager.georeference()");
+			}
+			for (Rec rec : this.recset.recs) {
+				rec.toString();
+			}
+		}
+		return true;
+	}
+
 	public boolean newGeoreference(GeorefPreferences prefs)
 	throws GeorefManager.GeorefManagerException {
 		for (Rec rec : this.recset.recs) {
@@ -858,6 +798,65 @@ public class GeorefManager extends BGManager {
 		}
 		return true;
 	}
+
+	public boolean georeference(Rec rec, GeorefPreferences prefs) {
+			GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
+			if (rec == null) return false;
+			try {
+				if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
+					this.yaleLocInterp.doParsing(rec, "highergeography", true);
+					this.yaleLocInterp.doParsing(rec, "continent", true);
+					this.yaleLocInterp.doParsing(rec, "waterbody", true);
+					this.yaleLocInterp.doParsing(rec, "islandgroup", true);
+					this.yaleLocInterp.doParsing(rec, "island", true);
+					this.yaleLocInterp.doParsing(rec, "country", true);
+					this.yaleLocInterp.doParsing(rec, "stateprovince", true);
+					this.yaleLocInterp.doParsing(rec, "county", true);
+					this.yaleLocInterp.doParsing(rec, "locality",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimlatitude",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimlongitude",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
+	
+				} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
+					this.uiucLocInterp.doParsing(rec, "Locality");
+					this.uiucLocInterp.doParsing(rec, "HigherGeography");
+					this.uiucLocInterp.doParsing(rec, "Continent");
+					this.uiucLocInterp.doParsing(rec, "WaterBody");
+					this.uiucLocInterp.doParsing(rec, "IslandGroup");
+					this.uiucLocInterp.doParsing(rec, "Island");
+					this.uiucLocInterp.doParsing(rec, "Country");
+					this.uiucLocInterp.doParsing(rec, "StateProvince");
+					this.uiucLocInterp.doParsing(rec, "County");
+					this.uiucLocInterp.doParsing(rec, "VerbatimLatitude");
+					this.uiucLocInterp.doParsing(rec, "VerbatimLongitude");
+					this.uiucLocInterp.doParsing(rec, "VerbatimCoordinates");
+					this.uiucLocInterp.doParsing(rec, "VerbatimElevation");
+				} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
+					this.TULocInterp.doParsing(rec, "Locality", "HigherGeography",
+							"Country", "State", "County");
+					System.out.println(rec);
+				} else
+					return false;
+			} catch (BGIHmm.BGIHmmException e) {
+				e.printStackTrace();
+			} catch (BGI.BGIException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				System.out.println("Error in GeorefManager.georeference(Rec, GeorefPreferences)");
+			}
+	
+			if(geoPredoneCheck(rec)){
+				if(populateGeoref(rec)){
+					return true;
+				}
+			} 
+			
+			// Comment next line for testing while not connected
+			spatialDescriptionManager.doNewSpatialDescription(rec);
+	//		spatialDescriptionManager.doSpatialDescription(rec);
+			return true;
+		}
 
 	public void newInterpretYale(String parsefield, String language)
 	throws GeorefManager.GeorefManagerException, BGIException {
@@ -1056,7 +1055,7 @@ public class GeorefManager extends BGManager {
 	}
 
 	public void testXML() {
-		System.out.print(this.recset.toXML());
+//		System.out.print(this.recset.toXML());
 	}
 
 }

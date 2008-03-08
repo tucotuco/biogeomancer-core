@@ -802,17 +802,37 @@ public class SpatialDescriptionManager extends BGManager {
 			r.state = RecState.REC_NO_CLAUSES_ERROR;
 			return;
 		}
+		long starttime = System.currentTimeMillis();
 		// Load features for all clauses in the Rec.
 		getPutativeFeatures(r);
+		long endtime = System.currentTimeMillis();
+		System.out.println("getPutativeFeatures: "+(endtime-starttime)+" ms");
+		System.out.println(r.getCounts("  "));
 		// Remove irrelevant features - ones that don't match the geography
 		// in any other clause.
-		removeNonmatchingFeatures(r);
+		starttime = System.currentTimeMillis();
+//		removeNonmatchingFeatures(r);
+		removeNonoverlappingFeatures(r);
+		endtime = System.currentTimeMillis();
+		System.out.println("removeNonmatchingFeatures: "+(endtime-starttime)+" ms");
+		System.out.println(r.getCounts("  "));
+// Metadata capture is slow - move this until after BB filter? Flatten gazetteer?
 		// Get feature metadata for the final candidate features
-		getFeatureMetadata(r);
+//		starttime = System.currentTimeMillis();
+//		getFeatureMetadata(r);
+//		endtime = System.currentTimeMillis();
+//		System.out.println("getFeatureMetadata: "+(endtime-starttime)+" ms");
+// filter by BB?
 		// Make Georefs for all clauses in the Rec.
+		starttime = System.currentTimeMillis();
 		makeClauseGeorefs(r);
+		endtime = System.currentTimeMillis();
+		System.out.println("makeClauseGeorefs: "+(endtime-starttime)+" ms");
 		// Make Georefs for the Rec
+		starttime = System.currentTimeMillis();
 		makeRecGeorefs(r);
+		endtime = System.currentTimeMillis();
+		System.out.println("makeRecGeorefs: "+(endtime-starttime)+" ms");
 	}
 
 	public void makeRecGeorefs(Rec r){
@@ -927,7 +947,8 @@ public class SpatialDescriptionManager extends BGManager {
 							encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
 						} 
 						else if(loctype.equalsIgnoreCase("ADM")){
-							if(gaz.lookupGeomMinx(gadm, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+//							if(gaz.lookupGeomMinx(gadm, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+							if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 								encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 							} else{
 								if(gaz.lookupFootprintGeometryCount(gadm, featureid)>geometrythreshhold){ // This is a temporary fix to overcome exceedingly complex geometries.
@@ -938,7 +959,8 @@ public class SpatialDescriptionManager extends BGManager {
 							}
 						}
 						else if(loctype.equalsIgnoreCase("F")){
-							if(gaz.lookupGeomMinx(worldplaces, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+//							if(gaz.lookupGeomMinx(worldplaces, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+							if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 								encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 							} else{
 								if(gaz.lookupFootprintGeometryCount(worldplaces, featureid)>geometrythreshhold){ // This is a temporary fix to overcome exceedingly complex geometries.
@@ -999,7 +1021,8 @@ public class SpatialDescriptionManager extends BGManager {
 								encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
 							} 
 							else if(loctype.equalsIgnoreCase("ADM")){
-								if(gaz.lookupGeomMinx(gadm, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+//								if(gaz.lookupGeomMinx(gadm, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+								if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 									encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 								} else{
 									if(gaz.lookupFootprintGeometryCount(gadm, featureid)>geometrythreshhold){ // This is a temporary fix to overcome exceedingly complex geometries.
@@ -1010,7 +1033,8 @@ public class SpatialDescriptionManager extends BGManager {
 								}
 							}
 							else if(loctype.equalsIgnoreCase("F")){
-								if(gaz.lookupGeomMinx(worldplaces, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+//								if(gaz.lookupGeomMinx(worldplaces, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+								if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 									encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 								} else{
 									if(gaz.lookupFootprintGeometryCount(worldplaces, featureid)>geometrythreshhold){
@@ -1534,6 +1558,45 @@ public class SpatialDescriptionManager extends BGManager {
 						// At this point, if the locspec still doesn't have any features, the lookup failed.
 						clause.state = ClauseState.CLAUSE_FEATURE_NOT_FOUND_ERROR;
 						locspec.state = LocSpecState.LOCSPEC_ERROR_FEATURE_NOT_FOUND;
+					}
+				}
+			}
+		}
+	}
+
+	public void removeNonoverlappingFeatures(Rec r){
+		/*
+		 * Find and remove features for which no other features in
+		 * other clauses that have overlapping bounding boxes.
+		 * Basically, this method takes
+		 * advantage of preprocessing into the flatfeatureinfo table 
+		 * to reduce the number of features that need to be compared 
+		 * for geometry intersections.
+		 */
+		// No point in trying this if there isn't more than one clause.
+		if(r.clauses.size()<2) return;
+		for( Clause c1 : r.clauses) { // do feature lookups for all locspecs for every clause based on locType
+			for(LocSpec locspec : c1.locspecs){
+				int fcount = locspec.featureinfos.size(); 
+				if(fcount>0){
+					boolean[] fparents = new boolean[fcount];
+					int i = 0;
+					for(FeatureInfo f : locspec.featureinfos){
+							fparents[i]=false;
+							for( Clause c2 : r.clauses){
+								if(c1.equals(c2)==false){
+									if(c2.overlapsFeature(f)==true){
+										fparents[i]=true;
+										break;
+									}
+								}
+							}
+							i++;
+					}
+					for(i=fcount-1;i>0;i--){
+						if(fparents[i]==false){
+							locspec.featureinfos.remove(i);
+						}
 					}
 				}
 			}
