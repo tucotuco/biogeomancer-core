@@ -38,7 +38,7 @@ import org.biogeomancer.managers.GeorefPreferences;
 
 // import org.biogeomancer.ws.HttpClient;
 
-import com.thoughtworks.xstream.XStream;
+//import com.thoughtworks.xstream.XStream;
 
 public class RecSet {
   public class RecSetException extends Exception { // recset exception
@@ -89,7 +89,7 @@ public class RecSet {
         }
         break;
       case TOXML:
-        System.out.println(recset.toXML());
+ //       System.out.println(recset.toXML());
         break;
 
       case FEATURE_REPORT:
@@ -354,6 +354,8 @@ public class RecSet {
     return s;
   }
 
+ /* 
+  * 
   public String toXML() {
     XStream xstream = new XStream();
     xstream.alias("RECSET", RecSet.class);
@@ -364,7 +366,7 @@ public class RecSet {
     String xml = xstream.toXML(this);
     return xml;
   }
-
+*/
   /**
    * getFile()
    * 

@@ -71,13 +71,44 @@ public class FeatureInfo {
   public String coordSource; // Required for metadata construction.
 
   public String encodedGeometry; // An encoded geometry to hold complex
-
   // representations of the feature (shapes)
   // public MetaData metadata; // metadata object to track processing
   // information, such as timestamps and methods.
   // public ArrayList<MetaData> metadata; // as an ArrayList, metadata could be
   // an event capturing mechanism.
 
+  public double geomminx; // Westernmost longitude of the bounding box of the feature
+  public double geomminy; // Southernmost latitude of the bounding box of the feature
+  public double geommaxx; // Easternmost longitude of the bounding box of the feature
+  public double geommaxy; // Northernmost latitude of the bounding box of the feature
+  
+  public boolean overlapsFeature(FeatureInfo f){
+	  if(extentInMeters<=f.extentInMeters){
+	  if(latitude>=f.geomminy && latitude<=f.geommaxy &&
+			  longitude>=f.geomminx && longitude<=f.geommaxx) return true;
+	  if(geomminy>=f.geomminy && geomminy<=f.geommaxy &&
+			  geomminx>=f.geomminx && geomminx<=f.geommaxx) return true;
+	  if(geommaxy>=f.geomminy && geommaxy<=f.geommaxy &&
+			  geomminx>=f.geomminx && geomminx<=f.geommaxx) return true;
+	  if(geommaxy>=f.geomminy && geommaxy<=f.geommaxy &&
+			  geommaxx>=f.geomminx && geommaxx<=f.geommaxx) return true;
+	  if(geomminy>=f.geomminy && geomminy<=f.geommaxy &&
+			  geommaxx>=f.geomminx && geommaxx<=f.geommaxx) return true;
+	  return false;
+	  } else {
+		  if(f.latitude>=geomminy && f.latitude<=geommaxy &&
+				  f.longitude>=geomminx && f.longitude<=geommaxx) return true;
+		  if(f.geomminy>=geomminy && f.geomminy<=geommaxy &&
+				  f.geomminx>=geomminx && f.geomminx<=geommaxx) return true;
+		  if(f.geommaxy>=geomminy && f.geommaxy<=geommaxy &&
+				  f.geomminx>=geomminx && f.geomminx<=geommaxx) return true;
+		  if(f.geommaxy>=geomminy && f.geommaxy<=geommaxy &&
+				  f.geommaxx>=geomminx && f.geommaxx<=geommaxx) return true;
+		  if(f.geomminy>=geomminy && f.geomminy<=geommaxy &&
+				  f.geommaxx>=geomminx && f.geommaxx<=geommaxx) return true;
+		  return false;
+	  }
+  }
   public FeatureInfo() { // constructor
     this.state = FeatureInfoState.FEATUREINFO_CREATED;
   }

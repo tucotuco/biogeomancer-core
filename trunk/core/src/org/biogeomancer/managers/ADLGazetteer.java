@@ -55,7 +55,7 @@ public class ADLGazetteer extends BGManager {
 			if (gdb == null || features == null || feature == null
 					|| querytype == null)
 				return false;
-			String searchname = new String(feature.replace("'", "\\'"));
+			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
 			FeatureInfo fi = null;
 			Statement st = null;
 			boolean featureadded = false;
@@ -92,7 +92,8 @@ public class ADLGazetteer extends BGManager {
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
 				query = query.concat(" AND lower(g_feature_name.name) = '"
-						+ searchname.toLowerCase().trim() + "';");
+//						+ searchname.toLowerCase().trim() + "';");
+				+ prepSearchName(feature) + "';");
 				try {
 					st = gdb.createStatement();
 				} catch (SQLException e) {
@@ -191,7 +192,7 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (feature == null || querytype == null)
 				return false;
-			String searchname = new String(feature.replace("'", "\\'"));
+			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
 			FeatureInfo fi = null;
 			Statement st = null;
 			boolean featureadded = false;
@@ -279,7 +280,7 @@ public class ADLGazetteer extends BGManager {
 				// "');";
 				// select feature_id,name,idxfti from g_feature_name where
 				// idxfti@@to_tsquery('default','santa|ROSA');
-				log.info("Contains-any-worrds query required for feature name: "
+				log.info("Contains-any-words query required for feature name: "
 						+ searchname.toLowerCase().trim() + ". " + query);
 				try {
 					st = userplaces.createStatement();
@@ -326,12 +327,22 @@ public class ADLGazetteer extends BGManager {
 			}
 			return result;
 		}
+		
+		public String prepSearchName(String s){
+			String searchname = new String(s.toLowerCase().replace("'", "\\'")
+					.replace("county", "").replace("co.", "")
+					.replace("prov.", "").replace("provincia","")
+					.replace("dept.","").replace("depto.","").replace("departamento","")
+					.replace("parish","")
+					.trim());
+			return searchname;
+		}
 
 		public ArrayList<FeatureInfo> selectDistinctFeaturesByName(Connection gdb,
 				String feature, String querytype) {
 			if (gdb == null || feature == null || querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'"));
+			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
 			String query = "empty";
 			int fid;
 			ArrayList<FeatureInfo> features = new ArrayList<FeatureInfo>();
@@ -349,7 +360,8 @@ public class ADLGazetteer extends BGManager {
 				// Make sure database is indexed on lower(name)
 				query = "SELECT DISTINCT " + " feature_id " + " FROM "
 				+ " g_feature_name " + " WHERE " + " lower(name) = '"
-				+ searchname.toLowerCase().trim() + "';";
+//				+ searchname.toLowerCase().trim() + "';";
+				+ prepSearchName(feature) + "';";
 				try {
 					st = gdb.createStatement();
 				} catch (SQLException e) {
@@ -482,7 +494,7 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (gdb == null || feature == null || querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'"));
+			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
 			String query = "empty";
 			int fid;
 			ArrayList<FeatureInfo> features = new ArrayList<FeatureInfo>();
@@ -498,8 +510,10 @@ public class ADLGazetteer extends BGManager {
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
 				query = "SELECT " + " feature_id " + " FROM " + " g_feature_name "
-				+ " WHERE " + " lower(name) = '" + searchname.toLowerCase().trim()
-				+ "';";
+				+ " WHERE " + " lower(name) = '" 
+//				+ searchname.toLowerCase().trim() + "';";
+				+ prepSearchName(feature) + "';";
+				
 				try {
 					st = gdb.createStatement();
 				} catch (SQLException e) {
@@ -570,7 +584,7 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (gdb == null || feature == null || querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'"));
+			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
 //			double lat = 90, lng = 0;
 //			double radius = -1;
 //			String displayname = null;
@@ -625,7 +639,8 @@ public class ADLGazetteer extends BGManager {
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
 				query = query.concat(" AND lower(g_feature_name.name) = '"
-						+ searchname.toLowerCase().trim() + "';");
+//						+ searchname.toLowerCase().trim() + "';");
+						+ prepSearchName(feature) + "';");
 				// select feature_id, name from g_feature_name where lower(name) ='santa
 				// rosa';
 				try {
@@ -710,26 +725,28 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (gdb == null || feature == null || querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'"));
+			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
 			double lat = 90, lng = 0, radius = 0;
-			String query =
+			String query = 
 				"SELECT"
 				+ " g_feature_name.feature_id,"
-				+ " i_containment.parent_feature_id,"
-				+ " i_containment.classification_term_id,"
 				+ " geom_y,"
 				+ " geom_x,"
 				+ " radius,"
-				+ " g_feature_name.name"
+				+ " geom_miny,"
+				+ " geom_minx,"
+				+ " geom_maxy,"
+				+ " geom_maxx,"
+				+ " displayname,"
+				+ " term,"
+				+ " mapaccuracyinmeters,"
+				+ " coordprecision,"
+				+ " flatfeatureinfo.name"
 				+ " FROM"
 				+ " g_feature_name,"
-				+ " i_containment,"
-				+ " i_feature_footprint"
+				+ " flatfeatureinfo"
 				+ " WHERE"
-				+ " g_feature_name.feature_id=i_feature_footprint.feature_id"
-				+ " AND g_feature_name.feature_id=i_containment.feature_id";
-
-			// int fid;
+				+ " g_feature_name.feature_id=flatfeatureinfo.feature_id";
 			ArrayList<FeatureInfo> features = new ArrayList<FeatureInfo>();
 			FeatureInfo fi = null;
 			Statement st = null;
@@ -743,7 +760,8 @@ public class ADLGazetteer extends BGManager {
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
 				query = query.concat(" AND lower(g_feature_name.name) = '"
-						+ searchname.toLowerCase().trim() + "';");
+//						+ searchname.toLowerCase().trim() + "';");
+				+ prepSearchName(feature) + "';");
 				// select feature_id, name 
 				// from g_feature_name 
 				// where lower(name) ='santa rosa';
@@ -808,13 +826,19 @@ public class ADLGazetteer extends BGManager {
 				while (rs.next()) {
 					fi = new FeatureInfo();
 					fi.featureID = new Integer(rs.getString(1)).intValue();
-					fi.parentFeatureID = new Integer(rs.getString(2)).intValue();
-					fi.parentFeatureType = new Integer(rs.getString(3)).intValue();
-					fi.latitude = rs.getDouble(4);
-					fi.longitude = rs.getDouble(5);
-					fi.extentInMeters = rs.getDouble(6);
+					fi.latitude = rs.getDouble(2);
+					fi.longitude = rs.getDouble(3);
+					fi.extentInMeters = rs.getDouble(4);
+					fi.geomminy = rs.getDouble(5);
+					fi.geomminx = rs.getDouble(6);
+					fi.geommaxy = rs.getDouble(7);
+					fi.geommaxx = rs.getDouble(8);
+					fi.name = new String(rs.getString(9));
+					fi.classificationTerm = new String(rs.getString(10));
+					fi.mapAccuracyInMeters = rs.getDouble(11);
+					fi.coordPrecision = rs.getDouble(12);
+					fi.coordSource = rs.getString(13);
 					fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
-					fi.name = rs.getString(7);
 					features.add(fi);
 				}
 				rs.close();
@@ -1692,6 +1716,52 @@ public class ADLGazetteer extends BGManager {
 		}
 	}
 
+	public FeatureInfo lookupFeatureMetadata(Connection gdb, FeatureInfo fi) {
+		Statement st = null;
+		String query = "SELECT"
+			+ " displayname,"
+			+ " i_scheme_term.term,"
+			+ " g_collection.name,"
+			+ " g_collection.mapaccuracyinmeters,"
+			+ " g_collection.coordprecision,"
+			+ " g_collection.name"
+			+ " FROM"
+			+ " g_feature,"
+			+ " g_feature_displayname,"
+			+ " i_scheme_term,"
+			+ " i_classification,"
+			+ " g_collection"
+			+ " WHERE"
+			+ " g_feature.feature_id=i_classification.feature_id"
+			+ " AND g_feature.feature_id=g_feature_displayname.feature_id"
+			+ " AND i_classification.classification_term_id=i_scheme_term.scheme_term_id"
+			+ " AND g_feature.collection_id=g_collection.collection_id"
+			+ " AND g_feature.feature_id = " + fi.featureID;
+		try {
+			st = gdb.createStatement();
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		try {
+			ResultSet rs = st.executeQuery(query);
+	
+			while (rs.next()) {
+				fi.name = new String(rs.getString(1));
+				fi.classificationTerm = new String(rs.getString(2));
+				fi.coordSource = new String(rs.getString(3));
+				fi.mapAccuracyInMeters = rs.getDouble(4);
+				fi.coordPrecision = rs.getDouble(5);
+				fi.coordSource = rs.getString(6);
+			}
+			rs.close();
+			st.close();
+			return fi;
+		} catch (SQLException e) {
+			log.error(e.toString() + "\n" + query);
+		}
+		return null;
+	}
+
 	public String lookupFeatureType(Connection gdb, int featureID) {
 		String s = null;
 		String query = "SELECT"
@@ -1965,52 +2035,6 @@ public class ADLGazetteer extends BGManager {
 		fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
 	}
 
-	public FeatureInfo lookupFeatureMetadata(Connection gdb, FeatureInfo fi) {
-		Statement st = null;
-		String query = "SELECT"
-			+ " displayname,"
-			+ " i_scheme_term.term,"
-			+ " g_collection.name,"
-			+ " g_collection.mapaccuracyinmeters,"
-			+ " g_collection.coordprecision,"
-			+ " g_collection.name"
-			+ " FROM"
-			+ " g_feature,"
-			+ " g_feature_displayname,"
-			+ " i_scheme_term,"
-			+ " i_classification,"
-			+ " g_collection"
-			+ " WHERE"
-			+ " g_feature.feature_id=i_classification.feature_id"
-			+ " AND g_feature.feature_id=g_feature_displayname.feature_id"
-			+ " AND i_classification.classification_term_id=i_scheme_term.scheme_term_id"
-			+ " AND g_feature.collection_id=g_collection.collection_id"
-			+ " AND g_feature.feature_id = " + fi.featureID;
-		try {
-			st = gdb.createStatement();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		try {
-			ResultSet rs = st.executeQuery(query);
-
-			while (rs.next()) {
-				fi.name = new String(rs.getString(1));
-				fi.classificationTerm = new String(rs.getString(2));
-				fi.coordSource = new String(rs.getString(3));
-				fi.mapAccuracyInMeters = rs.getDouble(4);
-				fi.coordPrecision = rs.getDouble(5);
-				fi.coordSource = rs.getString(6);
-			}
-			rs.close();
-			st.close();
-			return fi;
-		} catch (SQLException e) {
-			log.error(e.toString() + "\n" + query);
-		}
-		return null;
-	}
-	
 	public void lookupQuickAttributes(Connection gdb, FeatureInfo fi) {
 		double lat = 90, lng = 0, radius = 0;
 //		double acc = 1000; // Use default 1000 meter map accuracy if not given

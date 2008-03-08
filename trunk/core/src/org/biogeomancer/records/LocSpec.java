@@ -689,6 +689,14 @@ public class LocSpec {
 		return uc.unit2meters(offsetuncertainty, offsetunit);
 	}
 
+	public String getCounts(String prefix){
+		String s= new String("\n"+prefix+"FeatureInfos: "+featureinfos.size());
+		for( FeatureInfo fi: this.featureinfos) {
+//			s=s.concat(""+fi.featureID);
+		}
+		return s;
+	}
+
 	public void interpretElevation(SupportedLanguages lang) {
 		ielevation = ielevationunits = null;
 		if (isElevation(velevation, velevationunits) == false)
@@ -1220,6 +1228,12 @@ public class LocSpec {
 	public boolean containsParentFeature(int parentFeatureID){
 		for(FeatureInfo f:featureinfos){
 			if(f.parentFeatureID==parentFeatureID) return true;
+		}
+		return false;
+	}
+	public boolean overlapsFeature(FeatureInfo f){
+		for(FeatureInfo fi:featureinfos){
+			if(fi.overlapsFeature(f)) return true;
 		}
 		return false;
 	}

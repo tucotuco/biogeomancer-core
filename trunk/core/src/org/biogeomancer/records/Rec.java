@@ -277,7 +277,16 @@ public class Rec extends HashMap<String, String> {
 		return s;
 	}
 
-	public void set(String concept, String value) {
+	public String getCounts(String prefix){
+		String s = new String("Record: "+uFullLocality);
+		s=s.concat("\n"+prefix+"Clauses: "+clauses.size());
+		for( Clause c: this.clauses) {
+			s=s.concat(c.getCounts(prefix+prefix));
+		}
+		return s;
+	}
+
+  public void set(String concept, String value) {
     super.put(concept, value);
   }
 

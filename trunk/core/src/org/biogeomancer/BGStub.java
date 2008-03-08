@@ -59,7 +59,7 @@ public class BGStub {
         GeorefManager georefmanager = new GeorefManager(recset);
         GeorefPreferences prefs = new GeorefPreferences();
         prefs.locinterp = props.getProperty("interpreter");
-        georefmanager.georeference(prefs);
+        georefmanager.newGeoreference(prefs);
       }
       ValidationManager vm = new ValidationManager(props, recset);
       if (vm.enabled()) {
