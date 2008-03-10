@@ -55,7 +55,7 @@ public class ADLGazetteer extends BGManager {
 			if (gdb == null || features == null || feature == null
 					|| querytype == null)
 				return false;
-			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
+			String searchname = new String(feature.replace("'", "\\'"));
 			FeatureInfo fi = null;
 			Statement st = null;
 			boolean featureadded = false;
@@ -192,7 +192,7 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (feature == null || querytype == null)
 				return false;
-			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
+			String searchname = new String(feature.replace("'", "\\'"));
 			FeatureInfo fi = null;
 			Statement st = null;
 			boolean featureadded = false;
@@ -342,7 +342,7 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (gdb == null || feature == null || querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
+			String searchname = new String(feature.replace("'", "\\'"));
 			String query = "empty";
 			int fid;
 			ArrayList<FeatureInfo> features = new ArrayList<FeatureInfo>();
@@ -494,7 +494,7 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (gdb == null || feature == null || querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
+			String searchname = new String(feature.replace("'", "\\'"));
 			String query = "empty";
 			int fid;
 			ArrayList<FeatureInfo> features = new ArrayList<FeatureInfo>();
@@ -584,7 +584,7 @@ public class ADLGazetteer extends BGManager {
 				String feature, String querytype) {
 			if (gdb == null || feature == null || querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
+			String searchname = new String(feature.replace("'", "\\'"));
 //			double lat = 90, lng = 0;
 //			double radius = -1;
 //			String displayname = null;
@@ -721,11 +721,13 @@ public class ADLGazetteer extends BGManager {
 			}
 			return null;
 		}
-		public ArrayList<FeatureInfo> selectFeatureParentTypeByName(Connection gdb,
-				String feature, String querytype) {
-			if (gdb == null || feature == null || querytype == null)
+		public ArrayList<FeatureInfo> selectFlatFeatureInfoByName(Connection gdb,
+				String feature, int featuretype, String querytype) {
+			if (gdb == null 
+					|| feature == null 
+					|| querytype == null)
 				return null;
-			String searchname = new String(feature.replace("'", "\\'").replace(" County", ""));
+			String searchname = new String(feature.replace("'", "\\'"));
 			double lat = 90, lng = 0, radius = 0;
 			String query = 
 				"SELECT"
@@ -750,6 +752,7 @@ public class ADLGazetteer extends BGManager {
 			ArrayList<FeatureInfo> features = new ArrayList<FeatureInfo>();
 			FeatureInfo fi = null;
 			Statement st = null;
+			ResultSet rs = null;
 
 			// Potential query types in order of most useful execution:
 			// (all assume case is ignored and diacritical equivalence)
@@ -761,68 +764,66 @@ public class ADLGazetteer extends BGManager {
 				// Make sure database is indexed on lower(name)
 				query = query.concat(" AND lower(g_feature_name.name) = '"
 //						+ searchname.toLowerCase().trim() + "';");
-				+ prepSearchName(feature) + "';");
+				+ prepSearchName(feature) + "'");
 				// select feature_id, name 
 				// from g_feature_name 
 				// where lower(name) ='santa rosa';
-				try {
-					st = gdb.createStatement();
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.println(query);
-				}
-			} else if (querytype.equalsIgnoreCase("contains-phrase") /*
-			 * &&
-			 * searchname.length() >
-			 * 3
-			 */) {
+			} else if (querytype.equalsIgnoreCase("contains-phrase")) { 
+				// && searchname.length() > 3
 				// Make sure database is indexed properly for contains phrase
 				query = query.concat(" AND lower(g_feature_name.name) LIKE'%"
-						+ searchname.toLowerCase().trim() + "%';");
+						+ searchname.toLowerCase().trim() + "%'");
 				// select feature_id, name 
 				// from g_feature_name 
 				// where lower(name) LIKE '%santa rosa%';
 				log.info("Contains-phrase query required for feature name: "
 						+ searchname.toLowerCase().trim() + ". " + query);
-				try {
-					st = gdb.createStatement();
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.println(query);
-				}
 			} else if (querytype.equalsIgnoreCase("contains-all-words")) {
 				// Make sure database is indexed properly for contains words queries
 				query = query.concat(" AND idxfti@@to_tsquery('default','"
-						+ searchname.toLowerCase().trim().replace(" ", "&") + "');");
+						+ searchname.toLowerCase().trim().replace(" ", "&") + "')");
 				// select feature_id, name, idxfti 
 				// from g_feature_name 
 				// where idxfti@@to_tsquery('default','santa&ROSA');
 				log.info("Contains-all-words query required for feature name: "
 						+ searchname.toLowerCase().trim() + ". " + query);
-				try {
-					st = gdb.createStatement();
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.println(query);
-				}
 			} else if (querytype.equalsIgnoreCase("contains-any-words")) {
 				// Make sure database is indexed properly for contains words
 				query = query.concat(" AND idxfti@@to_tsquery('default','"
-						+ searchname.toLowerCase().trim().replace(" ", "|") + "');");
+						+ searchname.toLowerCase().trim().replace(" ", "|") + "')");
 				// select feature_id, name, idxfti 
 				// from g_feature_name 
 				// where idxfti@@to_tsquery('default','santa|ROSA');
 				log.info("Contains-any-words query required for feature name: "
 						+ searchname.toLowerCase().trim() + ". " + query);
-				try {
-					st = gdb.createStatement();
-				} catch (SQLException e) {
-					e.printStackTrace();
-					System.out.println(query);
-				}
+			}
+			
+			// Add WHERE clause for feature type to look up. 
+			// 754 = countries (country field)
+			// 755 = countries, 1st order divisions (stateprvince)
+			// 756 = countries, 2nd order divisions (county)
+			// 757 = countries, 3rd order divisions (county)
+			// 758 = countries, 4th order divisions (county)
+			// 1012 = countries, 5th order divisions (county)
+			// 1013 = countries, 6th order divisions (county)
+			
+			if(featuretype==0){
+				query = query.concat(";");
+			} else if(featuretype==754 || featuretype==755){
+				query = query.concat(" AND term_id =" + featuretype + ";");
+			} else if(featuretype==756){
+				query = query.concat(" AND term_id IN (756, 757, 758, 1012, 1013);");
 			}
 			try {
-				ResultSet rs = st.executeQuery(query);
+				st = gdb.createStatement();
+			} catch (SQLException e) {
+				e.printStackTrace();
+				System.out.println(query);
+				return null;
+			}
+			try {
+//				ResultSet rs = st.executeQuery(query);
+				rs = st.executeQuery(query);
 				while (rs.next()) {
 					fi = new FeatureInfo();
 					fi.featureID = new Integer(rs.getString(1)).intValue();
@@ -846,6 +847,13 @@ public class ADLGazetteer extends BGManager {
 				return features;
 			} catch (SQLException e) {
 				log.error(e.toString() + "\n" + query);
+			}
+			try {
+				st.close();
+				rs.close();
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 			return null;
 		}
@@ -1191,18 +1199,20 @@ public class ADLGazetteer extends BGManager {
 		return fis;
 	}
 
-	public ArrayList<FeatureInfo> featureParentLookup(Connection gdb,
-			String feature, String querytype, String logtype) {
-		if (gdb == null || feature == null || querytype == null
-				|| feature.length() == 0 || querytype.length() == 0)
+	public ArrayList<FeatureInfo> newFeatureInfoLookup(Connection gdb,
+			String feature, int featuretype, String querytype, String logtype) {
+		if (feature == null 
+				|| querytype == null
+				|| feature.length() == 0 
+				|| querytype.length() == 0)
 			return null;
 		ArrayList<FeatureInfo> fis = null;
 		if(logtype==null){
-			fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+			fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
 		}else{
 		if (logtype.equals("log")) {
 			long starttime = System.currentTimeMillis();
-			fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+			fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
 			long endtime = System.currentTimeMillis();
 			if (fis == null || fis.isEmpty()) {
 				log.info("Feature:\t" + feature + ";\tQuery type: " + querytype
@@ -1214,7 +1224,7 @@ public class ADLGazetteer extends BGManager {
 			}
 		} else if (logtype.equals("system")) {
 			long starttime = System.currentTimeMillis();
-			fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+			fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
 			long endtime = System.currentTimeMillis();
 			if (fis == null || fis.isEmpty()) {
 				System.out.println("Feature:\t" + feature + ";\tQuery type: "
@@ -1226,7 +1236,66 @@ public class ADLGazetteer extends BGManager {
 						+ (endtime - starttime) + "(ms)");
 			}
 		} else {
-				fis = iFeatureName.selectFeatureParentTypeByName(gdb, feature, querytype);
+				fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
+		}
+		}
+		if(fis!=null){
+		// Remove duplicate features.
+		for (int i = 0; i < fis.size(); i++) {
+			for (int j = 0; j < fis.size(); j++) {
+				if (i != j) {
+					if (fis.get(i).featureID == fis.get(j).featureID) {
+						// Two features may have the same id if they came from different
+						// databases (e.g., userplaces and worldplaces), so check if the
+						// names are also the same.
+						if (fis.get(i).name.equalsIgnoreCase(fis.get(j).name)) {
+							fis.remove(j);
+							j--;
+						}
+					}
+				}
+			}
+		}
+		}
+		return fis;
+	}
+
+	public ArrayList<FeatureInfo> featureInfoLookup(Connection gdb,
+			String feature, int featuretype, String querytype, String logtype) {
+		if (gdb == null || feature == null || querytype == null
+				|| feature.length() == 0 || querytype.length() == 0)
+			return null;
+		ArrayList<FeatureInfo> fis = null;
+		if(logtype==null){
+			fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
+		}else{
+		if (logtype.equals("log")) {
+			long starttime = System.currentTimeMillis();
+			fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
+			long endtime = System.currentTimeMillis();
+			if (fis == null || fis.isEmpty()) {
+				log.info("Feature:\t" + feature + ";\tQuery type: " + querytype
+						+ ";\tCount: 0;\tElapsed Time: " + (endtime - starttime) + "(ms)");
+			} else {
+				log.info("Feature:\t" + feature + ";\tQuery type: " + querytype
+						+ ";\tCount: " + fis.size() + ";\tElapsed Time: "
+						+ (endtime - starttime) + "(ms)");
+			}
+		} else if (logtype.equals("system")) {
+			long starttime = System.currentTimeMillis();
+			fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
+			long endtime = System.currentTimeMillis();
+			if (fis == null || fis.isEmpty()) {
+				System.out.println("Feature:\t" + feature + ";\tQuery type: "
+						+ querytype + ";\tCount: 0;\tLookup Time: " + (endtime - starttime)
+						+ "(ms)");
+			} else {
+				System.out.println("Feature:\t" + feature + ";\tQuery type: "
+						+ querytype + ";\tCount: " + fis.size() + ";\tLookup Time: "
+						+ (endtime - starttime) + "(ms)");
+			}
+		} else {
+				fis = iFeatureName.selectFlatFeatureInfoByName(gdb, feature, featuretype, querytype);
 		}
 		}
 		if(fis!=null){
@@ -1898,25 +1967,6 @@ public class ADLGazetteer extends BGManager {
 		fi.longitude = lng;
 		fi.extentInMeters = radius;
 		fi.geodeticDatum = DatumManager.getInstance().getDatum("WGS84");
-	}
-
-	public double lookupGeomMinx(Connection gdb, int featureID) {
-		double r = 0;
-		String query = "SELECT geom_minx " + "FROM i_feature_footprint "
-		+ "WHERE feature_id=" + featureID + ";";
-		try {
-			Statement st = gdb.createStatement();
-			ResultSet rs = st.executeQuery(query);
-			rs.next();
-			if (rs.getRow() != 0) { // has rows
-				r = rs.getDouble(1);
-			}
-			rs.close();
-			st.close();
-		} catch (SQLException e) {
-			log.error(e.toString());
-		}
-		return r;
 	}
 
 	public double lookupMapAccuracyInMeters(Connection gdb, int featureID) {

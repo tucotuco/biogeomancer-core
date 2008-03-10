@@ -148,8 +148,9 @@ public class ShapeManager extends BGManager {
     // TRSS, UTM
     // These locTypes interpreted:
     // BF, BP, F, P, ADM, FOH, POH, NN, UNK, FOO, FH, PH, NF, NP, FO, PO, TRS,
-    if (loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("P")
-        || loctype.equalsIgnoreCase("ADM")) {
+    if (loctype.equalsIgnoreCase("F")
+    	|| loctype.equalsIgnoreCase("P")
+        || loctype.toUpperCase().contains("ADM")) {
       // --- LocType "F" ---
       // --- LocType "P" ---
       // --- LocType "ADM" ---
