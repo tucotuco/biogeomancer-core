@@ -123,19 +123,16 @@ public class BGI {
     }
     String verbatimLocality = r.get(fieldName);
     if (verbatimLocality == null) {
-      // TODO: This field name isn't among those in the input RecSet.
+      // This field name isn't among those in the input RecSet.
       // The user must comply with the accepted column names, which
       // are enumerated on the BG web site.
       return;
     }
     try {
       LocalityRec rc = new LocalityRec();
-      // System.out.println(fieldName+"= " + verbatimLocality);
-      rc.localityString = verbatimLocality.trim().replaceAll("\"", "");
-      //BGMUtil.parseLocality(rc);
-      
+      rc.localityString = verbatimLocality.trim().replaceAll("\"", "");      
+
       //set the language of the parser
-      
       Parser.getInstance(GeorefDictionaryManager.getInstance(),
     		  SupportedLanguages.english).process(rc);
 
@@ -143,9 +140,8 @@ public class BGI {
         Clause cl = new Clause();
         r.clauses.add(cl);
         cl.locType = rc.results[i].locType;
-        cl.uLocality = rc.clauseSet[i]; // Added by JRW 060813 to capture
-                                        // original
-        // clause.
+        cl.sourceField = new String(fieldName);
+        cl.uLocality = rc.clauseSet[i]; 
         if (cl.locType.length() > 0 && cl.locType.equals("nn"))
           cl.state = ClauseState.CLAUSE_PARSE_ERROR;
         else
@@ -186,7 +182,7 @@ public class BGI {
             ls.velevationunits = rc.results[i].unit;
           }
         }
-        // JRW commented out the following line in favor f the code block above
+        // JRW commented out the following line in favor of the code block above
         // ls.velevation = rc.results[i].evelation + rc.results[i].unit;
         ls.vlat = rc.results[i].lat;
         ls.vlng = rc.results[i].lng;
@@ -226,7 +222,7 @@ public class BGI {
     }
     String verbatimLocality = r.get(fieldName);
     if (!isAdm || verbatimLocality == null || verbatimLocality.length() < 1) {
-      // TODO: This field name isn't among those in the input RecSet.
+      // This field name isn't among those in the input RecSet.
       // The user must comply with the accepted column names, which
       // are enumerated on the BG web site.
       return;
@@ -238,8 +234,8 @@ public class BGI {
           Clause cl = new Clause();
           r.clauses.add(cl);
           cl.locType = "ADM";
-          cl.uLocality = adm[i].trim(); // Added by JRW 060813 to capture
-          // original clause.
+          cl.sourceField = new String(fieldName);
+          cl.uLocality = adm[i].trim();
           cl.state = ClauseState.CLAUSE_PARSED;
           LocSpec ls = new LocSpec();
           cl.locspecs.add(ls);
@@ -260,23 +256,21 @@ public class BGI {
     }
     String verbatimLocality = r.get(fieldName);
     if (verbatimLocality == null) {
-      // TODO: This field name isn't among those in the input RecSet.
+      // This field name isn't among those in the input RecSet.
       // The user must comply with the accepted column names, which
       // are enumerated on the BG web site.
       return;
     }
     try {
       LocalityRec rc = new LocalityRec();
-      // System.out.println(fieldName+"= " + verbatimLocality);
       rc.localityString = verbatimLocality.trim().replaceAll("\"", "");
       Parser.getInstance(gdm, lang).process(rc);
       for (int i = 0; i < rc.results.length; i++) {
         Clause cl = new Clause();
         r.clauses.add(cl);
         cl.locType = rc.results[i].locType;
-        cl.uLocality = rc.clauseSet[i]; // Added by JRW 060813 to capture
-                                        // original
-        // clause.
+        cl.sourceField = new String(fieldName);
+        cl.uLocality = rc.clauseSet[i];
         if (cl.locType.length() > 0 && cl.locType.equals("nn"))
           cl.state = ClauseState.CLAUSE_PARSE_ERROR;
         else

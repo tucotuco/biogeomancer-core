@@ -158,7 +158,7 @@ public class SpatialDescriptionManager extends BGManager {
 		for( Clause clause : r.clauses) { // do feature lookups for all locspecs for every clause based on locType
 			gdb = null;
 			dbname=new String("not specified");
-			if(clause.locType.equalsIgnoreCase("ADM")){
+			if(clause.locType.toUpperCase().contains("ADM")){
 				gdb=gadm;
 				dbname=new String("gadm");
 				ProcessStep ps = new ProcessStep(process, version, "");
@@ -644,7 +644,7 @@ public class SpatialDescriptionManager extends BGManager {
 					// the geometry for the feature if the loctype is one of the
 					// feature-only loctypes.
 					foundFirstValid=true;
-					if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM")
+					if(loctype.equalsIgnoreCase("F") || loctype.toUpperCase().contains("ADM")
 							|| loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")
 							|| loctype.equalsIgnoreCase("TRSS")){
 						// Use the actual shape for the intersection instead of the point-radius.
@@ -654,7 +654,7 @@ public class SpatialDescriptionManager extends BGManager {
 						if(csource != null && csource.equalsIgnoreCase("usersdb")){
 							encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
 						} 
-						else if(loctype.equalsIgnoreCase("ADM")){
+						else if(loctype.toUpperCase().contains("ADM")){
 							encodedG = new String(gaz.lookupFootprint(gadm, featureid));
 						}
 						else if(loctype.equalsIgnoreCase("F")){
@@ -700,7 +700,7 @@ public class SpatialDescriptionManager extends BGManager {
 					if(distancebetweencenters<=sumofradii){
 						// there is a non-point intersection 
 						// For any of the feature-only loctypes
-						if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM")
+						if(loctype.equalsIgnoreCase("F") || loctype.toUpperCase().contains("ADM")
 								|| loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")
 								|| loctype.equalsIgnoreCase("TRSS")){
 							// Use the actual shape for the intersection instead of the point-radius.
@@ -710,7 +710,7 @@ public class SpatialDescriptionManager extends BGManager {
 							if(csource != null && csource.equalsIgnoreCase("usersdb")){
 								encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
 							} 
-							else if(loctype.equalsIgnoreCase("ADM")){
+							else if(loctype.toUpperCase().contains("ADM")){
 								encodedG = new String(gaz.lookupFootprint(gadm, featureid));
 							}
 							else if(loctype.equalsIgnoreCase("F")){
@@ -803,31 +803,42 @@ public class SpatialDescriptionManager extends BGManager {
 			return;
 		}
 		long starttime = System.currentTimeMillis();
-		// Load features for all clauses in the Rec.
-		getPutativeFeatures(r);
+
+		// Check for ADM subtypes within clauses in the Rec.
+		reassessClauseLocTypes(r);
 		long endtime = System.currentTimeMillis();
+		System.out.println("reassessClauseLocTypes: "+(endtime-starttime)+" ms");
+		System.out.println(r.getCounts("  "));
+		
+		// Load features for all clauses in the Rec.
+		starttime = System.currentTimeMillis();
+		getPutativeFeatures(r);
+		endtime = System.currentTimeMillis();
 		System.out.println("getPutativeFeatures: "+(endtime-starttime)+" ms");
 		System.out.println(r.getCounts("  "));
-		// Remove irrelevant features - ones that don't match the geography
-		// in any other clause.
+
+		// Remove irrelevant features - ones that don't have BB overlap with
+		// features in any other clause.
 		starttime = System.currentTimeMillis();
 //		removeNonmatchingFeatures(r);
 		removeNonoverlappingFeatures(r);
 		endtime = System.currentTimeMillis();
-		System.out.println("removeNonmatchingFeatures: "+(endtime-starttime)+" ms");
+		System.out.println("removeNonoverlappingFeatures: "+(endtime-starttime)+" ms");
 		System.out.println(r.getCounts("  "));
+
 // Metadata capture is slow - move this until after BB filter? Flatten gazetteer?
 		// Get feature metadata for the final candidate features
 //		starttime = System.currentTimeMillis();
 //		getFeatureMetadata(r);
 //		endtime = System.currentTimeMillis();
 //		System.out.println("getFeatureMetadata: "+(endtime-starttime)+" ms");
-// filter by BB?
+
 		// Make Georefs for all clauses in the Rec.
 		starttime = System.currentTimeMillis();
 		makeClauseGeorefs(r);
 		endtime = System.currentTimeMillis();
 		System.out.println("makeClauseGeorefs: "+(endtime-starttime)+" ms");
+
 		// Make Georefs for the Rec
 		starttime = System.currentTimeMillis();
 		makeRecGeorefs(r);
@@ -936,7 +947,7 @@ public class SpatialDescriptionManager extends BGManager {
 					// the geometry for the feature if the loctype is one of the
 					// feature-only loctypes.
 					foundFirstValid=true;
-					if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM")
+					if(loctype.equalsIgnoreCase("F") || loctype.toUpperCase().contains("ADM")
 							|| loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")
 							|| loctype.equalsIgnoreCase("TRSS")){
 						// Use the actual shape for the intersection instead of the point-radius.
@@ -946,8 +957,7 @@ public class SpatialDescriptionManager extends BGManager {
 						if(csource != null && csource.equalsIgnoreCase("usersdb")){
 							encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
 						} 
-						else if(loctype.equalsIgnoreCase("ADM")){
-//							if(gaz.lookupGeomMinx(gadm, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+						else if(loctype.toUpperCase().contains("ADM")){
 							if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 								encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 							} else{
@@ -959,7 +969,6 @@ public class SpatialDescriptionManager extends BGManager {
 							}
 						}
 						else if(loctype.equalsIgnoreCase("F")){
-//							if(gaz.lookupGeomMinx(worldplaces, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 							if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 								encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 							} else{
@@ -1010,7 +1019,7 @@ public class SpatialDescriptionManager extends BGManager {
 					if(distancebetweencenters<=sumofradii){
 						// there is a non-point intersection 
 						// For any of the feature-only loctypes
-						if(loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("ADM")
+						if(loctype.equalsIgnoreCase("F") || loctype.toUpperCase().contains("ADM")
 								|| loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS")
 								|| loctype.equalsIgnoreCase("TRSS")){
 							// Use the actual shape for the intersection instead of the point-radius.
@@ -1020,8 +1029,7 @@ public class SpatialDescriptionManager extends BGManager {
 							if(csource != null && csource.equalsIgnoreCase("usersdb")){
 								encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
 							} 
-							else if(loctype.equalsIgnoreCase("ADM")){
-//								if(gaz.lookupGeomMinx(gadm, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
+							else if(loctype.toUpperCase().contains("ADM")){
 								if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 									encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 								} else{
@@ -1033,7 +1041,6 @@ public class SpatialDescriptionManager extends BGManager {
 								}
 							}
 							else if(loctype.equalsIgnoreCase("F")){
-//								if(gaz.lookupGeomMinx(worldplaces, featureid)<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 								if(g1.featureinfos.get(0).geomminx<=-180){ // This is a temporary fix to overcome problems in the gazetteer for features crossing longitude 180.
 									encodedG=makeEncodedGeometry(g1.featureinfos.get(0));
 								} else{
@@ -1137,7 +1144,7 @@ public class SpatialDescriptionManager extends BGManager {
 		Connection gdb = null;
 		for(Clause clause : r.clauses){	
 			gdb = null;
-			if(clause.locType.equalsIgnoreCase("ADM")){
+			if(clause.locType.toUpperCase().contains("ADM")){
 				gdb=gadm;
 			} else if(clause.locType.equalsIgnoreCase("TRS")){
 				gdb=plss;
@@ -1229,6 +1236,31 @@ public class SpatialDescriptionManager extends BGManager {
 		}
 	}
 
+	public void reassessClauseLocTypes(Rec r){
+		if( r == null ) return;
+		if( r.clauses == null || r.clauses.size() == 0) {
+			r.state = RecState.REC_NO_CLAUSES_ERROR;
+			return;
+		}
+		for( Clause clause : r.clauses) { // do feature lookups for all locspecs for every clause based on locType
+			if(clause.locType.toUpperCase().contains("ADM")){
+				if(clause.sourceField.equalsIgnoreCase("country")){
+					clause.locType = new String("ADM0");
+				} else if(clause.sourceField.equalsIgnoreCase("stateprovince")){
+					clause.locType = new String("ADM1");
+				} else if(clause.sourceField.equalsIgnoreCase("county")){
+					clause.locType = new String("ADM2");
+				}				
+			} else if(clause.locType.equalsIgnoreCase("F")){
+				if(clause.uLocality.toLowerCase().contains(" county")
+						|| clause.uLocality.toLowerCase().contains(" co.")
+						|| clause.uLocality.toLowerCase().contains(" parish")){
+					clause.locType = new String("ADM2");
+				}
+			}
+		}
+	}
+	
 	public void getPutativeFeatures(Rec r){
 		String version = new String("getPutativeFeatures(Rec):20080202");
 		String process = new String("SpatialDescriptionManager");
@@ -1238,19 +1270,25 @@ public class SpatialDescriptionManager extends BGManager {
 			return;
 		}
 		/* For Every LocSpec in every Clause, populate the featureinfos
-		 * with only the feature, parent, and parent type info
 		 */
 		Connection gdb = null;
 		String dbname = new String("not specified");
 		for( Clause clause : r.clauses) { // do feature lookups for all locspecs for every clause based on locType
 			gdb = null;
 			dbname=new String("not specified");
-			if(clause.locType.equalsIgnoreCase("ADM")){
+			if(clause.locType.toUpperCase().contains("ADM")){
+				int featuretype=0;
+				if(clause.locType.equalsIgnoreCase("ADM0")){
+					featuretype=754; // countries
+				} else if (clause.locType.equalsIgnoreCase("ADM1")){
+					featuretype=755; // countries, 1st order divisions
+				} else if (clause.locType.equalsIgnoreCase("ADM2")){
+					featuretype=756;
+				}
 				gdb=gadm;
 				dbname=new String("gadm");
 				ProcessStep ps = new ProcessStep(process, version, "");
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
-				// The following could be made into a parentlookup as well, but not currently worth the trouble
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, featuretype, "equals-ignore-case", null);
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
 					// TODO: other kinds of lookups
@@ -1264,7 +1302,7 @@ public class SpatialDescriptionManager extends BGManager {
 				gdb=worldplaces;
 				dbname=new String("worldplaces");
 				ProcessStep ps = new ProcessStep(process, version, "");
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 				// The following could be made into a parentlookup as well, but not currently worth the trouble
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1283,7 +1321,7 @@ public class SpatialDescriptionManager extends BGManager {
 					clause.locspecs.get(0).interpretHeading(SupportedLanguages.english);
 				}
 				ProcessStep ps = new ProcessStep(process, version, "");
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 				// The following could be made into a parentlookup as well, but not currently worth the trouble
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1301,7 +1339,7 @@ public class SpatialDescriptionManager extends BGManager {
 					clause.locspecs.get(0).interpretOffset(SupportedLanguages.english);
 				}
 				ProcessStep ps = new ProcessStep(process, version, "");
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 				// The following could be made into a parentlookup as well, but not currently worth the trouble
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1319,7 +1357,7 @@ public class SpatialDescriptionManager extends BGManager {
 					clause.locspecs.get(0).interpretSubdivision(SupportedLanguages.english);
 				}
 				ProcessStep ps = new ProcessStep(process, version, "");
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 				// The following could be made into a parentlookup as well, but not currently worth the trouble
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1334,7 +1372,7 @@ public class SpatialDescriptionManager extends BGManager {
 				gdb=worldplaces;
 				dbname=new String("worldplaces");
 				ProcessStep ps = new ProcessStep(process, version, "");
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 				// The following could be made into a parentlookup as well, but not currently worth the trouble
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1355,7 +1393,7 @@ public class SpatialDescriptionManager extends BGManager {
 					clause.locspecs.get(0).interpretHeadingNS(SupportedLanguages.english);
 				}
 				ProcessStep ps = new ProcessStep(process, version, "");
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 				// The following could be made into a parentlookup as well, but not currently worth the trouble
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1376,7 +1414,7 @@ public class SpatialDescriptionManager extends BGManager {
 				dbname=new String("worldplaces");
 				if(clause.locspecs.size()>0){
 					ProcessStep ps = new ProcessStep(process, version, "");
-					clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.uLocality, "equals-ignore-case", null);
+					clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.uLocality, 0, "equals-ignore-case", null);
 					// The following could be made into a parentlookup as well, but not currently worth the trouble
 					gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.uLocality, "equals-ignore-case");
 					if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1403,7 +1441,7 @@ public class SpatialDescriptionManager extends BGManager {
 					if( clause.uLocality.equalsIgnoreCase(testname)){
 						// The uninterpreted clause contains the putative feature name. In other words, proceed with 
 						// cases such as uLocality="North Haven", but not with uLocality="North of Haven".
-						clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, testname, "equals-ignore-case", null);
+						clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, testname, 0, "equals-ignore-case", null);
 						// The following could be made into a parentlookup as well, but not currently worth the trouble
 						gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, testname, "equals-ignore-case");
 						if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1431,7 +1469,7 @@ public class SpatialDescriptionManager extends BGManager {
 				dbname=new String("worldplaces");
 				ProcessStep ps = new ProcessStep(process, version, "");
 				if(clause.locspecs.size()>1){
-					clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+					clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 					// The following could be made into a parentlookup as well, but not currently worth the trouble
 					gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 					if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
@@ -1440,7 +1478,7 @@ public class SpatialDescriptionManager extends BGManager {
 					} else{
 						ps.method=ps.method.concat("Found "+clause.locspecs.get(0).featureinfos.size()+" features matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type equals-ignore-case.");
 					}
-					clause.locspecs.get(1).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(1).featurename, "equals-ignore-case", null);
+					clause.locspecs.get(1).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(1).featurename, 0, "equals-ignore-case", null);
 					// The following could be made into a parentlookup as well, but not currently worth the trouble
 					gaz.addFeatures(userplaces, clause.locspecs.get(1).featureinfos, clause.locspecs.get(1).featurename, "equals-ignore-case");
 					if(clause.locspecs.get(1).featureinfos==null || clause.locspecs.get(1).featureinfos.size()==0){
@@ -1476,7 +1514,7 @@ public class SpatialDescriptionManager extends BGManager {
 				if(clause.locspecs.size()>0){
 					clause.locspecs.get(0).interpretTRS();
 				}
-				clause.locspecs.get(0).featureinfos = gaz.featureParentLookup(gdb, clause.locspecs.get(0).featurename, "equals-ignore-case", null);
+				clause.locspecs.get(0).featureinfos = gaz.featureInfoLookup(gdb, clause.locspecs.get(0).featurename, 0, "equals-ignore-case", null);
 				// The following could be made into a parentlookup as well, but not currently worth the trouble
 				gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename, "equals-ignore-case");
 				if(clause.locspecs.get(0).featureinfos==null || clause.locspecs.get(0).featureinfos.size()==0){
