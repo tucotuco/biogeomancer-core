@@ -238,6 +238,13 @@ public class LocSpec {
 		return true;
 	}
 
+	public boolean containsParentFeature(int parentFeatureID){
+		for(FeatureInfo f:featureinfos){
+			if(f.parentFeatureID==parentFeatureID) return true;
+		}
+		return false;
+	}
+
 	public int finishTRSSection(){
 		Integer sec = null;
 		try { // Try to make a double out of the vsection value.
@@ -255,6 +262,15 @@ public class LocSpec {
 		}
 		return 0;
 	}
+
+	public String getCounts(String prefix){
+		if(featureinfos==null) return "0";
+			String s= new String("\n"+prefix+"FeatureInfos: "+featureinfos.size());
+			for( FeatureInfo fi: this.featureinfos) {
+	//			s=s.concat(""+fi.featureID);
+			}
+			return s;
+		}
 
 	public double getElevationUncertaintyInMeters() {
 		// determine the uncertainty associated with the elevation as found in
@@ -687,14 +703,6 @@ public class LocSpec {
 		UnitConverterManager uc = UnitConverterManager.getInstance();
 		// Now just convert it to meters and send it home.
 		return uc.unit2meters(offsetuncertainty, offsetunit);
-	}
-
-	public String getCounts(String prefix){
-		String s= new String("\n"+prefix+"FeatureInfos: "+featureinfos.size());
-		for( FeatureInfo fi: this.featureinfos) {
-//			s=s.concat(""+fi.featureID);
-		}
-		return s;
 	}
 
 	public void interpretElevation(SupportedLanguages lang) {
@@ -1225,13 +1233,8 @@ public class LocSpec {
 		return true; // for now...
 	}
 
-	public boolean containsParentFeature(int parentFeatureID){
-		for(FeatureInfo f:featureinfos){
-			if(f.parentFeatureID==parentFeatureID) return true;
-		}
-		return false;
-	}
 	public boolean overlapsFeature(FeatureInfo f){
+		if(featureinfos==null) return false;
 		for(FeatureInfo fi:featureinfos){
 			if(fi.overlapsFeature(f)) return true;
 		}

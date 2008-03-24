@@ -329,7 +329,7 @@ public class ADLGazetteer extends BGManager {
 		}
 		
 		public String prepSearchName(String s){
-			String searchname = new String(s.toLowerCase().replace("'", "\\'")
+			String searchname = new String(s.toLowerCase()
 					.replace("county", "").replace("co.", "")
 					.replace("prov.", "").replace("provincia","")
 					.replace("dept.","").replace("depto.","").replace("departamento","")
@@ -358,10 +358,12 @@ public class ADLGazetteer extends BGManager {
 			// contains-potential-misspelling
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
-				query = "SELECT DISTINCT " + " feature_id " + " FROM "
-				+ " g_feature_name " + " WHERE " + " lower(name) = '"
-//				+ searchname.toLowerCase().trim() + "';";
-				+ prepSearchName(feature) + "';";
+				query = "SELECT DISTINCT " + " feature_id "
+				+ " FROM g_feature_name "
+				+ " WHERE "
+				+ " lower(name) = '"+ prepSearchName(searchname) 
+				+ "' OR lower(name) = '" + searchname.toLowerCase().trim()
+				+ "';";
 				try {
 					st = gdb.createStatement();
 				} catch (SQLException e) {
@@ -509,10 +511,12 @@ public class ADLGazetteer extends BGManager {
 			// contains-potential-misspelling
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
-				query = "SELECT " + " feature_id " + " FROM " + " g_feature_name "
-				+ " WHERE " + " lower(name) = '" 
-//				+ searchname.toLowerCase().trim() + "';";
-				+ prepSearchName(feature) + "';";
+				query = "SELECT " + " feature_id " 
+				+ " FROM " + " g_feature_name "
+				+ " WHERE "
+				+ " lower(name) = '"+ prepSearchName(searchname) 
+				+ "' OR lower(name) = '" + searchname.toLowerCase().trim()
+				+ "';";
 				
 				try {
 					st = gdb.createStatement();
@@ -638,9 +642,12 @@ public class ADLGazetteer extends BGManager {
 			// contains-potential-misspelling
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
-				query = query.concat(" AND lower(g_feature_name.name) = '"
-//						+ searchname.toLowerCase().trim() + "';");
-						+ prepSearchName(feature) + "';");
+				query = query.concat(
+						" AND (lower(g_feature_name.name) = '"
+						+ prepSearchName(feature) 
+						+ "' OR lower(g_feature_name.name) = '" 
+						+ searchname.toLowerCase().trim()
+						+ "');");
 				// select feature_id, name from g_feature_name where lower(name) ='santa
 				// rosa';
 				try {
@@ -721,14 +728,21 @@ public class ADLGazetteer extends BGManager {
 			}
 			return null;
 		}
-		public ArrayList<FeatureInfo> selectFlatFeatureInfoByName(Connection gdb,
+		public ArrayList<FeatureInfo> selectFlatFeatureInfoByName(Connection igdb,
 				String feature, int featuretype, String querytype) {
-			if (gdb == null 
+			if (igdb == null 
 					|| feature == null 
 					|| querytype == null)
 				return null;
+			Connection gdb = igdb;
 			String searchname = new String(feature.replace("'", "\\'"));
-			double lat = 90, lng = 0, radius = 0;
+			String preppedname = new String(prepSearchName(searchname));
+			if(searchname.toLowerCase().equalsIgnoreCase(preppedname) == false){
+				// means there was a highergeog indicator in the searchname
+				// switch connection to gadm
+				gdb = gadm;
+			}
+//			double lat = 90, lng = 0, radius = 0;
 			String query = 
 				"SELECT"
 				+ " g_feature_name.feature_id,"
@@ -762,9 +776,12 @@ public class ADLGazetteer extends BGManager {
 			// contains-potential-misspelling
 			if (querytype.equalsIgnoreCase("equals-ignore-case")) {
 				// Make sure database is indexed on lower(name)
-				query = query.concat(" AND lower(g_feature_name.name) = '"
-//						+ searchname.toLowerCase().trim() + "';");
-				+ prepSearchName(feature) + "'");
+				query = query.concat(
+						" AND ( lower(g_feature_name.name) = '"
+						+ prepSearchName(feature) 
+						+ "' OR lower(g_feature_name.name) = '" 
+						+ searchname.toLowerCase().trim()
+						+ "')");
 				// select feature_id, name 
 				// from g_feature_name 
 				// where lower(name) ='santa rosa';
@@ -852,7 +869,6 @@ public class ADLGazetteer extends BGManager {
 				st.close();
 				rs.close();
 			} catch (SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			return null;
@@ -876,7 +892,7 @@ public class ADLGazetteer extends BGManager {
 		}
 		Integer z = new Integer(argv[1]);
 		int featureid = z.intValue();
-		String db = argv[0];
+//		String db = argv[0];
 
 		ADLGazetteer adl = null;
 		try {
@@ -1418,8 +1434,8 @@ public class ADLGazetteer extends BGManager {
 			 * 10. envelope (null) 
 			 * 11. geom (POLYGON)
 			 */
-			String fp = new String(makeFootprintEwkt(g));
-			String gp = new String(makeGeomEwkt(g));
+//			String fp = new String(makeFootprintEwkt(g));
+//			String gp = new String(makeGeomEwkt(g));
 			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
 			+ ", ?, ?, ?, ?, 'user', ?, 2, ?, ?, null, " + makeGeomEwkt(g) + ")";
 			//			q = "INSERT INTO i_feature_footprint VALUES (?, " + makeFootprintEwkt(g)
@@ -2200,7 +2216,8 @@ public class ADLGazetteer extends BGManager {
 		try {
 			if(featureid==-1){
 				// Use -1 to set radii for the whole database
-				int min_fid=0, max_fid=0;
+				int min_fid=0;
+				int max_fid=0;
 				Statement st = gdb.createStatement();
 				ResultSet rs = st.executeQuery("SELECT MAX(feature_id) FROM i_feature_footprint");
 				rs.next();
@@ -2405,6 +2422,7 @@ public class ADLGazetteer extends BGManager {
 		+ ")))')";
 	}
 
+/*	
 	private void selectIFeatureFootprint(Connection gdb, int featureid) throws SQLException {
 		if(gdb==null) return;
 		GeometryFactory gf = new GeometryFactory();
@@ -2415,7 +2433,7 @@ public class ADLGazetteer extends BGManager {
 		String q = null;
 		PointRadius pr = null;
 		FeatureInfo fi=null;
-		double radius;
+//		double radius;
 		fi = iFeatureName.selectFeatureById(gdb, featureid);
 		//		lookupQuickAttributes(gdb,fi);
 		encodedG = lookupFootprint(gdb, featureid);
@@ -2431,7 +2449,7 @@ public class ADLGazetteer extends BGManager {
 			}
 		}
 	}
-
+*/
 	public void shutdown() {
 		try {
 			if (gadm != null)

@@ -411,29 +411,7 @@ public class GeorefManager extends BGManager {
 		return false;
 	}
 
-	public List<String> interpretLocalityForFeatures(String locality){
-		Rec r = new Rec();
-		List<String> features = new ArrayList<String>();
-		r.put("locality", locality);
-		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
-		
-		try{
-			this.yaleLocInterp.doParsing(r, "locality",gdm,defaultPrefs.language);
-		} catch (BGI.BGIException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			System.out.println("Error in GeorefManager.georeference()");
-		}
-
-		for(Clause clause : r.clauses){
-			for(LocSpec loc : clause.locspecs){
-				features.add(loc.featurename);
-			}
-		}
-
-		return features;
-	}
-/*	
+	/*	
 	public boolean georeference(Rec rec, int featureid) {
 		// In this method we are going to add a single georeference
 		// to the rec based solely on the feature referenced by featureid
@@ -459,12 +437,12 @@ public class GeorefManager extends BGManager {
 			Rec r = this.recset.recs.get(i);
 			String s1 = new String("Rec:\t" + r.get("id"));
 			this.yaleLocInterp.doParsing(r, "locality");
-			spatialDescriptionManager.doSpatialDescription(r);
+			spatialDescriptionManager.doNewSpatialDescription(r);
 			if (r.georefs == null || r.georefs.size() == 0) {
 				r.clear();
 				s1 = s1.concat(";\tYale failed");
 				this.uiucLocInterp.doParsing(r, "Locality");
-				spatialDescriptionManager.doSpatialDescription(r);
+				spatialDescriptionManager.doNewSpatialDescription(r);
 				if (r.georefs == null || r.georefs.size() == 0) {
 					s1 = s1.concat(";\tUIUC failed");
 				} else {
@@ -495,12 +473,12 @@ public class GeorefManager extends BGManager {
 			Rec r = this.recset.recs.get(i);
 			String s1 = new String("Rec:\t" + r.get("id"));
 			this.uiucLocInterp.doParsing(r, "Locality");
-			spatialDescriptionManager.doSpatialDescription(r);
+			spatialDescriptionManager.doNewSpatialDescription(r);
 			if (r.georefs == null || r.georefs.size() == 0) {
 				r.clear();
 				s1 = s1.concat(";\tUIUC failed");
 				this.yaleLocInterp.doParsing(r, "locality");
-				spatialDescriptionManager.doSpatialDescription(r);
+				spatialDescriptionManager.doNewSpatialDescription(r);
 				if (r.georefs == null || r.georefs.size() == 0) {
 					s1 = s1.concat(";\tYale failed");
 				} else {
@@ -554,63 +532,86 @@ public class GeorefManager extends BGManager {
 	}
 
 	public void interpretForFeatureNames(Rec rec, GeorefPreferences prefs){	
-		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
-		try {
-			//		long interpstarttime = 0, interpendtime = 0;
-			if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
-				//			interpstarttime = System.currentTimeMillis();
-				this.yaleLocInterp.doParsing(rec, "highergeography", true);
-				this.yaleLocInterp.doParsing(rec, "continent", true);
-				this.yaleLocInterp.doParsing(rec, "waterbody", true);
-				this.yaleLocInterp.doParsing(rec, "islandgroup", true);
-				this.yaleLocInterp.doParsing(rec, "island", true);
-				this.yaleLocInterp.doParsing(rec, "country", true);
-				this.yaleLocInterp.doParsing(rec, "stateprovince", true);
-				this.yaleLocInterp.doParsing(rec, "county", true);   
-//				this.yaleLocInterp.doParsing(rec, "locality");
-				this.yaleLocInterp.doParsing(rec, "locality",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimlatitude",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimlongitude",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
-				this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
-
-				//			interpendtime = System.currentTimeMillis();
-				//			s = s.concat(" (default) Yale interpreter elapsed time: "
-				//					+ (interpendtime - interpstarttime) + "(ms)");
-			} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
-				//			interpstarttime = System.currentTimeMillis();
-				this.uiucLocInterp.doParsing(rec, "Locality");
-				this.uiucLocInterp.doParsing(rec, "HigherGeography");
-				this.uiucLocInterp.doParsing(rec, "Continent");
-				this.uiucLocInterp.doParsing(rec, "WaterBody");
-				this.uiucLocInterp.doParsing(rec, "IslandGroup");
-				this.uiucLocInterp.doParsing(rec, "Island");
-				this.uiucLocInterp.doParsing(rec, "Country");
-				this.uiucLocInterp.doParsing(rec, "StateProvince");
-				this.uiucLocInterp.doParsing(rec, "County");
-				this.uiucLocInterp.doParsing(rec, "VerbatimLatitude");
-				this.uiucLocInterp.doParsing(rec, "VerbatimLongitude");
-				this.uiucLocInterp.doParsing(rec, "VerbatimCoordinates");
-				this.uiucLocInterp.doParsing(rec, "VerbatimElevation");
-				//			interpendtime = System.currentTimeMillis();
-				//			s = s.concat(" UIUC interpreter elapsed time: "
-				//					+ (interpendtime - interpstarttime) + "(ms)");
-			} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
-				//			interpstarttime = System.currentTimeMillis();
-				this.TULocInterp.doParsing(rec, "Locality", "Highergeography", "Country", "State", "County");
-				System.out.println(rec);
-				//			interpendtime = System.currentTimeMillis();
-				//			s = s.concat(" Tulane interpreter elapsed time: "
-				//					+ (interpendtime - interpstarttime) + "(ms)");
+			GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
+			try {
+				//		long interpstarttime = 0, interpendtime = 0;
+				if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
+					//			interpstarttime = System.currentTimeMillis();
+					this.yaleLocInterp.doParsing(rec, "highergeography", true);
+					this.yaleLocInterp.doParsing(rec, "continent", true);
+					this.yaleLocInterp.doParsing(rec, "waterbody", true);
+					this.yaleLocInterp.doParsing(rec, "islandgroup", true);
+					this.yaleLocInterp.doParsing(rec, "island", true);
+					this.yaleLocInterp.doParsing(rec, "country", true);
+					this.yaleLocInterp.doParsing(rec, "stateprovince", true);
+					this.yaleLocInterp.doParsing(rec, "county", true);   
+	//				this.yaleLocInterp.doParsing(rec, "locality");
+					this.yaleLocInterp.doParsing(rec, "locality",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimlatitude",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimlongitude",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimcoordinates",gdm,prefs.language);
+					this.yaleLocInterp.doParsing(rec, "verbatimelevation",gdm,prefs.language);
+	
+					//			interpendtime = System.currentTimeMillis();
+					//			s = s.concat(" (default) Yale interpreter elapsed time: "
+					//					+ (interpendtime - interpstarttime) + "(ms)");
+				} else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
+					//			interpstarttime = System.currentTimeMillis();
+					this.uiucLocInterp.doParsing(rec, "Locality");
+					this.uiucLocInterp.doParsing(rec, "HigherGeography");
+					this.uiucLocInterp.doParsing(rec, "Continent");
+					this.uiucLocInterp.doParsing(rec, "WaterBody");
+					this.uiucLocInterp.doParsing(rec, "IslandGroup");
+					this.uiucLocInterp.doParsing(rec, "Island");
+					this.uiucLocInterp.doParsing(rec, "Country");
+					this.uiucLocInterp.doParsing(rec, "StateProvince");
+					this.uiucLocInterp.doParsing(rec, "County");
+					this.uiucLocInterp.doParsing(rec, "VerbatimLatitude");
+					this.uiucLocInterp.doParsing(rec, "VerbatimLongitude");
+					this.uiucLocInterp.doParsing(rec, "VerbatimCoordinates");
+					this.uiucLocInterp.doParsing(rec, "VerbatimElevation");
+					//			interpendtime = System.currentTimeMillis();
+					//			s = s.concat(" UIUC interpreter elapsed time: "
+					//					+ (interpendtime - interpstarttime) + "(ms)");
+				} else if (prefs.locinterp.equalsIgnoreCase("tulane")) {
+					//			interpstarttime = System.currentTimeMillis();
+					this.TULocInterp.doParsing(rec, "Locality", "Highergeography", "Country", "State", "County");
+					System.out.println(rec);
+					//			interpendtime = System.currentTimeMillis();
+					//			s = s.concat(" Tulane interpreter elapsed time: "
+					//					+ (interpendtime - interpstarttime) + "(ms)");
+				}
+			} catch (BGIHmm.BGIHmmException e) {
+				e.printStackTrace();
+			} catch (BGI.BGIException e) {
+				e.printStackTrace();
+			} catch (Exception e) {
+				System.out.println("Error in GeorefManager.georeference()");
 			}
-		} catch (BGIHmm.BGIHmmException e) {
-			e.printStackTrace();
+			System.out.print(rec.getFeatures());
+		}
+
+	public List<String> interpretLocalityForFeatures(String locality){
+		Rec r = new Rec();
+		List<String> features = new ArrayList<String>();
+		r.put("locality", locality);
+		GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
+		
+		try{
+			this.yaleLocInterp.doParsing(r, "locality",gdm,defaultPrefs.language);
 		} catch (BGI.BGIException e) {
 			e.printStackTrace();
 		} catch (Exception e) {
 			System.out.println("Error in GeorefManager.georeference()");
 		}
-		System.out.print(rec.getFeatures());
+	
+		for(Clause clause : r.clauses){
+			for(LocSpec loc : clause.locspecs){
+				features.add(loc.featurename);
+			}
+		}
+	
+		return features;
 	}
 
 	public void interpretTulane() throws bg_geolocate_Exception {
@@ -733,7 +734,7 @@ public class GeorefManager extends BGManager {
 		System.out.println("Recs: " + this.recset.recs.size() + " Clauses: "
 				+ clausecount);
 	}
-
+/*
 	public boolean georeference(GeorefPreferences prefs)
 	throws GeorefManager.GeorefManagerException {
 		if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("all")) {
@@ -789,7 +790,7 @@ public class GeorefManager extends BGManager {
 		}
 		return true;
 	}
-
+*/
 	public boolean newGeoreference(GeorefPreferences prefs)
 	throws GeorefManager.GeorefManagerException {
 		for (Rec rec : this.recset.recs) {

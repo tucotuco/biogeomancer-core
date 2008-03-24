@@ -264,7 +264,123 @@ public class RecSet {
     return recset; // return feature list
   }
 
+  /* 
+  * 
+  public String toXML() {
+    XStream xstream = new XStream();
+    xstream.alias("RECSET", RecSet.class);
+    xstream.alias("REC", Rec.class);
+    xstream.alias("CLAUSE", Clause.class);
+    xstream.alias("LOCSPEC", LocSpec.class);
+    xstream.alias("GEOREF", Georef.class);
+    String xml = xstream.toXML(this);
+    return xml;
+  }
+*/
   /**
+   * getFile()
+   * 
+   * Downloads and saves recset data from a url, then returns it as a new file.
+   */
+  private File getFile(URL fileurl, String destination) {
+    try {
+      String filedata = fileurl.getContent().toString();
+      String filename = destination + fileurl.getFile();
+      System.out.println("DATA FILE NAME = " + filename);
+      BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
+      writer.write(filedata);
+      writer.close();
+      return new File(filename);
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return null;
+  }
+
+private boolean load() throws RecSet.RecSetException { // load a file from
+    // disk
+    if (delineator.equalsIgnoreCase("tab") || delineator.equalsIgnoreCase("\t"))
+      delineator = "\t";
+    else if (delineator.equalsIgnoreCase("comma"))
+      delineator = ",";
+
+    try { // opening file
+      // BufferedReader reader = new BufferedReader(new FileReader(this.file));
+      BufferedReader reader = new BufferedReader(new InputStreamReader(
+          new FileInputStream(this.file), "UTF-8"));
+      Pattern delineation = Pattern.compile(this.delineator);
+      Pattern lineTerminators = Pattern.compile("(?m)$^|[\\r\\n]+\\z");
+      String line = reader.readLine(); // read header definition from file
+
+      if (lineTerminators.matcher(line.subSequence(0, line.length())).matches()) { // get
+        // rid
+        // of
+        // control
+        // characters
+        line = lineTerminators.matcher(line.subSequence(0, line.length()))
+            .replaceAll("");
+      }
+
+      line = line + "\n";
+
+      String[] header = delineation.split(line); // create header definition
+      this.originalheader = delineation.split(line);
+      // for (String name : header)
+      // System.out.println("Header: " + name);
+      for (int i = 0; i < header.length; i++) { // remove leading/trailing white
+        // space
+        header[i] = header[i].toLowerCase().trim();
+        this.originalheader[i] = this.originalheader[i].trim();
+      }
+      String[] row;
+      Rec rec;
+      int rowcount = 0;
+      while ((line = reader.readLine()) != null) { // load each row of file
+        // data
+        if (lineTerminators.matcher(line.subSequence(0, line.length()))
+            .matches()) { // get rid of control characters
+          line = lineTerminators.matcher(line.subSequence(0, line.length()))
+              .replaceAll("");
+          line = line + "\n";
+        }
+
+        row = delineation.split(line);
+        rec = new Rec();
+        for (int i = 0; i < header.length; i++) {
+          if (i < row.length) {
+            // remove leading/trailing white space
+            row[i] = row[i].trim();
+            if (row[i].startsWith("\"") && row[i].endsWith("\"")) // row value
+              // is
+              // surrounded
+              // by double
+              // quotes
+              rec.put(header[i], row[i].substring(1, row[i].length() - 1)); // remove
+            // double
+            // quotes
+            else
+              rec.put(header[i], row[i]);
+          } else
+            rec.put(header[i], null);
+        }
+        // Provide an id if no id record is given in the input.
+        if (rec.get("id") == null) {
+          rowcount++;
+          rec.put("id", String.valueOf(rowcount));
+        }
+        rec.getFullLocality();
+        this.recs.add(rec);
+      }
+    } catch (Exception e) {
+      this.state = RecSetState.RECSET_LOADED;
+      throw this.new RecSetException("Problem loading the data file: "
+          + e.toString(), e);
+    }
+    this.state = RecSetState.RECSET_LOADED;
+    return true;
+  }
+
+/**
    * load()
    * 
    * Loads a recset file from the local filesystem.
@@ -352,121 +468,5 @@ public class RecSet {
     s = s.concat("</RECORDS>\n</RECSET>\n");
 
     return s;
-  }
-
- /* 
-  * 
-  public String toXML() {
-    XStream xstream = new XStream();
-    xstream.alias("RECSET", RecSet.class);
-    xstream.alias("REC", Rec.class);
-    xstream.alias("CLAUSE", Clause.class);
-    xstream.alias("LOCSPEC", LocSpec.class);
-    xstream.alias("GEOREF", Georef.class);
-    String xml = xstream.toXML(this);
-    return xml;
-  }
-*/
-  /**
-   * getFile()
-   * 
-   * Downloads and saves recset data from a url, then returns it as a new file.
-   */
-  private File getFile(URL fileurl, String destination) {
-    try {
-      String filedata = fileurl.getContent().toString();
-      String filename = destination + fileurl.getFile();
-      System.out.println("DATA FILE NAME = " + filename);
-      BufferedWriter writer = new BufferedWriter(new FileWriter(filename));
-      writer.write(filedata);
-      writer.close();
-      return new File(filename);
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
-    return null;
-  }
-
-  private boolean load() throws RecSet.RecSetException { // load a file from
-    // disk
-    if (delineator.equalsIgnoreCase("tab") || delineator.equalsIgnoreCase("\t"))
-      delineator = "\t";
-    else if (delineator.equalsIgnoreCase("comma"))
-      delineator = ",";
-
-    try { // opening file
-      // BufferedReader reader = new BufferedReader(new FileReader(this.file));
-      BufferedReader reader = new BufferedReader(new InputStreamReader(
-          new FileInputStream(this.file), "UTF-8"));
-      Pattern delineation = Pattern.compile(this.delineator);
-      Pattern lineTerminators = Pattern.compile("(?m)$^|[\\r\\n]+\\z");
-      String line = reader.readLine(); // read header definition from file
-
-      if (lineTerminators.matcher(line.subSequence(0, line.length())).matches()) { // get
-        // rid
-        // of
-        // control
-        // characters
-        line = lineTerminators.matcher(line.subSequence(0, line.length()))
-            .replaceAll("");
-      }
-
-      line = line + "\n";
-
-      String[] header = delineation.split(line); // create header definition
-      this.originalheader = delineation.split(line);
-      // for (String name : header)
-      // System.out.println("Header: " + name);
-      for (int i = 0; i < header.length; i++) { // remove leading/trailing white
-        // space
-        header[i] = header[i].toLowerCase().trim();
-        this.originalheader[i] = this.originalheader[i].trim();
-      }
-      String[] row;
-      Rec rec;
-      int rowcount = 0;
-      while ((line = reader.readLine()) != null) { // load each row of file
-        // data
-        if (lineTerminators.matcher(line.subSequence(0, line.length()))
-            .matches()) { // get rid of control characters
-          line = lineTerminators.matcher(line.subSequence(0, line.length()))
-              .replaceAll("");
-          line = line + "\n";
-        }
-
-        row = delineation.split(line);
-        rec = new Rec();
-        for (int i = 0; i < header.length; i++) {
-          if (i < row.length) {
-            // remove leading/trailing white space
-            row[i] = row[i].trim();
-            if (row[i].startsWith("\"") && row[i].endsWith("\"")) // row value
-              // is
-              // surrounded
-              // by double
-              // quotes
-              rec.put(header[i], row[i].substring(1, row[i].length() - 1)); // remove
-            // double
-            // quotes
-            else
-              rec.put(header[i], row[i]);
-          } else
-            rec.put(header[i], null);
-        }
-        // Provide an id if no id record is given in the input.
-        if (rec.get("id") == null) {
-          rowcount++;
-          rec.put("id", String.valueOf(rowcount));
-        }
-        rec.getFullLocality();
-        this.recs.add(rec);
-      }
-    } catch (Exception e) {
-      this.state = RecSetState.RECSET_LOADED;
-      throw this.new RecSetException("Problem loading the data file: "
-          + e.toString(), e);
-    }
-    this.state = RecSetState.RECSET_LOADED;
-    return true;
   }
 }
