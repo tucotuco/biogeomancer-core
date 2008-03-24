@@ -48,12 +48,28 @@ public class Clause
 			if(g.state!=GeorefState.GEOREF_COMPLETED) georefs.remove(g);
 		}
 	}
+	public boolean containsParentFeature(int parentFeatureID){
+		for(LocSpec l:locspecs){
+			if(l.containsParentFeature(parentFeatureID)==true) return true;
+		}
+		return false;
+	}
+
 	public int finishTRSSection(){
 		int sec = locspecs.get(0).finishTRSSection();
 		if (sec > 0 && sec < 37) {
 			iLocality=iLocality.concat(" Section "+sec);
 		}
 		return sec;
+	}
+
+	public String getCounts(String prefix){
+		if(locspecs==null) return "0";
+		String s= new String("\n"+prefix+"LocSpecs: "+locspecs.size());
+		for( LocSpec ls: this.locspecs) {
+			s=s.concat(ls.getCounts(prefix+prefix));
+		}
+		return s;
 	}
 
 	public String getFeatures(){
@@ -77,14 +93,6 @@ public class Clause
 				+prefix+"Clause Georefs:\n");
 		for( Georef g: this.georefs) {
 			s=s.concat(g.getSummary(prefix+prefix));
-		}
-		return s;
-	}
-
-	public String getCounts(String prefix){
-		String s= new String("\n"+prefix+"LocSpecs: "+locspecs.size());
-		for( LocSpec ls: this.locspecs) {
-			s=s.concat(ls.getCounts(prefix+prefix));
 		}
 		return s;
 	}
@@ -281,14 +289,8 @@ public class Clause
 		return iLocality;
 	}
 
-	public boolean containsParentFeature(int parentFeatureID){
-		for(LocSpec l:locspecs){
-			if(l.containsParentFeature(parentFeatureID)==true) return true;
-		}
-		return false;
-	}
-
 	public boolean overlapsFeature(FeatureInfo f){
+		if(locspecs==null) return false;
 		for(LocSpec l:locspecs){
 			if(l.overlapsFeature(f)==true) return true;
 		}
