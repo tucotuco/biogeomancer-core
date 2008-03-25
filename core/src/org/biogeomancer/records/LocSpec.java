@@ -238,6 +238,33 @@ public class LocSpec {
 		return true;
 	}
 
+	public void clear() {
+		featurename = null;
+		voffset = null;
+		voffsetunit = null;
+		vheading = null;
+		vsubdivision = null;
+		voffsetew = null;
+		voffsetewunit = null;
+		voffsetns = null;
+		voffsetnsunit = null;
+		vheadingew = null;
+		vheadingns = null;
+		velevation = null;
+		velevationunits = null;
+		vlat = null;
+		vlng = null;
+		vdatum = null;
+		vutmzone = null;
+		vutme = null;
+		vutmn = null;
+		vtownship = null;
+		vtownshipdir = null;
+		vrange = null;
+		vrangedir = null;
+		vsection = null;
+		state = LocSpecState.LOCSPEC_CREATED;
+	}
 	public boolean containsParentFeature(int parentFeatureID){
 		for(FeatureInfo f:featureinfos){
 			if(f.parentFeatureID==parentFeatureID) return true;
