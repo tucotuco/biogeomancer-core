@@ -1649,7 +1649,21 @@ public class SpatialDescriptionManager extends BGManager {
 			r.state = RecState.REC_NO_CLAUSES_ERROR;
 			return;
 		}
-		for( Clause clause : r.clauses) { // do feature lookups for all locspecs for every clause based on locType
+		for( Clause clause : r.clauses) { 
+			// do feature lookups for all locspecs for every clause based on locType
+			// Hack! TODO: Proper handling of misinterpreted features in Interpreters. Due diligence
+			// would suggest that all feature names should be tested
+			if(clause.locType.toUpperCase().equals("F")==false
+					&&	(clause.uLocality.equalsIgnoreCase("NM") 
+						|| clause.uLocality.equalsIgnoreCase("NE")
+						|| clause.uLocality.equalsIgnoreCase("MI")
+						)){
+					clause.locType=new String("F");
+					for(LocSpec ls : clause.locspecs){
+						ls.clear();
+						ls.featurename=new String(clause.uLocality);
+					}
+			}
 			if(clause.locType.toUpperCase().contains("ADM")){
 				if(clause.sourceField.equalsIgnoreCase("country")){
 					clause.locType = new String("ADM0");
