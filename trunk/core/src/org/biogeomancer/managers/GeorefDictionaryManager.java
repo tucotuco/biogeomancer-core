@@ -159,7 +159,7 @@ public class GeorefDictionaryManager extends BGManager {
       break;
     }
     if (abbreviation == null)
-      log.info("Lookup failed: lookup(" + token + ", " + lang + ") = null");
+      System.out.println("Lookup failed: lookup(" + token + ", " + lang + ") = null");
     return abbreviation;
   }
 
@@ -192,7 +192,7 @@ public class GeorefDictionaryManager extends BGManager {
         }
       }
     }
-    log.info("Concept lookup failed: lookup(" + token + ", " + lang
+    System.out.println("Concept lookup failed: lookup(" + token + ", " + lang
         + ") = null");
     return "unknown";
   }

@@ -249,7 +249,7 @@ public class GeorefManager extends BGManager {
 		gm.newGeoreference(gp);
 		break;
 		}
-		log.info("\nElapsed test time: " + (endtime - starttime) + " (ms)\n");
+		System.out.println("\nElapsed test time: " + (endtime - starttime) + " (ms)\n");
 		gm.shutdown();
 	}
 
@@ -432,7 +432,7 @@ public class GeorefManager extends BGManager {
 		else
 			s = s.concat(recset.filename + "; ");
 		s = s.concat("Count=" + recset.recs.size());
-		log.info(s);
+		System.out.println(s);
 		for (int i = 0; i < this.recset.recs.size(); i++) {
 			Rec r = this.recset.recs.get(i);
 			String s1 = new String("Rec:\t" + r.get("id"));
@@ -451,7 +451,7 @@ public class GeorefManager extends BGManager {
 			} else {
 				s1 = s1.concat(";\tYale succeeded\tUIUC not attempted");
 			}
-			log.info(s1);
+			System.out.println(s1);
 		}
 		return true;
 	}
@@ -468,7 +468,7 @@ public class GeorefManager extends BGManager {
 		else
 			s = s.concat(recset.filename + "; ");
 		s = s.concat("Count=" + recset.recs.size());
-		log.info(s);
+		System.out.println(s);
 		for (int i = 0; i < this.recset.recs.size(); i++) {
 			Rec r = this.recset.recs.get(i);
 			String s1 = new String("Rec:\t" + r.get("id"));
@@ -487,7 +487,7 @@ public class GeorefManager extends BGManager {
 			} else {
 				s1 = s1.concat(";\tUIUC succeeded\tYale not attempted");
 			}
-			log.info(s1);
+			System.out.println(s1);
 		}
 		return true;
 	}
@@ -512,7 +512,7 @@ public class GeorefManager extends BGManager {
 
 	private void init() throws GeorefManagerException {
 		try {
-			log.info("GeorefManager started");
+//			log.info("GeorefManager started");
 			yaleLocInterp = new BGI();
 			// log.info("after BGI()");
 			uiucLocInterp = new BGIHmm();

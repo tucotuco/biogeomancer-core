@@ -778,7 +778,7 @@ public class ADLGazetteer extends BGManager {
 				// Make sure database is indexed on lower(name)
 				query = query.concat(
 						" AND ( lower(g_feature_name.name) = '"
-						+ prepSearchName(feature) 
+						+ preppedname.toLowerCase().trim() 
 						+ "' OR lower(g_feature_name.name) = '" 
 						+ searchname.toLowerCase().trim()
 						+ "')");
