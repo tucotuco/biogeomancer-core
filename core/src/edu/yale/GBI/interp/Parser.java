@@ -211,7 +211,7 @@ public class Parser {
         		"").trim().replaceAll("\\]","").trim().replaceAll(" at ", ", ");
     String s = "";
     
-    //Make sure all numbers and letters are separated from eachother
+    //Make sure all numbers and letters are separated from each other
     if(qs.matches(".*\\d[\\D\\w].*")){
     	String[] t = qs.split("");
     	qs = "";
@@ -219,8 +219,10 @@ public class Parser {
         		
         		//Remove any periods after letters, since they are unneccessary
         		if(t[i].matches("[a-zA-Z]") && t[i+1].matches("\\.")){
-        			t[i+1] = t[i];
-        			continue;
+//           			t[i+1] = t[i];
+        			t[i+1] = " ";
+            	   	qs = qs + t[i] + " ";
+            	   	continue;
         		}
             	//put a space between letter and number, such as 1A -> A 1
         		else if(isNum(t[i]) && t[i+1].matches("[a-zA-Z]")){
