@@ -279,6 +279,18 @@ public class Georef {
 		return (getMinLng()+getMaxLng())/2;
 	}
 
+	public double getCenterOfMassLat(){
+		return geometry.getCentroid().getY();
+	}
+
+	public double getCenterOfMassLng(){
+		return geometry.getCentroid().getX();
+	}
+
+	public Point getCenterOfMass(){
+		return geometry.getCentroid();
+	}
+	
 	public double getDistanceToGeorefCentroid(Georef g){
 		double d = 0;
 		d=this.pointRadius.getDistanceInMetersToCoordinate(g.pointRadius);
