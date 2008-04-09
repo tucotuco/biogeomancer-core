@@ -315,8 +315,8 @@ public class Parser {
      * 
      * qs=buildString(0,phases,", ");
      */
-    
-    return BGMUtil.recoverClauses(qs.trim().split("[;,:]\\s"), this);
+     return BGMUtil.recoverClauses(qs.trim().replaceAll("[;,:]",", ").replaceAll("  "," ").split("[;,:]\\s"), this);
+//    return BGMUtil.recoverClauses(qs.trim().split("[;,:]\\s"), this);
 
   }
 

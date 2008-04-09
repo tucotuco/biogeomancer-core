@@ -192,8 +192,7 @@ public class GeorefDictionaryManager extends BGManager {
         }
       }
     }
-    System.out.println("Concept lookup failed: lookup(" + token + ", " + lang
-        + ") = null");
+//   System.out.println("Concept lookup failed: lookup(" + token + ", " + lang + ") = null");
     return "unknown";
   }
 
