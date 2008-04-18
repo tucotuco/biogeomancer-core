@@ -635,8 +635,9 @@ public class ADLGazetteer extends BGManager {
         if (preppedname.equalsIgnoreCase(searchname) == false) {
           query = query.concat("OR lower(g_feature_name.name) = '"
               + searchname.toLowerCase().trim() + "')");
+        } else {
+          query = query.concat(")");
         }
-        query = query.concat(");");
         // select feature_id, name
         // from g_feature_name
         // where lower(name) ='santa rosa';
