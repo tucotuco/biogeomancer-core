@@ -33,6 +33,7 @@ import org.biogeomancer.records.ProcessStep;
 import org.biogeomancer.records.Rec;
 import org.biogeomancer.records.RecState;
 import org.biogeomancer.records.RecSet.RecSetException;
+import org.biogeomancer.utils.Concepts;
 import org.biogeomancer.utils.PointRadius;
 import org.biogeomancer.utils.SupportedLanguages;
 
@@ -154,10 +155,9 @@ public class SpatialDescriptionManager extends BGManager {
    * String("doSpatialDescription(Rec):20070916"); String process = new
    * String("SpatialDescriptionManager"); if( r == null ) return; if( r.clauses ==
    * null || r.clauses.size() == 0) { r.state = RecState.REC_NO_CLAUSES_ERROR;
-   * return; }
-   *  // For every Clause // Fill in the georefs list with georefs generated for //
-   * every combination of FeatureInfos resulting from // lookupFeature on the
-   * one or two LocSpecs.
+   * return; } // For every Clause // Fill in the georefs list with georefs
+   * generated for // every combination of FeatureInfos resulting from //
+   * lookupFeature on the one or two LocSpecs.
    * 
    * Connection gdb = null; String dbname = new String("not specified"); for(
    * Clause clause : r.clauses) { // do feature lookups for all locspecs for
@@ -426,8 +426,8 @@ public class SpatialDescriptionManager extends BGManager {
    * type contains-any-words."); } else{ ps.method=ps.method.concat("Found
    * "+locspec.featureinfos.size()+" features matching "+locspec.featurename+"
    * in "+dbname+" using query type contains-any-words."); }
-   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); }
-   *  // contains-any-words didn't work, try other method,
+   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); } //
+   * contains-any-words didn't work, try other method,
    * if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
    * ProcessStep ps = new ProcessStep(process, version, "");
    * locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename,
@@ -439,14 +439,14 @@ public class SpatialDescriptionManager extends BGManager {
    * contains-phrase."); } else{ ps.method=ps.method.concat("Found
    * "+locspec.featureinfos.size()+" features matching "+locspec.featurename+"
    * in "+dbname+" using query type contains-phrase."); }
-   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); }
-   *  // contains phrase didn't work, try other method, // such as a pattern
-   * query replacing vowels with wildcard characters
-   * if(locspec.featureinfos==null || locspec.featureinfos.size()==0){ // At
-   * this point, if the locspec still doesn't have any features, the lookup
-   * failed. clause.state = ClauseState.CLAUSE_FEATURE_NOT_FOUND_ERROR;
-   * locspec.state = LocSpecState.LOCSPEC_ERROR_FEATURE_NOT_FOUND; } } }
-   *  // LocSpec Feature lookups are done. Make Shapes for this Clause.
+   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); } //
+   * contains phrase didn't work, try other method, // such as a pattern query
+   * replacing vowels with wildcard characters if(locspec.featureinfos==null ||
+   * locspec.featureinfos.size()==0){ // At this point, if the locspec still
+   * doesn't have any features, the lookup failed. clause.state =
+   * ClauseState.CLAUSE_FEATURE_NOT_FOUND_ERROR; locspec.state =
+   * LocSpecState.LOCSPEC_ERROR_FEATURE_NOT_FOUND; } } } // LocSpec Feature
+   * lookups are done. Make Shapes for this Clause.
    * if(clause.locspecs.get(0).featureinfos != null){ for(int i=0;i<clause.locspecs.get(0).featureinfos.size();i++) { //
    * for every featureinfo in LocSpec1 FeatureInfo featureinfo1 =
    * clause.locspecs.get(0).featureinfos.get(i); FeatureInfo featureinfo2 =
@@ -480,21 +480,18 @@ public class SpatialDescriptionManager extends BGManager {
    * featureinfo2)); } g.uLocality=clause.uLocality;
    * g.addFeatureInfo(featureinfo1); g.state=GeorefState.GEOREF_COMPLETED;
    * clause.state=ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
-   * clause.georefs.add(g); } } } } }
-   *  // Now that georefs have been generated for the clauses, remove any
-   * duplicate georefs within a given clause. // TODO: Determined that this is
-   * probably not necessary.
+   * clause.georefs.add(g); } } } } } // Now that georefs have been generated
+   * for the clauses, remove any duplicate georefs within a given clause. //
+   * TODO: Determined that this is probably not necessary.
    * 
    * for( Clause clause : r.clauses) { // do feature lookups for all locspecs
    * for every clause for(int i=0;i<clause.georefs.size();i++){ for(int j=0;j<clause.georefs.size();j++){
    * if(i!=j){ if(clause.georefs.get(i).equals(clause.georefs.get(j))){
-   * clause.georefs.remove(j); j--; } } } } }
-   * 
-   *  // Point-radius creation has been attempted for all Clauses in the Rec. //
-   * Now do a spatial intersection on all combinations of georefs across
-   * clauses. // The number of possible georefs arising from the intersections
-   * of clauses // is the product of the number of successfully created georefs
-   * for each clause.
+   * clause.georefs.remove(j); j--; } } } } } // Point-radius creation has been
+   * attempted for all Clauses in the Rec. // Now do a spatial intersection on
+   * all combinations of georefs across clauses. // The number of possible
+   * georefs arising from the intersections of clauses // is the product of the
+   * number of successfully created georefs for each clause.
    * 
    * if(r.getGeorefedClauseCount()==0){ r.state =
    * RecState.REC_NO_GEOREFERENCE_ERROR; return; } int
@@ -513,28 +510,24 @@ public class SpatialDescriptionManager extends BGManager {
    * 
    * gcounts=new int[clausecount]; for(int j=0;j<clausecount;j++){ int
    * viablegeorefs = r.clauses.get(j).viableGeorefCount(); gcounts[j] =
-   * viablegeorefs; }
-   *  // find the max number of combos int size = 1; for (int k = 0; k <
-   * gcounts.length; k++) { if(gcounts[k] != 0) size = size * gcounts[k]; }
+   * viablegeorefs; } // find the max number of combos int size = 1; for (int k =
+   * 0; k < gcounts.length; k++) { if(gcounts[k] != 0) size = size * gcounts[k]; } //
+   * Create an array to hold the combinations of georef indexes to do
+   * intersections on. int[][] geoCombos = new int[size][gcounts.length]; //
+   * create a array to store the current combo int[] curr = new int[
+   * gcounts.length]; // populate the new array with 0's for the beginning for
+   * (int k = 0; k < gcounts.length; k++) { if(gcounts[k] == 0){ curr[k] = -1;
+   * continue; } curr[k] = 0; } // loop through each combo for (int x = 0; x <
+   * geoCombos.length; x++) {
    * 
-   *  // Create an array to hold the combinations of georef indexes to do
-   * intersections on. int[][] geoCombos = new int[size][gcounts.length];
-   *  // create a array to store the current combo int[] curr = new int[
-   * gcounts.length];
-   *  // populate the new array with 0's for the beginning for (int k = 0; k <
-   * gcounts.length; k++) { if(gcounts[k] == 0){ curr[k] = -1; continue; }
-   * curr[k] = 0; }
-   *  // loop through each combo for (int x = 0; x < geoCombos.length; x++) {
-   * 
-   * geoCombos[x] = curr.clone(); // add the new combo to the list
-   *  // loop through each location in the current combo // essentially works
-   * like a backwards mileage counter with each number // place having a
-   * different base for (int j = 0; j < curr.length; j++) { //check for invalid
-   * clauses if(curr[j] == -1){ continue; } curr[j] = curr[j] + 1;// increase
-   * the value of current location if (curr[j] == gcounts[j]) { curr[j] = 0; //
-   * if current location is too big, drop it to zero and // move to next
-   * continue; } break;// otherwise break and add this new unique combo }
-   *  }
+   * geoCombos[x] = curr.clone(); // add the new combo to the list // loop
+   * through each location in the current combo // essentially works like a
+   * backwards mileage counter with each number // place having a different base
+   * for (int j = 0; j < curr.length; j++) { //check for invalid clauses
+   * if(curr[j] == -1){ continue; } curr[j] = curr[j] + 1;// increase the value
+   * of current location if (curr[j] == gcounts[j]) { curr[j] = 0; // if current
+   * location is too big, drop it to zero and // move to next continue; }
+   * break;// otherwise break and add this new unique combo } }
    * 
    * GeometryFactory gf = new GeometryFactory(); WKTReader wktreader = new
    * WKTReader(gf); Georef newGeoref = null; Geometry geom; String encodedG =
@@ -688,6 +681,25 @@ public class SpatialDescriptionManager extends BGManager {
     System.out.println("makeRecGeorefs: " + (endtime - starttime) + " ms");
   }
 
+  public Geometry getGeomSubdivision(Geometry geom, String subdivision) {
+    if (subdivision == null || subdivision.length() == 0)
+      return geom;
+    String remainder = new String(subdivision);
+    while (remainder.trim().length() > 0) {
+
+      if (remainder.lastIndexOf(" 1/") > remainder.indexOf(" 1/")) {
+        geom = subdivide(geom, remainder.substring(
+            remainder.lastIndexOf(" 1/") - 2).trim());
+        remainder = new String(remainder.substring(0, remainder
+            .lastIndexOf(" 1/") - 2));
+      } else {
+        geom = subdivide(geom, remainder.trim());
+        remainder = new String("");
+      }
+    }
+    return geom;
+  }
+
   /*
    * public void getFeatureMetadata(Rec r){ Connection gdb = null; for(Clause
    * clause : r.clauses){ gdb = null;
@@ -714,7 +726,7 @@ public class SpatialDescriptionManager extends BGManager {
     Connection gdb = null;
     String dbname = new String("not specified");
     for (Clause clause : r.clauses) { // do feature lookups for all locspecs for
-                                      // every clause based on locType
+      // every clause based on locType
       gdb = null;
       dbname = new String("not specified");
       if (clause.locType.toUpperCase().contains("ADM")) {
@@ -1263,11 +1275,11 @@ public class SpatialDescriptionManager extends BGManager {
           if (clause.locspecs.size() > 1
               && clause.locspecs.get(1).featureinfos.size() > 0) {
             for (int j = 0; j < clause.locspecs.get(1).featureinfos.size(); j++) { // for
-                                                                                    // every
-                                                                                    // feature
-                                                                                    // info
-                                                                                    // in
-                                                                                    // LocSpec2
+              // every
+              // feature
+              // info
+              // in
+              // LocSpec2
               featureinfo2 = clause.locspecs.get(1).featureinfos.get(j);
               pr = sm.getPointRadius(clause.locType, clause.locspecs.get(0),
                   featureinfo1, featureinfo2);
@@ -1460,6 +1472,8 @@ public class SpatialDescriptionManager extends BGManager {
           if (loctype.equalsIgnoreCase("F")
               || loctype.toUpperCase().contains("ADM")
               || loctype.equalsIgnoreCase("P")
+              || loctype.equalsIgnoreCase("FS")
+              || loctype.equalsIgnoreCase("PS")
               || loctype.equalsIgnoreCase("TRS")
               || loctype.equalsIgnoreCase("TRSS")) {
             // Use the actual shape for the intersection instead of the
@@ -1470,50 +1484,29 @@ public class SpatialDescriptionManager extends BGManager {
             if (csource != null && csource.equalsIgnoreCase("usersdb")) {
               encodedG = new String(gaz.lookupFootprint(userplaces, featureid));
             } else if (loctype.toUpperCase().contains("ADM")) {
-              if (g1.featureinfos.get(0).geomminx <= -180) { // This is a
-                                                              // temporary fix
-                                                              // to overcome
-                                                              // problems in the
-                                                              // gazetteer for
-                                                              // features
-                                                              // crossing
-                                                              // longitude 180.
+              if (g1.featureinfos.get(0).geomminx <= -180) {
+                // This is a temporary fix to overcome problems in the gazetteer
+                // features for features crossing longitude 180.
                 encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
               } else {
-                if (gaz.lookupFootprintGeometryCount(gadm, featureid) > geometrythreshhold) { // This
-                                                                                              // is a
-                                                                                              // temporary
-                                                                                              // fix
-                                                                                              // to
-                                                                                              // overcome
-                                                                                              // exceedingly
-                                                                                              // complex
-                                                                                              // geometries.
+                if (gaz.lookupFootprintGeometryCount(gadm, featureid) > geometrythreshhold) {
+                  // This is a temporary fix to overcome exceedingly complex
+                  // geometries.
                   encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
                 } else {
                   encodedG = new String(gaz.lookupFootprint(gadm, featureid));
                 }
               }
-            } else if (loctype.equalsIgnoreCase("F")) {
-              if (g1.featureinfos.get(0).geomminx <= -180) { // This is a
-                                                              // temporary fix
-                                                              // to overcome
-                                                              // problems in the
-                                                              // gazetteer for
-                                                              // features
-                                                              // crossing
-                                                              // longitude 180.
+            } else if (loctype.equalsIgnoreCase("F")
+                || loctype.equalsIgnoreCase("FS")) {
+              if (g1.featureinfos.get(0).geomminx <= -180) {
+                // This is a temporary fix to overcome problems in the gazetteer
+                // features for features crossing longitude 180.
                 encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
               } else {
-                if (gaz.lookupFootprintGeometryCount(worldplaces, featureid) > geometrythreshhold) { // This
-                                                                                                      // is a
-                                                                                                      // temporary
-                                                                                                      // fix
-                                                                                                      // to
-                                                                                                      // overcome
-                                                                                                      // exceedingly
-                                                                                                      // complex
-                                                                                                      // geometries.
+                if (gaz.lookupFootprintGeometryCount(worldplaces, featureid) > geometrythreshhold) {
+                  // This is a temporary fix to overcome exceedingly complex
+                  // geometries.
                   encodedG = new String(gaz.lookupConvexHull(worldplaces,
                       featureid));
                 } else {
@@ -1524,7 +1517,8 @@ public class SpatialDescriptionManager extends BGManager {
             }
             // TODO change this to be roads or rivers when they get added to the
             // Gazetteer
-            else if (loctype.equalsIgnoreCase("P")) {
+            else if (loctype.equalsIgnoreCase("P")
+                || loctype.equalsIgnoreCase("PS")) {
               encodedG = new String(gaz.lookupFootprint(worldplaces, featureid));
             } else if (loctype.equalsIgnoreCase("TRS")
                 || loctype.equalsIgnoreCase("TRSS")) {
@@ -1534,16 +1528,36 @@ public class SpatialDescriptionManager extends BGManager {
               geom = wktreader.read(encodedG);
               if (geom.getDimension() == 0) {
                 // feature is a point in the gazetteer
-                intersection = g1;
+                geom = g1.geometry;
+                // intersection = g1;
               } else {
                 // feature has a footprint in the gazetteer
-                if (loctype.equalsIgnoreCase("TRS")) {
+                if (loctype.equalsIgnoreCase("TRS")
+                    || loctype.equalsIgnoreCase("TRSS")) {
                   int sec = r.clauses.get(i).locspecs.get(0).finishTRSSection();
                   if (sec > 0) {
-                    g1.iLocality = g1.iLocality.concat(" Section " + sec);
+                    // g1.iLocality = g1.iLocality.concat(" Section " + sec);
                     geom = getTRSectionGeometry(geom, sec);
                   }
+                  if (loctype.equalsIgnoreCase("TRSS")) {
+                    if (r.clauses.get(i).locspecs.get(0).isubdivision != null
+                        && r.clauses.get(i).locspecs.get(0).isubdivision
+                            .length() > 0) {
+                      geom = getGeomSubdivision(geom, r.clauses.get(i).locspecs
+                          .get(0).isubdivision);
+                    }
+                  }
                 }
+                intersection = new Georef(geom, DatumManager.getInstance()
+                    .getDatum("WGS84"));
+                intersection.iLocality = new String(g1.iLocality);
+              }
+              // Regardless of point-radius or shape, if FS or PS, make
+              // subdivision
+              if (loctype.equalsIgnoreCase("FS")
+                  || loctype.equalsIgnoreCase("PS")) {
+                geom = getGeomSubdivision(geom, r.clauses.get(i).locspecs
+                    .get(0).isubdivision);
                 intersection = new Georef(geom, DatumManager.getInstance()
                     .getDatum("WGS84"));
                 intersection.iLocality = new String(g1.iLocality);
@@ -1567,6 +1581,8 @@ public class SpatialDescriptionManager extends BGManager {
             if (loctype.equalsIgnoreCase("F")
                 || loctype.toUpperCase().contains("ADM")
                 || loctype.equalsIgnoreCase("P")
+                || loctype.equalsIgnoreCase("FS")
+                || loctype.equalsIgnoreCase("PS")
                 || loctype.equalsIgnoreCase("TRS")
                 || loctype.equalsIgnoreCase("TRSS")) {
               // Use the actual shape for the intersection instead of the
@@ -1578,47 +1594,33 @@ public class SpatialDescriptionManager extends BGManager {
                 encodedG = new String(gaz
                     .lookupFootprint(userplaces, featureid));
               } else if (loctype.toUpperCase().contains("ADM")) {
-                if (g1.featureinfos.get(0).geomminx <= -180) { // This is a
-                                                                // temporary fix
-                                                                // to overcome
-                                                                // problems in
-                                                                // the gazetteer
-                                                                // for features
-                                                                // crossing
-                                                                // longitude
-                                                                // 180.
+                if (g1.featureinfos.get(0).geomminx <= -180) {
+                  // This is a temporary fix to overcome problems in the
+                  // gazetteer
+                  // features for features crossing longitude 180.
                   encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
                 } else {
-                  if (gaz.lookupFootprintGeometryCount(gadm, featureid) > geometrythreshhold) { // This
-                                                                                                // is a
-                                                                                                // temporary
-                                                                                                // fix
-                                                                                                // to
-                                                                                                // overcome
-                                                                                                // exceedingly
-                                                                                                // complex
-                                                                                                // geometries.
+                  if (gaz.lookupFootprintGeometryCount(gadm, featureid) > geometrythreshhold) {
+                    // This is a temporary fix to overcome
+                    // exceedingly complex geometries.
                     encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
                   } else {
                     encodedG = new String(gaz.lookupFootprint(gadm, featureid));
                   }
                 }
-              } else if (loctype.equalsIgnoreCase("F")) {
-                if (g1.featureinfos.get(0).geomminx <= -180) { // This is a
-                                                                // temporary fix
-                                                                // to overcome
-                                                                // problems in
-                                                                // the gazetteer
-                                                                // for features
-                                                                // crossing
-                                                                // longitude
-                                                                // 180.
+              } else if (loctype.equalsIgnoreCase("F")
+                  || loctype.equalsIgnoreCase("FS")) {
+                if (g1.featureinfos.get(0).geomminx <= -180) {
+                  // This is a temporary fix to overcome problems in the
+                  // gazetteer
+                  // features for features crossing longitude 180.
                   encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
                 } else {
                   if (gaz.lookupFootprintGeometryCount(worldplaces, featureid) > geometrythreshhold) {
                     encodedG = new String(gaz.lookupConvexHull(worldplaces,
-                        featureid)); // This is a temporary fix to overcome
-                                      // exceedingly complex geometries.
+                        featureid));
+                    // This is a temporary fix to overcome
+                    // exceedingly complex geometries.
                   } else {
                     encodedG = new String(gaz.lookupFootprint(worldplaces,
                         featureid));
@@ -1627,10 +1629,12 @@ public class SpatialDescriptionManager extends BGManager {
               }
               // TODO change this to be roads or rivers when they get added to
               // the Gazetteer
-              else if (loctype.equalsIgnoreCase("P")) {
+              else if (loctype.equalsIgnoreCase("P")
+                  || loctype.equalsIgnoreCase("PS")) {
                 encodedG = new String(gaz.lookupFootprint(worldplaces,
                     featureid));
-              } else if (loctype.equalsIgnoreCase("TRS")) {
+              } else if (loctype.equalsIgnoreCase("TRS")
+                  || loctype.equalsIgnoreCase("TRSS")) {
                 encodedG = new String(gaz.lookupFootprint(plss, featureid));
               }
               try {
@@ -1641,14 +1645,34 @@ public class SpatialDescriptionManager extends BGManager {
                   newGeoref = g1;
                 } else {
                   // feature has a footprint in the gazetteer
-                  if (loctype.equalsIgnoreCase("TRS")) {
+                  if (loctype.equalsIgnoreCase("TRS")
+                      || loctype.equalsIgnoreCase("TRSS")) {
                     int sec = r.clauses.get(i).locspecs.get(0)
                         .finishTRSSection();
                     if (sec > 0) {
-                      g1.iLocality = g1.iLocality.concat(" Section " + sec);
+                      // g1.iLocality = g1.iLocality.concat(" Section " + sec);
                       geom = getTRSectionGeometry(geom, sec);
                     }
+                    if (loctype.equalsIgnoreCase("TRSS")) {
+                      if (r.clauses.get(i).locspecs.get(0).isubdivision != null
+                          && r.clauses.get(i).locspecs.get(0).isubdivision
+                              .length() > 0) {
+                        geom = getGeomSubdivision(geom,
+                            r.clauses.get(i).locspecs.get(0).isubdivision);
+                      }
+                    }
                   }
+
+                  newGeoref = new Georef(geom, DatumManager.getInstance()
+                      .getDatum("WGS84"));
+                  newGeoref.iLocality = new String(g1.iLocality);
+                }
+                // Regardless of point-radius or shape, if FS or PS, make
+                // subdivision
+                if (loctype.equalsIgnoreCase("FS")
+                    || loctype.equalsIgnoreCase("PS")) {
+                  geom = getGeomSubdivision(geom, r.clauses.get(i).locspecs
+                      .get(0).isubdivision);
                   newGeoref = new Georef(geom, DatumManager.getInstance()
                       .getDatum("WGS84"));
                   newGeoref.iLocality = new String(g1.iLocality);
@@ -1682,7 +1706,7 @@ public class SpatialDescriptionManager extends BGManager {
               // calculated intersection based on geometry
               intersection = null;
               i = clausecount; // no reason to even try other clauses, because
-                                // there is already an inconsistency
+              // there is already an inconsistency
             }
           } else {
             // there is no intersection between g1 and g2 based on distance
@@ -1690,7 +1714,7 @@ public class SpatialDescriptionManager extends BGManager {
             // and point-radiuses
             intersection = null;
             i = clausecount; // no reason to even try other clauses, because
-                              // there is already an inconsistency
+            // there is already an inconsistency
           }
         }
       }
@@ -1757,15 +1781,14 @@ public class SpatialDescriptionManager extends BGManager {
    * Basically, this method takes // advantage of preprocessing into the
    * i_containment table to weed // out features that are not in the same
    * country or stateprovince. This // can severely reduce the number of
-   * features that need to be compared // for intersections.
-   *  // No point in trying this if there isn't more than one clause.
-   * if(r.clauses.size()<2) return; for( Clause c1 : r.clauses) { // do feature
-   * lookups for all locspecs for every clause based on locType for(LocSpec
-   * locspec : c1.locspecs){ int fcount = locspec.featureinfos.size();
-   * if(fcount>0){ boolean[] fparents = new boolean[fcount]; int i = 0;
-   * for(FeatureInfo f : locspec.featureinfos){ if(f.parentFeatureID==0)
-   * fparents[i]=true; else{ fparents[i]=false; for( Clause c2 : r.clauses){
-   * if(c1.equals(c2)==false){
+   * features that need to be compared // for intersections. // No point in
+   * trying this if there isn't more than one clause. if(r.clauses.size()<2)
+   * return; for( Clause c1 : r.clauses) { // do feature lookups for all
+   * locspecs for every clause based on locType for(LocSpec locspec :
+   * c1.locspecs){ int fcount = locspec.featureinfos.size(); if(fcount>0){
+   * boolean[] fparents = new boolean[fcount]; int i = 0; for(FeatureInfo f :
+   * locspec.featureinfos){ if(f.parentFeatureID==0) fparents[i]=true; else{
+   * fparents[i]=false; for( Clause c2 : r.clauses){ if(c1.equals(c2)==false){
    * if(c2.containsParentFeature(f.parentFeatureID)==true){ fparents[i]=true;
    * break; } } } i++; } } for(i=fcount-1;i>0;i--){ if(fparents[i]==false){
    * locspec.featureinfos.remove(i); } } } } } }
@@ -1786,7 +1809,7 @@ public class SpatialDescriptionManager extends BGManager {
     if (r.clauses.size() < 2)
       return;
     for (Clause c1 : r.clauses) { // do feature lookups for all locspecs for
-                                  // every clause based on locType
+      // every clause based on locType
       for (LocSpec locspec : c1.locspecs) {
         int fcount = 0;
         if (locspec.featureinfos != null)
@@ -1835,5 +1858,109 @@ public class SpatialDescriptionManager extends BGManager {
       e.printStackTrace();
     }
     sm = new ShapeManager();
+  }
+
+  public Geometry subdivide(Geometry geom, String subdivision) {
+    // Translate subdivision string to English before calling subdivide
+    if (subdivision == null || subdivision.length() == 0)
+      return geom;
+    Coordinate[] coordinates = geom.getEnvelope().getCoordinates();
+    int nc = coordinates.length;
+    double maxx = -180.0;
+    double minx = 180.0;
+    double miny = 90.0;
+    double maxy = -90.0;
+    double xincrement = 1.0;
+    double yincrement = 1.0;
+    Coordinate[] cuttercoords = new Coordinate[5];
+    for (int k = 0; k < nc; k++) {
+      if (coordinates[k].x > maxx)
+        maxx = coordinates[k].x;
+      if (coordinates[k].x < minx)
+        minx = coordinates[k].x;
+      if (coordinates[k].y > maxy)
+        maxy = coordinates[k].y;
+      if (coordinates[k].y < miny)
+        miny = coordinates[k].y;
+    }
+    double rx = maxx;
+    double uy = maxy;
+    double lx = minx;
+    double ly = miny;
+    // Now we have the bounding coordinates for the geometry
+    // Find the geometry for the subdivision.
+    if (GeorefDictionaryManager.getInstance().lookup(subdivision,
+        SupportedLanguages.english, Concepts.headings, true).equalsIgnoreCase(
+        "NW")
+        // || subdivision.equalsIgnoreCase("NW")
+        || subdivision.equalsIgnoreCase("NW 1/4")) {
+      xincrement = (maxx - minx) / 2;
+      yincrement = (maxy - miny) / 2;
+      rx = minx + xincrement;
+      lx = minx;
+      uy = maxy;
+      ly = maxy - yincrement;
+    } else if (subdivision.equalsIgnoreCase("SW")
+        || subdivision.equalsIgnoreCase("SW 1/4")) {
+      xincrement = (maxx - minx) / 2;
+      yincrement = (maxy - miny) / 2;
+      rx = minx + xincrement;
+      lx = minx;
+      uy = miny + yincrement;
+      ly = miny;
+    } else if (subdivision.equalsIgnoreCase("SE")
+        || subdivision.equalsIgnoreCase("SE 1/4")) {
+      xincrement = (maxx - minx) / 2;
+      yincrement = (maxy - miny) / 2;
+      rx = maxx;
+      lx = maxx - xincrement;
+      uy = miny + yincrement;
+      ly = miny;
+    } else if (subdivision.equalsIgnoreCase("NE")
+        || subdivision.equalsIgnoreCase("NE 1/4")) {
+      xincrement = (maxx - minx) / 2;
+      yincrement = (maxy - miny) / 2;
+      rx = maxx;
+      lx = maxx - xincrement;
+      uy = maxy;
+      ly = maxy - yincrement;
+    } else if (subdivision.equalsIgnoreCase("N")
+        || subdivision.equalsIgnoreCase("N 1/2")) {
+      yincrement = (maxy - miny) / 2;
+      rx = maxx;
+      lx = minx;
+      uy = maxy;
+      ly = maxy - yincrement;
+    } else if (subdivision.equalsIgnoreCase("S")
+        || subdivision.equalsIgnoreCase("S 1/2")) {
+      yincrement = (maxy - miny) / 2;
+      rx = maxx;
+      lx = minx;
+      uy = miny + yincrement;
+      ly = miny;
+    } else if (subdivision.equalsIgnoreCase("W")
+        || subdivision.equalsIgnoreCase("W 1/2")) {
+      xincrement = (maxx - minx) / 2;
+      rx = minx + xincrement;
+      lx = minx;
+      uy = maxy;
+      ly = miny;
+    } else if (subdivision.equalsIgnoreCase("E")
+        || subdivision.equalsIgnoreCase("E 1/2")) {
+      xincrement = (maxx - minx) / 2;
+      rx = maxx;
+      lx = maxx - xincrement;
+      uy = maxy;
+      ly = miny;
+    }
+    cuttercoords[0] = new Coordinate(rx, uy);
+    cuttercoords[1] = new Coordinate(rx, ly);
+    cuttercoords[2] = new Coordinate(lx, ly);
+    cuttercoords[3] = new Coordinate(lx, uy);
+    cuttercoords[4] = new Coordinate(rx, uy);
+    LinearRing cutter = new GeometryFactory().createLinearRing(cuttercoords);
+    Polygon p = new GeometryFactory().createPolygon(cutter, null);
+    Geometry newgeom = geom.intersection(p);
+    return newgeom;
   }
 }
