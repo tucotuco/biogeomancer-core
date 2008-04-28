@@ -144,18 +144,24 @@ public class ShapeManager extends BGManager {
     double uncertainty = 0.0;
 
     // TODO: Interpret these loctypes:
-    // ADDR, E, FPOH, FS, J, JO, JH, JOH, JOO, JPOH, LL, NJ, NPOM, POM, PS, Q,
-    // TRSS, UTM
+    // ADDR, E, FPOH, J, JO, JH, JOH, JOO, JPOH, LL, NJ, NPOM, POM, Q, UTM
     // These locTypes interpreted:
-    // BF, BP, F, P, ADM, FOH, POH, NN, UNK, FOO, FH, PH, NF, NP, FO, PO, TRS,
-    if (loctype.equalsIgnoreCase("F")
-    	|| loctype.equalsIgnoreCase("P")
+    // BF, BP, F, P, FS, PS, ADM, FOH, POH, NN, UNK, FOO, FH, PH, NF, NP, FO,
+    // PO, TRS, TRSS
+    if (loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("P")
+        || loctype.equalsIgnoreCase("PS") || loctype.equalsIgnoreCase("FS")
         || loctype.toUpperCase().contains("ADM")) {
       // --- LocType "F" ---
       // --- LocType "P" ---
+      // --- LocType "FS" the point-radius will be or the whole feature ---
+      // --- LocType "PS" the point-radius will be for the whole feature ---
       // --- LocType "ADM" ---
       // Feature/Path/Admin locality type. Example: "Bakersfield"
-      // This LocType type requires one and only one FeatureInfo.
+      // These LocTypes require one and only one FeatureInfo.
+      // Subdivision or a Feature/Path locality type. Example: "N part of
+      // Bakersfield"
+      // These locTypes need to have a final determination made from the actual
+      // shape.
       if (f1 == null) {
         return null;
       }
@@ -235,9 +241,9 @@ public class ShapeManager extends BGManager {
       // from the feature in the direction of the heading.
 
       if (!locspec.isHeading()) { // If the heading isn't interpretable as a
-                                  // valid heading, set the locspec.state and
-                                  // end
-      // locspec.state = LocSpecState.LOCSPEC_HEADING_ERROR;
+        // valid heading, set the locspec.state and
+        // end
+        // locspec.state = LocSpecState.LOCSPEC_HEADING_ERROR;
         return null;
       }
       // Interpret the offset. We know this will be valid since we already did
@@ -314,7 +320,7 @@ public class ShapeManager extends BGManager {
       locspec.state = LocSpecState.LOCSPEC_COMPLETED;
       return null;
     } else if (loctype.equalsIgnoreCase("FOO")) { // Orthogonal offsets from a
-                                                  // feature
+      // feature
       // --- LocType "FOO" ---
       // Orthogal Offsets from a Feature locality type. Example: "2 mi E, 4 mi N
       // Bakersfield"
@@ -342,18 +348,18 @@ public class ShapeManager extends BGManager {
       // maxerrordistance += getMapScaleError();
       // maxerrordistance += getCoordPrecisionError();
       if (locspec.isOffset(locspec.ioffsetew, locspec.ioffsetewunit) == false
-          || locspec.isOffset(locspec.ioffsetns, locspec.ioffsetnsunit) == false) { 
-    	  // If the orthgonal offsets aren't interpretable as valid offsets with
-    	  // understood units, set the locspec.state and end.
-    	  
-      // locspec.state = LocSpecState.LOCSPEC_MALFORMED_OFFSET_ERROR;
+          || locspec.isOffset(locspec.ioffsetns, locspec.ioffsetnsunit) == false) {
+        // If the orthgonal offsets aren't interpretable as valid offsets with
+        // understood units, set the locspec.state and end.
+
+        // locspec.state = LocSpecState.LOCSPEC_MALFORMED_OFFSET_ERROR;
         return null;
       }
       if (!locspec.areHeadingsOrthogonal()) { // If the headings aren't
-                                              // interpretable as valid
-                                              // orthogonal headings, set the
-                                              // locspec.state and end
-      // locspec.state = LocSpecState.LOCSPEC_HEADING_ERROR;
+        // interpretable as valid
+        // orthogonal headings, set the
+        // locspec.state and end
+        // locspec.state = LocSpecState.LOCSPEC_HEADING_ERROR;
         return null;
       }
       // Interpret the offset. We know this will be valid since we already did
@@ -414,16 +420,8 @@ public class ShapeManager extends BGManager {
 
       pr = new PointRadius(newlng, newlat, f1.geodeticDatum, c1.precision,
           uncertainty);
-    } else if (loctype.equalsIgnoreCase("NF") || loctype.equalsIgnoreCase("NP")) { // Near
-                                                                                    // a
-                                                                                    // feature
-                                                                                    // (path
-                                                                                    // or
-                                                                                    // feature
-                                                                                    // the
-                                                                                    // same
-                                                                                    // for
-                                                                                    // now).
+    } else if (loctype.equalsIgnoreCase("NF") || loctype.equalsIgnoreCase("NP")) {
+      // Near a feature (path or feature the same for now).
       // --- LocType "NF" or "NP" ---
       // Near Feature/Path locality type. Example: "near Bakersfield", "vicinity
       // of Lake Tahoe"
@@ -512,74 +510,15 @@ public class ShapeManager extends BGManager {
       // double mindistindd=uncertainty/lngmpd;
       // Look for features within 100km of the outer extent of the feature.
       double distanceouterlimit = 100000;
-
-      /*
-       * // Determine the vertices of the heading shape. double x1 =
-       * c1.x+(distanceouterlimit+extent)*Math.sin( Math.toRadians(alpha-delta)
-       * )/lngmpd; double y1 = c1.y+(distanceouterlimit+extent)*Math.cos(
-       * Math.toRadians(alpha-delta) )/latmpd; double x2 =
-       * c1.x+(distanceouterlimit+extent)*Math.sin( Math.toRadians(alpha)
-       * )/lngmpd; double y2 = c1.y+(distanceouterlimit+extent)*Math.cos(
-       * Math.toRadians(alpha) )/latmpd; double x3 =
-       * c1.x+(distanceouterlimit+extent)*Math.sin( Math.toRadians(alpha+delta)
-       * )/lngmpd; double y3 = c1.y+(distanceouterlimit+extent)*Math.cos(
-       * Math.toRadians(alpha+delta) )/latmpd; double x4 = c1.x+extent*Math.sin(
-       * Math.toRadians(alpha+delta) )/lngmpd; double y4 = c1.y+extent*Math.cos(
-       * Math.toRadians(alpha+delta) )/latmpd; double x5 = c1.x+extent*Math.sin(
-       * Math.toRadians(alpha) )/lngmpd; double y5 = c1.y+extent*Math.cos(
-       * Math.toRadians(alpha) )/latmpd; double x6 = c1.x+extent*Math.sin(
-       * Math.toRadians(alpha-delta) )/lngmpd; double y6 = c1.y+extent*Math.cos(
-       * Math.toRadians(alpha-delta) )/latmpd;
-       */
       double conecentroidx = c1.x + (uncertainty + distanceouterlimit / 2)
           * Math.sin(Math.toRadians(alpha)) / lngmpd;
       double conecentroidy = c1.y + (uncertainty + distanceouterlimit / 2)
           * Math.cos(Math.toRadians(alpha)) / latmpd;
-      /*
-       * // This version of the heading cone starts at the center point of the
-       * feature and // goes out to distanceouterlimit. String headingcone = new
-       * String("'SRID=4326;POLYGON(("+ f1.longitude+" "+f1.latitude+","+ x1+"
-       * "+y1+","+ x2+" "+y2+","+ x3+" "+y3+","+ f1.longitude+"
-       * "+f1.latitude+"))'");
-       *  // This version of the heading cone excludes the part of the cone
-       * within the extent // of the feature and goes out to distanceouterlimit.
-       * String headingcone = new String("'SRID=4326;POLYGON(("+ x1+" "+y1+","+
-       * x2+" "+y2+","+ x3+" "+y3+","+ x4+" "+y4+","+ x5+" "+y5+","+ x6+"
-       * "+y6+","+ x1+" "+y1+"))'");
-       */
-      /*
-       * This method turns out to be too slow to be viable. FeatureInfo tofi =
-       * new FeatureInfo(); // Create a FeatureInfo to hold the nearest Feature //
-       * TODO: This should be changed to worldplaces. Connection gdb =
-       * worldplaces; // Connection gdb = gnispopulatedplaces; ADLGazetteer
-       * gaz=null; try { gaz = ADLGazetteer.getInstance();
-       * gaz.lookupNearestFeature(gdb, f1, tofi, mindistindd, headingcone); }
-       * catch (Exception e) { e.printStackTrace(); } finally { //
-       * gaz.shutdown(); }
-       */
-      // Coordinate c2 = new Coordinate( tofi.longitude, tofi.latitude,
-      // tofi.geodeticDatum, tofi.coordPrecision );
-      // double xdist = c2.getLngDistanceInMetersToCoordinate(c1);
-      // double ydist = c2.getLatDistanceInMetersToCoordinate(c1);
-      // Coordinate midpoint = Georef.getMidPoint(c1, c2);
-      // double betweendist = Math.sqrt(Math.pow(xdist, 2) + Math.pow(ydist,
-      // 2));
-      // double newx = c1.x+betweendist*Math.sin( Math.toRadians(alpha)
-      // )/lngmpd;
-      // double newy = c1.y+betweendist*Math.cos( Math.toRadians(alpha)
-      // )/latmpd;
-      // Coordinate newpoint = new Coordinate(newx, newy, tofi.geodeticDatum,
-      // tofi.coordPrecision);
       Coordinate newpoint = new Coordinate(conecentroidx, conecentroidy,
           f1.geodeticDatum, 0);
       pr = new PointRadius(newpoint, distanceouterlimit / 2);
-    } else if (loctype.equalsIgnoreCase("FO") || loctype.equalsIgnoreCase("PO")) { // Offset
-                                                                                    // from
-                                                                                    // a
-                                                                                    // feature
-                                                                                    // with
-                                                                                    // no
-                                                                                    // heading
+    } else if (loctype.equalsIgnoreCase("FO") || loctype.equalsIgnoreCase("PO")) {
+      // Offset from a feature with no heading.
       // --- LocType "FO" ---
       // --- LocType "PO" ---
       // Feature Offset locality type. Example: "5 mi from Bakersfield"
@@ -610,9 +549,9 @@ public class ShapeManager extends BGManager {
       // 2) Add the offset distance
 
       if (!locspec.isOffset()) { // If the offset isn't interpretable as a
-                                  // valid offset with understood units, set the
-                                  // locspec.state and end
-      // locspec.state = LocSpecState.LOCSPEC_MALFORMED_OFFSET_ERROR;
+        // valid offset with understood units, set the
+        // locspec.state and end
+        // locspec.state = LocSpecState.LOCSPEC_MALFORMED_OFFSET_ERROR;
         return null;
       }
       // Interpret the offset. We know this will be valid since we already did
@@ -643,47 +582,8 @@ public class ShapeManager extends BGManager {
           + distanceprecisionerror;
       uncertainty += offsetdistance;
       pr = new PointRadius(c1, uncertainty);
-    } else if (loctype.equalsIgnoreCase("FS") || loctype.equalsIgnoreCase("PS")) { // Subdivision
-                                                                                    // of a
-                                                                                    // feature
-      // --- LocType "FS" ---
-      // --- LocType "PS" ---
-      // Feature Subdivision locality type. Example: "SE Bakersfield"
-      // This LocType type requires one and only one FeatureInfo.
-      if (f1 == null) {
-        return null;
-      }
-      // This LocType requires the following attributes of the LocSpec to be
-      // interpretable:
-      // feature, subdivision
-      boolean problems = false;
-      // LocSpecState locspecstate =
-      // locspecmanager.interpretSubdivision(locspec);
-      // if( locspecstate != LocSpecState.LOCSPEC_COMPLETED) {
-      // problems = true;
-      // log.error("LocSpec interpretation problem: "+locspecstate);
-      // }
-      if (problems == true)
-        return null;
-
-      // The sources of uncertainty for this locality type are:
-      // datum
-      // extent
-      // distance precision
-      // map scale
-      // coordinate precision
-      // 1) Sum all uncertainties (datum, extent, distance precision, mapscale,
-      // coordinate precision)
-    } else if (loctype.equalsIgnoreCase("BF") || loctype.equalsIgnoreCase("BP")) { // Near
-                                                                                    // a
-                                                                                    // feature
-                                                                                    // (path
-                                                                                    // or
-                                                                                    // feature
-                                                                                    // the
-                                                                                    // same
-                                                                                    // for
-                                                                                    // now).
+    } else if (loctype.equalsIgnoreCase("BF") || loctype.equalsIgnoreCase("BP")) {
+      // Near a feature (path or feature the same for now).
       // --- LocType "BF" ---
       // --- LocType "BP" ---
       // Between Features/Between Paths. Example: "between Bakersfield and
@@ -739,7 +639,7 @@ public class ShapeManager extends BGManager {
 
       uncertainty = datumerror + extent + mapscaleerror + coordprecisionerror;
       uncertainty += midpoint.precision; // add the distance from the midpoint
-                                          // to either center.
+      // to either center.
 
       pr = new PointRadius(midpoint, uncertainty);
     } else if (loctype.equalsIgnoreCase("TRS")
@@ -782,12 +682,12 @@ public class ShapeManager extends BGManager {
       double extent = f1.extentInMeters;
       double xoffset = 0, yoffset = 0;
       double sectionwidth = extent * Math.sqrt(2) / 2;
-      if (locspec.isection != null) {
+      if (locspec.isection != null && locspec.isection.length() > 0) {
         int sec = Integer.valueOf(locspec.isection);
         if (sec > 0 && sec < 37) { // valid section number
           extent = 1138; // use standard 1 mi section. 0.707 mi = 1138 m
           switch (sec) { // The following adjustments for sections are based on
-                          // well-behaved townships.
+          // well-behaved townships.
           case 1:
             xoffset += sectionwidth * 5 / 6;
             yoffset += sectionwidth * 5 / 6;
@@ -947,8 +847,8 @@ public class ShapeManager extends BGManager {
       uncertainty = datumerror + extent + mapscaleerror + coordprecisionerror;
       pr = new PointRadius(c1, uncertainty);
     } else { // didn't process this loctype
-    // log.error("LocType "+loctype.toUpperCase()+" processing not yet
-    // implemented.");
+      // log.error("LocType "+loctype.toUpperCase()+" processing not yet
+      // implemented.");
       return null;
     }
     return pr;
