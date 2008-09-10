@@ -780,12 +780,8 @@ public class SpatialDescriptionManager extends BGManager {
           // If there are features for the second locspec
           if (clause.locspecs.size() > 1
               && clause.locspecs.get(1).featureinfos.size() > 0) {
-            for (int j = 0; j < clause.locspecs.get(1).featureinfos.size(); j++) { // for
-              // every
-              // feature
-              // info
-              // in
-              // LocSpec2
+            for (int j = 0; j < clause.locspecs.get(1).featureinfos.size(); j++) {
+              // for every featureinfo in LocSpec2
               featureinfo2 = clause.locspecs.get(1).featureinfos.get(j);
               pr = sm.getPointRadius(clause.locType, clause.locspecs.get(0),
                   featureinfo1, featureinfo2);
@@ -1257,6 +1253,15 @@ public class SpatialDescriptionManager extends BGManager {
       // Hack! TODO: Proper handling of misinterpreted features in Interpreters.
       // Due diligence
       // would suggest that all feature names should be tested
+      if (clause.locType.toUpperCase().equals("FS")
+          && (clause.locspecs.get(0).vsubdivision == null || clause.locspecs
+              .get(0).vsubdivision.length() == 0)) {
+        clause.locType = new String("F");
+        for (LocSpec ls : clause.locspecs) {
+          ls.clear();
+          ls.featurename = new String(clause.uLocality);
+        }
+      }
       if (clause.locType.toUpperCase().equals("F") == false
           && (clause.uLocality.equalsIgnoreCase("NM")
               || clause.uLocality.equalsIgnoreCase("NE") || clause.uLocality
@@ -1285,24 +1290,6 @@ public class SpatialDescriptionManager extends BGManager {
     }
   }
 
-  /*
-   * public void removeNonmatchingFeatures(Rec r){ // Find and remove features
-   * for which no other features in // other clauses have the same parent.
-   * Basically, this method takes // advantage of preprocessing into the
-   * i_containment table to weed // out features that are not in the same
-   * country or stateprovince. This // can severely reduce the number of
-   * features that need to be compared // for intersections. // No point in
-   * trying this if there isn't more than one clause. if(r.clauses.size()<2)
-   * return; for( Clause c1 : r.clauses) { // do feature lookups for all
-   * locspecs for every clause based on locType for(LocSpec locspec :
-   * c1.locspecs){ int fcount = locspec.featureinfos.size(); if(fcount>0){
-   * boolean[] fparents = new boolean[fcount]; int i = 0; for(FeatureInfo f :
-   * locspec.featureinfos){ if(f.parentFeatureID==0) fparents[i]=true; else{
-   * fparents[i]=false; for( Clause c2 : r.clauses){ if(c1.equals(c2)==false){
-   * if(c2.containsParentFeature(f.parentFeatureID)==true){ fparents[i]=true;
-   * break; } } } i++; } } for(i=fcount-1;i>0;i--){ if(fparents[i]==false){
-   * locspec.featureinfos.remove(i); } } } } } }
-   */
   public void removeNonoverlappingFeatures(Rec r) {
     if (r == null)
       return;
