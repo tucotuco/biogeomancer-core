@@ -91,7 +91,8 @@ public class Clause
     return s;
   }
 
-  public String makeInterpretedLocality(FeatureInfo fi1, FeatureInfo fi2) {
+  public String makeInterpretedLocality(FeatureInfo fi1, FeatureInfo fi2,
+      boolean showSource, boolean showType) {
     if (locType == null || locType.length() == 0) {
       iLocality = null;
       return null;
@@ -113,15 +114,17 @@ public class Clause
         iLocality = null;
         return null;
       }
-      iLocality = new String(fi1.name + " (" + fi1.coordSource + ":"
-          + fi1.featureID + ")");
+      // iLocality = new String(fi1.name + " (" + fi1.coordSource + ":"
+      // + fi1.featureID + ")");
+      iLocality = new String(fi1.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("TRS")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String(fi1.name + " (" + fi1.coordSource + ":"
-          + fi1.featureID + ")");
+      // iLocality = new String(fi1.name + " (" + fi1.coordSource + ":"
+      // + fi1.featureID + ")");
+      iLocality = new String(fi1.displayInfo(showSource, showType));
       if (locspecs.get(0).isection != null
           && locspecs.get(0).isection.length() > 0) {
         iLocality = iLocality.concat(" Section " + locspecs.get(0).isection);
@@ -132,32 +135,40 @@ public class Clause
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffset + " "
+      // + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
+      // + " of " + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID
+      // + ")");
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of " + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID
-          + ")");
+          + " of " + fi1.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("NF") || locType.equalsIgnoreCase("NP")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("near " + fi1.name + " (" + fi1.coordSource + ":"
-          + fi1.featureID + ")");
+      // iLocality = new String("near " + fi1.name + " (" + fi1.coordSource +
+      // ":"
+      // + fi1.featureID + ")");
+      iLocality = new String("near " + fi1.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("FS") || locType.equalsIgnoreCase("PS")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).isubdivision
+      // + " (subdivision of) " + fi1.name + " (" + fi1.coordSource + ":"
+      // + fi1.featureID + ")");
       iLocality = new String(locspecs.get(0).isubdivision
-          + " (subdivision of) " + fi1.name + " (" + fi1.coordSource + ":"
-          + fi1.featureID + ")");
+          + " (subdivision of) " + fi1.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("TRSS")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String(fi1.name + " (" + fi1.coordSource + ":"
-          + fi1.featureID + ")");
+      // iLocality = new String(fi1.name + " (" + fi1.coordSource + ":"
+      // + fi1.featureID + ")");
+      iLocality = new String(fi1.displayInfo(showSource, showType));
       if (locspecs.get(0).isection != null
           && locspecs.get(0).isection.length() > 0) {
         iLocality = iLocality.concat(" Section " + locspecs.get(0).isection);
@@ -171,112 +182,156 @@ public class Clause
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffsetew + " "
+      // + locspecs.get(0).ioffsetewunit + " " + locspecs.get(0).iheadingew
+      // + " and " + locspecs.get(0).ioffsetns + " "
+      // + locspecs.get(0).ioffsetnsunit + " " + locspecs.get(0).iheadingns
+      // + " of " + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID
+      // + ")");
       iLocality = new String(locspecs.get(0).ioffsetew + " "
           + locspecs.get(0).ioffsetewunit + " " + locspecs.get(0).iheadingew
           + " and " + locspecs.get(0).ioffsetns + " "
           + locspecs.get(0).ioffsetnsunit + " " + locspecs.get(0).iheadingns
-          + " of " + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID
-          + ")");
+          + " of " + fi1.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("BF") || locType.equalsIgnoreCase("BP")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("between " + fi1.name + " (" + fi1.coordSource
-          + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
-          + fi2.coordSource + ":" + fi2.featureID + ")");
+      // iLocality = new String("between " + fi1.name + " (" + fi1.coordSource
+      // + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
+      // + fi2.coordSource + ":" + fi2.featureID + ")");
+      iLocality = new String("between " + fi1.displayInfo(showSource, showType)
+          + " and " + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("FH") || locType.equalsIgnoreCase("PH")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String(locspecs.get(0).iheading + " of " + fi1.name
-          + " (" + fi1.coordSource + ":" + fi1.featureID + ")");
+      // iLocality = new String(locspecs.get(0).iheading + " of " + fi1.name
+      // + " (" + fi1.coordSource + ":" + fi1.featureID + ")");
+      iLocality = new String(locspecs.get(0).iheading + " of "
+          + fi1.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("FO") || locType.equalsIgnoreCase("PO")) {
       if (fi1.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffset + " "
+      // + locspecs.get(0).ioffsetunit + " from " + fi1.name + " ("
+      // + fi1.coordSource + ":" + fi1.featureID + ")");
       iLocality = new String(locspecs.get(0).ioffset + " "
-          + locspecs.get(0).ioffsetunit + " from " + fi1.name + " ("
-          + fi1.coordSource + ":" + fi1.featureID + ")");
+          + locspecs.get(0).ioffsetunit + " from "
+          + fi1.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("FPOH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffset + " "
+      // + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
+      // + " of " + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID
+      // + ")" + " along " + fi2.name + " (" + fi2.coordSource + ":"
+      // + fi2.featureID + ")");
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of " + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID
-          + ")" + " along " + fi2.name + " (" + fi2.coordSource + ":"
-          + fi2.featureID + ")");
+          + " of " + fi1.displayInfo(showSource, showType) + " along "
+          + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("J")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("intersection of " + fi1.name + " ("
-          + fi1.coordSource + ":" + fi1.featureID + ")" + " and " + fi2.name
-          + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      // iLocality = new String("intersection of " + fi1.name + " ("
+      // + fi1.coordSource + ":" + fi1.featureID + ")" + " and " + fi2.name
+      // + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      iLocality = new String("intersection of "
+          + fi1.displayInfo(showSource, showType) + " and "
+          + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("JO")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffset + " "
+      // + locspecs.get(0).ioffsetunit + " from the intersection of "
+      // + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID + ")"
+      // + " and " + fi2.name + " (" + fi2.coordSource + ":" + fi2.featureID
+      // + ")");
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " from the intersection of "
-          + fi1.name + " (" + fi1.coordSource + ":" + fi1.featureID + ")"
-          + " and " + fi2.name + " (" + fi2.coordSource + ":" + fi2.featureID
-          + ")");
+          + fi1.displayInfo(showSource, showType) + " and "
+          + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("JH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).iheading
+      // + " of the intersection of " + fi1.name + " (" + fi1.coordSource
+      // + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
+      // + fi2.coordSource + ":" + fi2.featureID + ")");
       iLocality = new String(locspecs.get(0).iheading
-          + " of the intersection of " + fi1.name + " (" + fi1.coordSource
-          + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
-          + fi2.coordSource + ":" + fi2.featureID + ")");
+          + " of the intersection of " + fi1.displayInfo(showSource, showType)
+          + " and " + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("JOH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffset + " "
+      // + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
+      // + " of the intersection of " + fi1.name + " (" + fi1.coordSource
+      // + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
+      // + fi2.coordSource + ":" + fi2.featureID + ")");
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of the intersection of " + fi1.name + " (" + fi1.coordSource
-          + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
-          + fi2.coordSource + ":" + fi2.featureID + ")");
+          + " of the intersection of " + fi1.displayInfo(showSource, showType)
+          + " and " + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("JOO")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffsetew + " "
+      // + locspecs.get(0).ioffsetewunit + " " + locspecs.get(0).iheadingew
+      // + " and " + locspecs.get(0).ioffsetns + " "
+      // + locspecs.get(0).ioffsetnsunit + " " + locspecs.get(0).iheadingns
+      // + " of the intersection of " + fi1.name + " (" + fi1.coordSource
+      // + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
+      // + fi2.coordSource + ":" + fi2.featureID + ")");
       iLocality = new String(locspecs.get(0).ioffsetew + " "
           + locspecs.get(0).ioffsetewunit + " " + locspecs.get(0).iheadingew
           + " and " + locspecs.get(0).ioffsetns + " "
           + locspecs.get(0).ioffsetnsunit + " " + locspecs.get(0).iheadingns
-          + " of the intersection of " + fi1.name + " (" + fi1.coordSource
-          + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
-          + fi2.coordSource + ":" + fi2.featureID + ")");
+          + " of the intersection of " + fi1.displayInfo(showSource, showType)
+          + " and " + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("JPOH")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
+      // iLocality = new String(locspecs.get(0).ioffset + " "
+      // + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
+      // + " of the intersection of " + fi1.name + " (" + fi1.coordSource
+      // + ":" + fi1.featureID + ")" + " and " + fi2.name + " ("
+      // + fi2.coordSource + ":" + fi2.featureID + ")" + " along " + fi2.name);
       iLocality = new String(locspecs.get(0).ioffset + " "
           + locspecs.get(0).ioffsetunit + " " + locspecs.get(0).iheading
-          + " of the intersection of " + fi1.name + " (" + fi1.coordSource
-          + ":" + fi1.featureID + ")" + " and  " + fi2.name + " ("
-          + fi2.coordSource + ":" + fi2.featureID + ")" + " along  " + fi2.name);
+          + " of the intersection of " + fi1.displayInfo(showSource, showType)
+          + " and  " + fi2.displayInfo(showSource, showType) + " along  "
+          + fi2.name);
     } else if (locType.equalsIgnoreCase("NJ")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("near the intersection of " + fi1.name + " ("
-          + fi1.coordSource + ":" + fi1.featureID + ")" + " and " + fi2.name
-          + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      // iLocality = new String("near the intersection of " + fi1.name + " ("
+      // + fi1.coordSource + ":" + fi1.featureID + ")" + " and " + fi2.name
+      // + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      iLocality = new String("near the intersection of "
+          + fi1.displayInfo(showSource, showType) + " and "
+          + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("ADDR")) {
       if (fi1.name == null) {
         iLocality = null;
@@ -303,17 +358,23 @@ public class Clause
         iLocality = null;
         return null;
       }
-      iLocality = new String("near the marker " + fi1.name + " ("
-          + fi1.coordSource + ":" + fi1.featureID + ")" + " on " + fi2.name
-          + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      // iLocality = new String("near the marker " + fi1.name + " ("
+      // + fi1.coordSource + ":" + fi1.featureID + ")" + " on " + fi2.name
+      // + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      iLocality = new String("near the marker "
+          + fi1.displayInfo(showSource, showType) + " on "
+          + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("POM")) {
       if (fi1.name == null || fi2.name == null) {
         iLocality = null;
         return null;
       }
-      iLocality = new String("at the marker " + fi1.name + " ("
-          + fi1.coordSource + ":" + fi1.featureID + ")" + " on " + fi2.name
-          + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      // iLocality = new String("at the marker " + fi1.name + " ("
+      // + fi1.coordSource + ":" + fi1.featureID + ")" + " on " + fi2.name
+      // + " (" + fi2.coordSource + ":" + fi2.featureID + ")");
+      iLocality = new String("at the marker "
+          + fi1.displayInfo(showSource, showType) + " on "
+          + fi2.displayInfo(showSource, showType));
     } else if (locType.equalsIgnoreCase("UTM")) {
       if (locspecs.get(0).iutmzone == null || locspecs.get(0).iutme == null
           || locspecs.get(0).iutmn == null) {

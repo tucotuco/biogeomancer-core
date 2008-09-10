@@ -46,69 +46,47 @@ public class FeatureInfo {
     return fi;
   }
 
-  public FeatureInfoState state; // The processing state of the FeatureInfo
-  public String name; // The accepted valid name of the feature
-  public int featureID; // Unique identifier for the feature
-  public int parentFeatureID; // Unique identifier for the containing feature
-  public int parentFeatureType; // Type code for containing feature (e.g., 754=country)
   public String classificationTerm; // The Feature Type in which this feature is
-  // classified
-  public double latitude; // The decimal latitude of the snapped-to centroid of
-  // the feature.
-  public double longitude; // The decimal longitude of the snapped-to centroid
-  // of the feature.
-  public Datum geodeticDatum; // The Coordinate Reference System (geodetic
-  // datum) of the latitude and longitude.
-  public double extentInMeters; // The distance from the snapped-to centroid of
   // the feature to the further point in the
   // feature, in meters.
   public double coordPrecision; // Coordinate precision expressed in decimal
-  // degrees (e.g., 0.5 means 30 minutes or half a
-  // degree).
-  public double mapAccuracyInMeters;// Map accuracy in meters (how far off a
   // coordinate can be from the true value
   // based on the original source).
   public String coordSource; // Required for metadata construction.
-
   public String encodedGeometry; // An encoded geometry to hold complex
   // representations of the feature (shapes)
   // public MetaData metadata; // metadata object to track processing
   // information, such as timestamps and methods.
   // public ArrayList<MetaData> metadata; // as an ArrayList, metadata could be
   // an event capturing mechanism.
+  // datum) of the latitude and longitude.
+  public double extentInMeters; // The distance from the snapped-to centroid of
+  public int featureID; // Unique identifier for the feature
+  // of the feature.
+  public Datum geodeticDatum; // The Coordinate Reference System (geodetic
+  public double geommaxx; // Easternmost longitude of the bounding box of the
+                          // feature
+  public double geommaxy; // Northernmost latitude of the bounding box of the
+                          // feature
+  public double geomminx; // Westernmost longitude of the bounding box of the
+                          // feature
+  public double geomminy; // Southernmost latitude of the bounding box of the
+                          // feature
+  // classified
+  public double latitude; // The decimal latitude of the snapped-to centroid of
+  // the feature.
+  public double longitude; // The decimal longitude of the snapped-to centroid
 
-  public double geomminx; // Westernmost longitude of the bounding box of the feature
-  public double geomminy; // Southernmost latitude of the bounding box of the feature
-  public double geommaxx; // Easternmost longitude of the bounding box of the feature
-  public double geommaxy; // Northernmost latitude of the bounding box of the feature
-  
-  public boolean overlapsFeature(FeatureInfo f){
-	  if(extentInMeters<=f.extentInMeters){
-	  if(latitude>=f.geomminy && latitude<=f.geommaxy &&
-			  longitude>=f.geomminx && longitude<=f.geommaxx) return true;
-	  if(geomminy>=f.geomminy && geomminy<=f.geommaxy &&
-			  geomminx>=f.geomminx && geomminx<=f.geommaxx) return true;
-	  if(geommaxy>=f.geomminy && geommaxy<=f.geommaxy &&
-			  geomminx>=f.geomminx && geomminx<=f.geommaxx) return true;
-	  if(geommaxy>=f.geomminy && geommaxy<=f.geommaxy &&
-			  geommaxx>=f.geomminx && geommaxx<=f.geommaxx) return true;
-	  if(geomminy>=f.geomminy && geomminy<=f.geommaxy &&
-			  geommaxx>=f.geomminx && geommaxx<=f.geommaxx) return true;
-	  return false;
-	  } else {
-		  if(f.latitude>=geomminy && f.latitude<=geommaxy &&
-				  f.longitude>=geomminx && f.longitude<=geommaxx) return true;
-		  if(f.geomminy>=geomminy && f.geomminy<=geommaxy &&
-				  f.geomminx>=geomminx && f.geomminx<=geommaxx) return true;
-		  if(f.geommaxy>=geomminy && f.geommaxy<=geommaxy &&
-				  f.geomminx>=geomminx && f.geomminx<=geommaxx) return true;
-		  if(f.geommaxy>=geomminy && f.geommaxy<=geommaxy &&
-				  f.geommaxx>=geomminx && f.geommaxx<=geommaxx) return true;
-		  if(f.geomminy>=geomminy && f.geomminy<=geommaxy &&
-				  f.geommaxx>=geomminx && f.geommaxx<=geommaxx) return true;
-		  return false;
-	  }
-  }
+  // degrees (e.g., 0.5 means 30 minutes or half a
+  // degree).
+  public double mapAccuracyInMeters;// Map accuracy in meters (how far off a
+
+  public String name; // The accepted valid name of the feature
+  public int parentFeatureID; // Unique identifier for the containing feature
+  public int parentFeatureType; // Type code for containing feature (e.g.,
+                                // 754=country)
+  public FeatureInfoState state; // The processing state of the FeatureInfo
+
   public FeatureInfo() { // constructor
     this.state = FeatureInfoState.FEATUREINFO_CREATED;
   }
@@ -141,10 +119,10 @@ public class FeatureInfo {
     this.state = FeatureInfoState.FEATUREINFO_CREATED;
   }
 
-  public FeatureInfo(String name, int fid, int pid, int ptype, String classificationterm,
-      double lat, double lng, String datum, double extent,
-      double coordprecision, double mapaccuracyinmeters, String coordsource,
-      String encodedgeometry) {
+  public FeatureInfo(String name, int fid, int pid, int ptype,
+      String classificationterm, double lat, double lng, String datum,
+      double extent, double coordprecision, double mapaccuracyinmeters,
+      String coordsource, String encodedgeometry) {
     // this.name = new String(name);
     this.name = new String(name.replaceAll(";", " "));
     this.featureID = fid;
@@ -162,6 +140,21 @@ public class FeatureInfo {
     this.state = FeatureInfoState.FEATUREINFO_CREATED;
   }
 
+  public String displayInfo(boolean showSource, boolean showType) {
+    if (name == null)
+      return "no feature";
+    String s = new String(name);
+    if (showSource || showType) {
+      s = s.concat(" (");
+      if (showSource && coordSource != null)
+        s = s.concat(coordSource + ":" + featureID);
+      if (showType && classificationTerm != null)
+        s = s.concat(":" + classificationTerm);
+      s = s.concat(")");
+    }
+    return s;
+  }
+
   public boolean equals(Object o) {
     if (!(o instanceof FeatureInfo))
       return false;
@@ -171,6 +164,44 @@ public class FeatureInfo {
 
   public int hashCode() {
     return featureID;
+  }
+
+  public boolean overlapsFeature(FeatureInfo f) {
+    if (extentInMeters <= f.extentInMeters) {
+      if (latitude >= f.geomminy && latitude <= f.geommaxy
+          && longitude >= f.geomminx && longitude <= f.geommaxx)
+        return true;
+      if (geomminy >= f.geomminy && geomminy <= f.geommaxy
+          && geomminx >= f.geomminx && geomminx <= f.geommaxx)
+        return true;
+      if (geommaxy >= f.geomminy && geommaxy <= f.geommaxy
+          && geomminx >= f.geomminx && geomminx <= f.geommaxx)
+        return true;
+      if (geommaxy >= f.geomminy && geommaxy <= f.geommaxy
+          && geommaxx >= f.geomminx && geommaxx <= f.geommaxx)
+        return true;
+      if (geomminy >= f.geomminy && geomminy <= f.geommaxy
+          && geommaxx >= f.geomminx && geommaxx <= f.geommaxx)
+        return true;
+      return false;
+    } else {
+      if (f.latitude >= geomminy && f.latitude <= geommaxy
+          && f.longitude >= geomminx && f.longitude <= geommaxx)
+        return true;
+      if (f.geomminy >= geomminy && f.geomminy <= geommaxy
+          && f.geomminx >= geomminx && f.geomminx <= geommaxx)
+        return true;
+      if (f.geommaxy >= geomminy && f.geommaxy <= geommaxy
+          && f.geomminx >= geomminx && f.geomminx <= geommaxx)
+        return true;
+      if (f.geommaxy >= geomminy && f.geommaxy <= geommaxy
+          && f.geommaxx >= geomminx && f.geommaxx <= geommaxx)
+        return true;
+      if (f.geomminy >= geomminy && f.geomminy <= geommaxy
+          && f.geommaxx >= geomminx && f.geommaxx <= geommaxx)
+        return true;
+      return false;
+    }
   }
 
   public String toString() {
@@ -231,8 +262,10 @@ public class FeatureInfo {
       s = s.concat("<FEATURETYPE>not recorded</FEATURETYPE>\n");
     }
 
-    s = s.concat("<PARENTFEATUREID>" + parentFeatureID + "</PARENTFEATUREID>\n");
-    s = s.concat("<PARENTFEATURETYPE>" + parentFeatureType + "</PARENTFEATUREID>\n");
+    s = s
+        .concat("<PARENTFEATUREID>" + parentFeatureID + "</PARENTFEATUREID>\n");
+    s = s.concat("<PARENTFEATURETYPE>" + parentFeatureType
+        + "</PARENTFEATUREID>\n");
 
     s = s.concat("<FEATURE_LATITUDE>" + latitude + "</FEATURE_LATITUDE>\n");
     s = s.concat("<FEATURE_LONGITUDE>" + longitude + "</FEATURE_LONGITUDE>\n");
