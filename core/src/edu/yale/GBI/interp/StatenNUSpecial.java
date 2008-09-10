@@ -23,6 +23,36 @@ final class StatenNUSpecial extends ParsingState {
     pd = data;
   }
 
+  public boolean isLatitude(String s) {
+    if (s == null || s.length() == 0)
+      return false;
+    Double d = null;
+    try {
+      d = new Double(s);
+      if (d < -90 || d > 90)
+        return false;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+
+    return true;
+  }
+
+  public boolean isLongitude(String s) {
+    if (s == null || s.length() == 0)
+      return false;
+    Double d = null;
+    try {
+      d = new Double(s);
+      if (d < -180 || d > 180)
+        return false;
+    } catch (NumberFormatException e) {
+      return false;
+    }
+
+    return true;
+  }
+
   public ParsingState parse() {
     // TODO Auto-generated method stub
     if (pd.words.length < 3
@@ -38,10 +68,25 @@ final class StatenNUSpecial extends ParsingState {
       pd = null;
       return state;
 
-    } else if (parser.isNum(pd.clause.replaceAll(
-        "[nNsSeEwWMmDdoO.',:\\u00B0\\s]", ""))) {
+    } else if (pd.words.length == 2 && isLatitude(pd.words[0])
+        && isLongitude(pd.words[1])) {
+      // Lat Long
       pd.state = "LL";
       StateFinish state = new StateFinish(pd, "LL", parser);
+      pd = null;
+      return state;
+
+    }
+    // Need a series of LL regx matching attempts here
+    /*
+     * else if (parser.isNum(pd.clause.replaceAll(
+     * "[nNsSeEwWMmDdoO.',:\\u00B0\\s]", ""))) { pd.state = "LL"; StateFinish
+     * state = new StateFinish(pd, "LL", parser); pd = null; return state; }
+     */
+    // TODO: Doesn't match simple DDDD E DDDD N
+    else if (pd.clause.toUpperCase().trim().matches(parser.regx_UTM)) {
+      pd.state = "UTM";
+      StateFinish state = new StateFinish(pd, "UTM", parser);
       pd = null;
       return state;
 
@@ -59,27 +104,21 @@ final class StatenNUSpecial extends ParsingState {
       pd = null;
       return state;
 
-    } 
+    }
 
-    else if (pd.clause.toUpperCase().trim().matches(parser.regx_TRS + parser.regx_TRSS + "?")) {
+    else if (pd.clause.toUpperCase().trim().matches(
+        parser.regx_TRS + parser.regx_TRSS + "?")) {
       pd.state = "TRS";
       StateFinish state = new StateFinish(pd, "TRS", parser);
       pd = null;
       return state;
 
     }
-    
-    else if (pd.clause.toUpperCase().trim().matches(parser.regx_TRS + parser.regx_TRSS + ".*")) {
-        pd.state = "TRSS";
-        StateFinish state = new StateFinish(pd, "TRSS", parser);
-        pd = null;
-        return state;
 
-      }
-    
-    else if (pd.clause.toUpperCase().trim().matches(parser.regx_UTM)) {
-      pd.state = "UTM";
-      StateFinish state = new StateFinish(pd, "UTM", parser);
+    else if (pd.clause.toUpperCase().trim().matches(
+        parser.regx_TRS + parser.regx_TRSS + ".*")) {
+      pd.state = "TRSS";
+      StateFinish state = new StateFinish(pd, "TRSS", parser);
       pd = null;
       return state;
 
@@ -100,5 +139,4 @@ final class StatenNUSpecial extends ParsingState {
       return state;
     }
   }
-
 }

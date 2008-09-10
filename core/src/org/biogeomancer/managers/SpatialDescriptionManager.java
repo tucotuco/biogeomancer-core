@@ -88,17 +88,17 @@ public class SpatialDescriptionManager extends BGManager {
       g.confidence = 0;
       g.uLocality = clause.uLocality;
       if (g.iLocality == null || g.iLocality.trim().length() == 0) {
-        g.iLocality = clause.makeInterpretedLocality(fi, null);
+        g.iLocality = clause.makeInterpretedLocality(fi, null, true, true);
       } else {
         g.iLocality = g.iLocality.concat(clause.makeInterpretedLocality(fi,
-            null));
+            null, true, true));
       }
       g.uLocality = clause.uLocality;
       g.state = GeorefState.GEOREF_COMPLETED;
       rec.georefs.add(g);
     }
 
-    sdm.doNewSpatialDescription(rec);
+    sdm.doNewSpatialDescription(rec, true, true);
     System.out.println(rec);
     sdm.shutdown();
   }
@@ -130,502 +130,8 @@ public class SpatialDescriptionManager extends BGManager {
     }
   }
 
-  /*
-   * public void doSpatialDescription(Rec rec, int featureid){ String version =
-   * new String("doSpatialDescription(Rec, int):20070513"); String process = new
-   * String("SpatialDescriptionManager)"); // In this method we are going to add
-   * a single georeference // to the rec based solely on the feature referenced
-   * by featureid // with locType F Clause clause = new Clause(); clause.locType =
-   * new String("F"); LocSpec locspec = new LocSpec(); FeatureInfo fi =
-   * gaz.featureLookup(userplaces, featureid); locspec.featurename = new
-   * String(fi.name); locspec.featureinfos.add(fi);
-   * clause.locspecs.add(locspec); PointRadius pr = null; pr =
-   * sm.getPointRadius( clause.locType, clause.locspecs.get(0), fi, null ); //
-   * Point-radius was successfully created, now add it to the clause's georefs
-   * list. if( pr != null ) { Georef g = new Georef(pr); g.confidence=0;
-   * g.uLocality=clause.uLocality; if(g.iLocality==null ||
-   * g.iLocality.trim().length()==0){
-   * g.iLocality=clause.makeInterpretedLocality(fi, null); }else{
-   * g.iLocality=g.iLocality.concat(clause.makeInterpretedLocality(fi, null)); }
-   * g.uLocality=clause.uLocality; g.state=GeorefState.GEOREF_COMPLETED;
-   * rec.georefs.add(g); } }
-   */
-  /*
-   * public void doSpatialDescription(Rec r){ String version = new
-   * String("doSpatialDescription(Rec):20070916"); String process = new
-   * String("SpatialDescriptionManager"); if( r == null ) return; if( r.clauses ==
-   * null || r.clauses.size() == 0) { r.state = RecState.REC_NO_CLAUSES_ERROR;
-   * return; } // For every Clause // Fill in the georefs list with georefs
-   * generated for // every combination of FeatureInfos resulting from //
-   * lookupFeature on the one or two LocSpecs.
-   * 
-   * Connection gdb = null; String dbname = new String("not specified"); for(
-   * Clause clause : r.clauses) { // do feature lookups for all locspecs for
-   * every clause based on locType gdb = null; dbname=new String("not
-   * specified"); if(clause.locType.toUpperCase().contains("ADM")){ gdb=gadm;
-   * dbname=new String("gadm"); ProcessStep ps = new ProcessStep(process,
-   * version, ""); clause.locspecs.get(0).featureinfos =
-   * gaz.featureQuickLookup(gdb, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case", null); gaz.addFeatures(userplaces,
-   * clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case"); if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("F")){
-   * gdb=worldplaces; dbname=new String("worldplaces"); ProcessStep ps = new
-   * ProcessStep(process, version, ""); clause.locspecs.get(0).featureinfos =
-   * gaz.featureQuickLookup(gdb, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case", null); gaz.addFeatures(userplaces,
-   * clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case"); if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("FOH")){
-   * gdb=worldplaces; dbname=new String("worldplaces");
-   * if(clause.locspecs.size()>0){
-   * clause.locspecs.get(0).interpretOffset(SupportedLanguages.english);
-   * clause.locspecs.get(0).interpretHeading(SupportedLanguages.english); }
-   * ProcessStep ps = new ProcessStep(process, version, "");
-   * clause.locspecs.get(0).featureinfos = gaz.featureQuickLookup(gdb,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case", null);
-   * gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case");
-   * if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("FO")){
-   * gdb=worldplaces; dbname=new String("worldplaces");
-   * if(clause.locspecs.size()>0){
-   * clause.locspecs.get(0).interpretOffset(SupportedLanguages.english); }
-   * ProcessStep ps = new ProcessStep(process, version, "");
-   * clause.locspecs.get(0).featureinfos = gaz.featureQuickLookup(gdb,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case", null);
-   * gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case");
-   * if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("FS")){
-   * gdb=worldplaces; dbname=new String("worldplaces");
-   * if(clause.locspecs.size()>0){
-   * clause.locspecs.get(0).interpretSubdivision(SupportedLanguages.english); }
-   * ProcessStep ps = new ProcessStep(process, version, "");
-   * clause.locspecs.get(0).featureinfos = gaz.featureQuickLookup(gdb,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case", null);
-   * gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case");
-   * if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("NF")){
-   * gdb=worldplaces; dbname=new String("worldplaces"); ProcessStep ps = new
-   * ProcessStep(process, version, ""); clause.locspecs.get(0).featureinfos =
-   * gaz.featureQuickLookup(gdb, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case", null); gaz.addFeatures(userplaces,
-   * clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case"); if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("FOO")){
-   * gdb=worldplaces; dbname=new String("worldplaces");
-   * if(clause.locspecs.size()>0){
-   * clause.locspecs.get(0).interpretOffsetEW(SupportedLanguages.english);
-   * clause.locspecs.get(0).interpretOffsetNS(SupportedLanguages.english);
-   * clause.locspecs.get(0).interpretHeadingEW(SupportedLanguages.english);
-   * clause.locspecs.get(0).interpretHeadingNS(SupportedLanguages.english); }
-   * ProcessStep ps = new ProcessStep(process, version, "");
-   * clause.locspecs.get(0).featureinfos = gaz.featureQuickLookup(gdb,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case", null);
-   * gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case");
-   * if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("UNK")){ //
-   * It might be that clauses of UNK locType are actually a feature. This
-   * happens, // for example, if the Yale interpreter encounters a lower-case
-   * feature name. In // this case try to lookup the contents of the UNK clause
-   * as if it was a Feature. // If it is found, change the locType to F,
-   * populate the feature name and proceed // accordingly. gdb=worldplaces;
-   * dbname=new String("worldplaces"); if(clause.locspecs.size()>0){ ProcessStep
-   * ps = new ProcessStep(process, version, "");
-   * clause.locspecs.get(0).featureinfos = gaz.featureQuickLookup(gdb,
-   * clause.uLocality, "equals-ignore-case", null); gaz.addFeatures(userplaces,
-   * clause.locspecs.get(0).featureinfos, clause.uLocality,
-   * "equals-ignore-case"); if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.uLocality+" in "+dbname+" using query type equals-ignore-case.
-   * LocType UNK remains changed."); } else{ // Features found matching
-   * clause.uLocality. Change the locType and associated variables.
-   * clause.locType="F"; clause.locspecs.get(0).featurename = new
-   * String(clause.uLocality); ps.method=ps.method.concat("Changed locType UNK
-   * to locType F. Found "+clause.locspecs.get(0).featureinfos.size()+" features
-   * matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query
-   * type equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } } else if(clause.locType.equalsIgnoreCase("FH") ||
-   * clause.locType.equalsIgnoreCase("PH")){ // The FH and PH locTypes are often
-   * misinterpreted F or P (e.g., "North Haven" is a feature, // not a heading
-   * from a feature, such as "North of Haven"). // Test to see if a Feature can
-   * be found when the locType is FH or PH. gdb=worldplaces; dbname=new
-   * String("worldplaces"); if(clause.locspecs.size()>0){ ProcessStep ps = new
-   * ProcessStep(process, version, ""); String testname = new
-   * String(clause.locspecs.get(0).vheading+"
-   * "+clause.locspecs.get(0).featurename); if(
-   * clause.uLocality.equalsIgnoreCase(testname)){ // The uninterpreted clause
-   * contains the putative feature name. In other words, proceed with // cases
-   * such as uLocality="North Haven", but not with uLocality="North of Haven".
-   * clause.locspecs.get(0).featureinfos = gaz.featureQuickLookup(gdb, testname,
-   * "equals-ignore-case", null); gaz.addFeatures(userplaces,
-   * clause.locspecs.get(0).featureinfos, testname, "equals-ignore-case");
-   * if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching "+testname+"
-   * in "+dbname+" using query type equals-ignore-case. LocType FH remains
-   * changed."); } else{ // Features found matching testname. Change the locType
-   * and associated variables. if( clause.locType.equalsIgnoreCase("fh") ){
-   * clause.locType="F"; ps.method=ps.method.concat("Found feature matching
-   * "+testname+" in "+dbname+" using query type equals-ignore-case. Changed
-   * locType FH to F."); } else if( clause.locType.equalsIgnoreCase("ph") ){
-   * clause.locType="P"; ps.method=ps.method.concat("Found feature matching
-   * "+testname+" in "+dbname+" using query type equals-ignore-case. Changed
-   * locType PH to P."); } clause.locspecs.get(0).featurename = new
-   * String(testname); clause.locspecs.get(0).vheading = null;
-   * clause.locspecs.get(0).iheading = null; }
-   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); } } }
-   * else if(clause.locType.equalsIgnoreCase("BF")){ gdb=worldplaces; dbname=new
-   * String("worldplaces"); ProcessStep ps = new ProcessStep(process, version,
-   * ""); if(clause.locspecs.size()>1){ clause.locspecs.get(0).featureinfos =
-   * gaz.featureQuickLookup(gdb, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case", null); gaz.addFeatures(userplaces,
-   * clause.locspecs.get(0).featureinfos, clause.locspecs.get(0).featurename,
-   * "equals-ignore-case"); if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } clause.locspecs.get(1).featureinfos =
-   * gaz.featureQuickLookup(gdb, clause.locspecs.get(1).featurename,
-   * "equals-ignore-case", null); gaz.addFeatures(userplaces,
-   * clause.locspecs.get(1).featureinfos, clause.locspecs.get(1).featurename,
-   * "equals-ignore-case"); if(clause.locspecs.get(1).featureinfos==null ||
-   * clause.locspecs.get(1).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(1).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(1).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(1).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if (clause.locType.equalsIgnoreCase("P") ||
-   * clause.locType.equalsIgnoreCase("POH") ||
-   * clause.locType.equalsIgnoreCase("PO") ||
-   * clause.locType.equalsIgnoreCase("PH") ||
-   * clause.locType.equalsIgnoreCase("J") ||
-   * clause.locType.equalsIgnoreCase("NJ") ||
-   * clause.locType.equalsIgnoreCase("JOH") ||
-   * clause.locType.equalsIgnoreCase("JO") ||
-   * clause.locType.equalsIgnoreCase("JH") ||
-   * clause.locType.equalsIgnoreCase("JOO") ||
-   * clause.locType.equalsIgnoreCase("POM") ||
-   * clause.locType.equalsIgnoreCase("NPOM") ||
-   * clause.locType.equalsIgnoreCase("PS") ||
-   * clause.locType.equalsIgnoreCase("BP") ||
-   * clause.locType.equalsIgnoreCase("ADDR") ||
-   * clause.locType.equalsIgnoreCase("NP")){ gdb = null; // until roads and
-   * rivers layers are installed } else
-   * if(clause.locType.equalsIgnoreCase("TRS") ||
-   * clause.locType.equalsIgnoreCase("TRSS")){ gdb=plss; dbname=new
-   * String("plss"); ProcessStep ps = new ProcessStep(process, version, "");
-   * if(clause.locspecs.size()>0){ clause.locspecs.get(0).interpretTRS(); }
-   * clause.locspecs.get(0).featureinfos = gaz.featureQuickLookup(gdb,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case", null);
-   * gaz.addFeatures(userplaces, clause.locspecs.get(0).featureinfos,
-   * clause.locspecs.get(0).featurename, "equals-ignore-case");
-   * if(clause.locspecs.get(0).featureinfos==null ||
-   * clause.locspecs.get(0).featureinfos.size()==0){ // TODO: other kinds of
-   * lookups ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } else{ ps.method=ps.method.concat("Found
-   * "+clause.locspecs.get(0).featureinfos.size()+" features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * equals-ignore-case."); } ps.endtimestamp=System.currentTimeMillis();
-   * r.metadata.addStep(ps); } else if(clause.locType.equalsIgnoreCase("LL")){
-   * if(clause.locspecs.size()>0){
-   * clause.locspecs.get(0).interpretLatLng(clause.locspecs.get(0)); gdb=null; } }
-   * else if(clause.locType.equalsIgnoreCase("UTM")){
-   * if(clause.locspecs.size()>0){ clause.locspecs.get(0).interpretUTM();
-   * gdb=null; } } else if(clause.locType.equalsIgnoreCase("FPOH")){ gdb = null; //
-   * until roads and rivers layers are installed } else
-   * if(clause.locType.equalsIgnoreCase("JPOH")){ gdb = null; // until roads and
-   * rivers layers are installed } else
-   * if(clause.locType.equalsIgnoreCase("Q")){ gdb = null; // don't yet have
-   * data for this }
-   * 
-   * if(gdb!=null){ // do other lookup types if the database is defined
-   * for(LocSpec locspec:clause.locspecs) {
-   * 
-   * if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-   * ProcessStep ps = new ProcessStep(process, version, "");
-   * locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename,
-   * "contains-all-words", null); gaz.addFeatures(userplaces,
-   * locspec.featureinfos, locspec.featurename, "contains-all-words");
-   * if(locspec.featureinfos==null || locspec.featureinfos.size()==0){ // TODO:
-   * other kinds of lookups ps.method=ps.method.concat("Found no features
-   * matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query
-   * type contains-all-words."); } else{ ps.method=ps.method.concat("Found
-   * "+locspec.featureinfos.size()+" features matching "+locspec.featurename+"
-   * in "+dbname+" using query type contains-all-words."); }
-   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); } //
-   * contains-all-words didn't work, try other method,
-   * 
-   * if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-   * ProcessStep ps = new ProcessStep(process, version, "");
-   * locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename,
-   * "contains-any-words", null); gaz.addFeatures(userplaces,
-   * locspec.featureinfos, locspec.featurename, "contains-any-words");
-   * if(locspec.featureinfos==null || locspec.featureinfos.size()==0){ // TODO:
-   * other kinds of lookups ps.method=ps.method.concat("Found no features
-   * matching "+clause.locspecs.get(0).featurename+" in "+dbname+" using query
-   * type contains-any-words."); } else{ ps.method=ps.method.concat("Found
-   * "+locspec.featureinfos.size()+" features matching "+locspec.featurename+"
-   * in "+dbname+" using query type contains-any-words."); }
-   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); } //
-   * contains-any-words didn't work, try other method,
-   * if(locspec.featureinfos==null || locspec.featureinfos.size()==0){
-   * ProcessStep ps = new ProcessStep(process, version, "");
-   * locspec.featureinfos = gaz.featureQuickLookup(gdb, locspec.featurename,
-   * "contains-phrase", null); gaz.addFeatures(userplaces, locspec.featureinfos,
-   * locspec.featurename, "contains-phrase"); if(locspec.featureinfos==null ||
-   * locspec.featureinfos.size()==0){ // TODO: other kinds of lookups
-   * ps.method=ps.method.concat("Found no features matching
-   * "+clause.locspecs.get(0).featurename+" in "+dbname+" using query type
-   * contains-phrase."); } else{ ps.method=ps.method.concat("Found
-   * "+locspec.featureinfos.size()+" features matching "+locspec.featurename+"
-   * in "+dbname+" using query type contains-phrase."); }
-   * ps.endtimestamp=System.currentTimeMillis(); r.metadata.addStep(ps); } //
-   * contains phrase didn't work, try other method, // such as a pattern query
-   * replacing vowels with wildcard characters if(locspec.featureinfos==null ||
-   * locspec.featureinfos.size()==0){ // At this point, if the locspec still
-   * doesn't have any features, the lookup failed. clause.state =
-   * ClauseState.CLAUSE_FEATURE_NOT_FOUND_ERROR; locspec.state =
-   * LocSpecState.LOCSPEC_ERROR_FEATURE_NOT_FOUND; } } } // LocSpec Feature
-   * lookups are done. Make Shapes for this Clause.
-   * if(clause.locspecs.get(0).featureinfos != null){ for(int i=0;i<clause.locspecs.get(0).featureinfos.size();i++) { //
-   * for every featureinfo in LocSpec1 FeatureInfo featureinfo1 =
-   * clause.locspecs.get(0).featureinfos.get(i); FeatureInfo featureinfo2 =
-   * null; PointRadius pr = null; if(clause.locspecs.size() > 1 &&
-   * clause.locspecs.get(1).featureinfos.size() > 0) { // there are features for
-   * the second locspec for(int j=0;j<clause.locspecs.get(1).featureinfos.size();j++) { //
-   * for every feature info in LocSpec2 featureinfo2 =
-   * clause.locspecs.get(1).featureinfos.get(j); pr = sm.getPointRadius(
-   * clause.locType, clause.locspecs.get(0), featureinfo1, featureinfo2 ); //
-   * Point-radius was successfully created, now add it to the clause's georefs
-   * list. if( pr != null) { Georef g = new Georef(pr); g.confidence=0;
-   * if(g.iLocality==null || g.iLocality.trim().length()==0){
-   * g.iLocality=clause.makeInterpretedLocality(featureinfo1, featureinfo2);
-   * }else{
-   * g.iLocality=g.iLocality.concat(clause.makeInterpretedLocality(featureinfo1,
-   * featureinfo2)); } g.uLocality=clause.uLocality;
-   * g.addFeatureInfo(featureinfo1); g.addFeatureInfo(featureinfo2);
-   * clause.state=ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
-   * clause.georefs.add(g); } } }else { // there is no second locspec try{ pr =
-   * sm.getPointRadius( clause.locType, clause.locspecs.get(0), featureinfo1,
-   * featureinfo2 ); } catch (Exception e) { e.printStackTrace(); } //
-   * Point-radius was successfully created, now add it to the clause's georefs
-   * list.
-   * 
-   * if( pr != null ) { Georef g = new Georef(pr); g.confidence=0;
-   * g.uLocality=clause.uLocality; if(g.iLocality==null ||
-   * g.iLocality.trim().length()==0){
-   * g.iLocality=clause.makeInterpretedLocality(featureinfo1, featureinfo2);
-   * }else{
-   * g.iLocality=g.iLocality.concat(clause.makeInterpretedLocality(featureinfo1,
-   * featureinfo2)); } g.uLocality=clause.uLocality;
-   * g.addFeatureInfo(featureinfo1); g.state=GeorefState.GEOREF_COMPLETED;
-   * clause.state=ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
-   * clause.georefs.add(g); } } } } } // Now that georefs have been generated
-   * for the clauses, remove any duplicate georefs within a given clause. //
-   * TODO: Determined that this is probably not necessary.
-   * 
-   * for( Clause clause : r.clauses) { // do feature lookups for all locspecs
-   * for every clause for(int i=0;i<clause.georefs.size();i++){ for(int j=0;j<clause.georefs.size();j++){
-   * if(i!=j){ if(clause.georefs.get(i).equals(clause.georefs.get(j))){
-   * clause.georefs.remove(j); j--; } } } } } // Point-radius creation has been
-   * attempted for all Clauses in the Rec. // Now do a spatial intersection on
-   * all combinations of georefs across clauses. // The number of possible
-   * georefs arising from the intersections of clauses // is the product of the
-   * number of successfully created georefs for each clause.
-   * 
-   * if(r.getGeorefedClauseCount()==0){ r.state =
-   * RecState.REC_NO_GEOREFERENCE_ERROR; return; } int
-   * clausecount=r.clauses.size(); // Total number of Clauses in the Rec. // int
-   * viableclausecount = r.getGeorefedClauseCount(); // Number of Clauses that
-   * have at least one viable georef. int combos=0; // Total number of
-   * combinations of viable Clauses. int[] gcounts=null; // Number of Georefs
-   * for the Clause at each index for(int n=0;n<clausecount;n++) { int
-   * viablegeorefcount = r.clauses.get(n).viableGeorefCount(); if(
-   * viablegeorefcount>0 ){ if(combos==0) combos=viablegeorefcount; else
-   * combos*=viablegeorefcount; } }
-   * 
-   * if(combos>3000){ // Optimize in this case log.error("Georef abandoned, more
-   * than 3000 ("+combos+") combinations." ); System.out.println("Georef
-   * abandoned, more than 3000 ("+combos+") combinations." ); return; }
-   * 
-   * gcounts=new int[clausecount]; for(int j=0;j<clausecount;j++){ int
-   * viablegeorefs = r.clauses.get(j).viableGeorefCount(); gcounts[j] =
-   * viablegeorefs; } // find the max number of combos int size = 1; for (int k =
-   * 0; k < gcounts.length; k++) { if(gcounts[k] != 0) size = size * gcounts[k]; } //
-   * Create an array to hold the combinations of georef indexes to do
-   * intersections on. int[][] geoCombos = new int[size][gcounts.length]; //
-   * create a array to store the current combo int[] curr = new int[
-   * gcounts.length]; // populate the new array with 0's for the beginning for
-   * (int k = 0; k < gcounts.length; k++) { if(gcounts[k] == 0){ curr[k] = -1;
-   * continue; } curr[k] = 0; } // loop through each combo for (int x = 0; x <
-   * geoCombos.length; x++) {
-   * 
-   * geoCombos[x] = curr.clone(); // add the new combo to the list // loop
-   * through each location in the current combo // essentially works like a
-   * backwards mileage counter with each number // place having a different base
-   * for (int j = 0; j < curr.length; j++) { //check for invalid clauses
-   * if(curr[j] == -1){ continue; } curr[j] = curr[j] + 1;// increase the value
-   * of current location if (curr[j] == gcounts[j]) { curr[j] = 0; // if current
-   * location is too big, drop it to zero and // move to next continue; }
-   * break;// otherwise break and add this new unique combo } }
-   * 
-   * GeometryFactory gf = new GeometryFactory(); WKTReader wktreader = new
-   * WKTReader(gf); Georef newGeoref = null; Geometry geom; String encodedG =
-   * null;
-   * 
-   * Georef g1 = null, intersection = null; double distancebetweencenters=0,
-   * sumofradii=0; boolean foundFirstValid = false; String loctype; int
-   * featureid; for(int m=0;m<combos;m++) { // For every combo of Clause
-   * Georefs g1=intersection=null; for(int i=0;i<clausecount;i++) { // For
-   * every Clause in the Rec if(i == 0){ foundFirstValid = false; }
-   * 
-   * if(geoCombos[m][i] == -1){ continue; }
-   * g1=r.clauses.get(i).georefs.get(geoCombos[m][i]); loctype =
-   * r.clauses.get(i).locType; if(!foundFirstValid){ // first VALID clause,
-   * intersection is just that clause or // the geometry for the feature if the
-   * loctype is one of the // feature-only loctypes. foundFirstValid=true;
-   * if(loctype.equalsIgnoreCase("F") || loctype.toUpperCase().contains("ADM") ||
-   * loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS") ||
-   * loctype.equalsIgnoreCase("TRSS")){ // Use the actual shape for the
-   * intersection instead of the point-radius. featureid =
-   * g1.featureinfos.get(0).featureID;
-   * 
-   * String csource = new String(g1.featureinfos.get(0).coordSource); if(csource !=
-   * null && csource.equalsIgnoreCase("usersdb")){ encodedG = new
-   * String(gaz.lookupFootprint(userplaces, featureid)); } else
-   * if(loctype.toUpperCase().contains("ADM")){ encodedG = new
-   * String(gaz.lookupFootprint(gadm, featureid)); } else
-   * if(loctype.equalsIgnoreCase("F")){ encodedG = new
-   * String(gaz.lookupFootprint(worldplaces, featureid)); } //TODO change this
-   * to be roads or rivers when they get added to the Gazetteer else
-   * if(loctype.equalsIgnoreCase("P")){ encodedG = new
-   * String(gaz.lookupFootprint(worldplaces, featureid)); } else
-   * if(loctype.equalsIgnoreCase("TRS") || loctype.equalsIgnoreCase("TRSS")){
-   * encodedG = new String(gaz.lookupFootprint(plss, featureid)); } try { geom =
-   * wktreader.read(encodedG); if(geom.getDimension()==0){ // feature is a point
-   * in the gazetteer intersection = g1; } else { // feature has a footprint in
-   * the gazetteer if(loctype.equalsIgnoreCase("TRS")){ int sec =
-   * r.clauses.get(i).locspecs.get(0).finishTRSSection(); if(sec>0) {
-   * g1.iLocality=g1.iLocality.concat(" Section "+sec); geom =
-   * getTRSectionGeometry(geom,sec); } } intersection = new Georef(geom,
-   * DatumManager.getInstance().getDatum("WGS84")); intersection.iLocality=new
-   * String(g1.iLocality); } } catch (ParseException e) { e.printStackTrace(); } }
-   * else{ intersection=g1; } } else{ // clause beyond the first, may have real
-   * intersection // Check to see if the distances between points is greater //
-   * than the sum of the radii of the features. If so, there is no overlap.
-   * distancebetweencenters = g1.getDistanceToGeorefCentroid(intersection);
-   * sumofradii = g1.pointRadius.extent+intersection.pointRadius.extent;
-   * if(distancebetweencenters<=sumofradii){ // there is a non-point
-   * intersection // For any of the feature-only loctypes
-   * if(loctype.equalsIgnoreCase("F") || loctype.toUpperCase().contains("ADM") ||
-   * loctype.equalsIgnoreCase("P") || loctype.equalsIgnoreCase("TRS") ||
-   * loctype.equalsIgnoreCase("TRSS")){ // Use the actual shape for the
-   * intersection instead of the point-radius. featureid =
-   * g1.featureinfos.get(0).featureID;
-   * 
-   * String csource = new String(g1.featureinfos.get(0).coordSource); if(csource !=
-   * null && csource.equalsIgnoreCase("usersdb")){ encodedG = new
-   * String(gaz.lookupFootprint(userplaces, featureid)); } else
-   * if(loctype.toUpperCase().contains("ADM")){ encodedG = new
-   * String(gaz.lookupFootprint(gadm, featureid)); } else
-   * if(loctype.equalsIgnoreCase("F")){ encodedG = new
-   * String(gaz.lookupFootprint(worldplaces, featureid)); } //TODO change this
-   * to be roads or rivers when they get added to the Gazetteer else
-   * if(loctype.equalsIgnoreCase("P")){ encodedG = new
-   * String(gaz.lookupFootprint(worldplaces, featureid)); } else
-   * if(loctype.equalsIgnoreCase("TRS")){ encodedG = new
-   * String(gaz.lookupFootprint(plss, featureid)); } try { // Test the old
-   * intersection against the real geometries geom = wktreader.read(encodedG);
-   * if(geom.getDimension()==0){ // feature is a point in the gazetteer, use the
-   * point-radius newGeoref = g1; } else { // feature has a footprint in the
-   * gazetteer if(loctype.equalsIgnoreCase("TRS")){ int sec =
-   * r.clauses.get(i).locspecs.get(0).finishTRSSection(); if(sec>0) {
-   * g1.iLocality=g1.iLocality.concat(" Section "+sec); geom =
-   * getTRSectionGeometry(geom,sec); } } newGeoref = new Georef(geom,
-   * DatumManager.getInstance().getDatum("WGS84")); newGeoref.iLocality=new
-   * String(g1.iLocality); } } catch (ParseException e) { e.printStackTrace(); }
-   * intersection=intersection.intersect(newGeoref); } else{
-   * intersection=intersection.intersect(g1); } if(intersection!=null &&
-   * !intersection.geometry.isEmpty()){ // copy the featureinfos used in the
-   * intersecting georef // to the georef for the resulting intersection
-   * for(FeatureInfo f: g1.featureinfos){ try{ if(intersection!=null){
-   * intersection.addFeatureInfo(f); } } catch (Exception e) {
-   * System.out.println("Problem with addFeatureInfo to intersection for the
-   * following feature:\n"+f.toXML(true)); System.out.println("from the
-   * following intersection:\n"+intersection.toXML(true)); e.printStackTrace(); } } }
-   * else{ // there is no intersection between g1 and the previously calculated
-   * intersection based on geometry intersection=null; i=clausecount; // no
-   * reason to even try other clauses, because there is already an inconsistency } }
-   * else { // there is no intersection between g1 and g2 based on distance
-   * between centers // and point-radiuses intersection=null; i=clausecount; //
-   * no reason to even try other clauses, because there is already an
-   * inconsistency } } } if( intersection != null) {
-   * r.georefs.add(intersection); } } // Remove duplicate georeferences, if any
-   * for(int i=0;i<r.georefs.size();i++){ for(int j=0;j<r.georefs.size();j++){
-   * if(i!=j){ if(r.georefs.get(i).equals(r.georefs.get(j))){
-   * r.georefs.remove(j); j--; } } } } }
-   */
-  public void doNewSpatialDescription(Rec r) {
+  public void doNewSpatialDescription(Rec r, boolean showSource,
+      boolean showType) {
     String version = new String("doNewSpatialDescription(Rec):20080202");
     String process = new String("SpatialDescriptionManager");
     if (r == null)
@@ -670,7 +176,7 @@ public class SpatialDescriptionManager extends BGManager {
 
     // Make Georefs for all clauses in the Rec.
     starttime = System.currentTimeMillis();
-    makeClauseGeorefs(r);
+    makeClauseGeorefs(r, showSource, showType);
     endtime = System.currentTimeMillis();
     System.out.println("makeClauseGeorefs: " + (endtime - starttime) + " ms");
 
@@ -1263,7 +769,7 @@ public class SpatialDescriptionManager extends BGManager {
     return p;
   }
 
-  public void makeClauseGeorefs(Rec r) {
+  public void makeClauseGeorefs(Rec r, boolean showSource, boolean showType) {
     for (Clause clause : r.clauses) {
       if (clause.locspecs.get(0).featureinfos != null) {
         // for every featureinfo in LocSpec1
@@ -1290,10 +796,11 @@ public class SpatialDescriptionManager extends BGManager {
                 g.confidence = 0;
                 if (g.iLocality == null || g.iLocality.trim().length() == 0) {
                   g.iLocality = clause.makeInterpretedLocality(featureinfo1,
-                      featureinfo2);
+                      featureinfo2, showSource, showType);
                 } else {
                   g.iLocality = g.iLocality.concat(clause
-                      .makeInterpretedLocality(featureinfo1, featureinfo2));
+                      .makeInterpretedLocality(featureinfo1, featureinfo2,
+                          showSource, showType));
                 }
                 g.uLocality = clause.uLocality;
                 g.addFeatureInfo(featureinfo1);
@@ -1318,10 +825,11 @@ public class SpatialDescriptionManager extends BGManager {
               g.uLocality = clause.uLocality;
               if (g.iLocality == null || g.iLocality.trim().length() == 0) {
                 g.iLocality = clause.makeInterpretedLocality(featureinfo1,
-                    featureinfo2);
+                    featureinfo2, showSource, showType);
               } else {
                 g.iLocality = g.iLocality.concat(clause
-                    .makeInterpretedLocality(featureinfo1, featureinfo2));
+                    .makeInterpretedLocality(featureinfo1, featureinfo2,
+                        showSource, showType));
               }
               g.uLocality = clause.uLocality;
               g.addFeatureInfo(featureinfo1);
@@ -1529,7 +1037,9 @@ public class SpatialDescriptionManager extends BGManager {
               if (geom.getDimension() == 0) {
                 // feature is a point in the gazetteer
                 geom = g1.geometry;
-                // intersection = g1;
+                intersection = g1; // not sure why this was commented out. It
+                // seems to omit all features based on
+                // single points.
               } else {
                 // feature has a footprint in the gazetteer
                 if (loctype.equalsIgnoreCase("TRS")

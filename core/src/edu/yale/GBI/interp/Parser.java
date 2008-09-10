@@ -19,7 +19,6 @@ package edu.yale.GBI.interp;
 import org.biogeomancer.managers.GeorefDictionaryManager;
 import org.biogeomancer.utils.SupportedLanguages;
 
-import edu.yale.GBI.BGI;
 import edu.yale.GBI.BGMUtil;
 import edu.yale.GBI.LocalityInfo;
 import edu.yale.GBI.LocalityRec;
@@ -27,9 +26,9 @@ import edu.yale.GBI.LocalityRec;
 public class Parser {
 
   private static Parser englishInstance;
-  private static Parser spanishInstance;
   private static Parser frenchInstance;
   private static Parser portugueseInstance;
+  private static Parser spanishInstance;
 
   public static Parser getInstance(GeorefDictionaryManager gdm,
       SupportedLanguages lang) {
@@ -85,52 +84,52 @@ public class Parser {
     System.out.println(rc.results[0].utmn);
   }
 
+  final String keyword_AND;
+  final String keyword_BY_RD;
+  final String keyword_OF;
+  final SupportedLanguages lng;
+  final GeorefDictionaryManager mgr;
   final String regx_AND;
-  final String regx_OF;
-  final String regx_BY_RD;
   final String regx_BF;
-  // final String regx_FH_JH;
-  final String regx_NF_NJ_NPOM;
-  final String regx_J;
-  final String regx_FS;
-  final String regx_NN;
-  // final String regx_JH;
-  final String regx_JH_NJ;
-  final String regx_TRS;
-  final String regx_TRSS;
-  final String regx_UTM;
-
-  final String regx_Q;
-  final String regx_PBF;
+  final String regx_BF_MASK;
+  final String regx_BY_RD;
+  final String regx_FO_MASK;
   // final String regx_FPH;
   // final String regx_JOH_JPOH;
   // final String regx_JOO;
   final String regx_FOP;
-  final String regx_JO;
-  // final String regx_JPOH;
-  final String regx_FPOH_JPOH;
-  final String regx_HEADING_EW;
-  // final String regx_INNER_COMMA;
-  final String regx_TRSS_MASK;
-  final String regx_BF_MASK;
-  final String regx_FO_MASK;
   final String regx_FOP_MASK;
 
-  final String regx_J_MASK;
+  // final String regx_JPOH;
+  final String regx_FPOH_JPOH;
   final String regx_FPOH_MASK;
-
-  final String regx_JPOH_MASK;
-  final String regx_NEAR_MASK;
-  final String regx_PBF_MASK;
-
+  final String regx_FS;
   final String regx_FS_MASK;
-  final GeorefDictionaryManager mgr;
-  final SupportedLanguages lng;
-  final String keyword_AND;
+  final String regx_HEADING_EW;
+  final String regx_J;
+  final String regx_J_MASK;
+  // final String regx_JH;
+  final String regx_JH_NJ;
+  final String regx_JO;
+  final String regx_JPOH_MASK;
 
-  final String keyword_OF;
+  final String regx_NEAR_MASK;
+  // final String regx_FH_JH;
+  final String regx_NF_NJ_NPOM;
 
-  final String keyword_BY_RD;
+  final String regx_NN;
+  final String regx_OF;
+  final String regx_PBF;
+
+  final String regx_PBF_MASK;
+  final String regx_Q;
+  final String regx_TRS;
+  final String regx_TRSS;
+
+  // final String regx_INNER_COMMA;
+  final String regx_TRSS_MASK;
+
+  final String regx_UTM;
 
   private Parser(GeorefDictionaryManager gdm, SupportedLanguages lang) {
 
@@ -154,7 +153,7 @@ public class Parser {
     // regx_JH=mgr.lookup("regxs_JH", lng, Concepts.regxs, false);
     regx_JH_NJ = mgr.lookup("regx_JH_NJ", lng);
     regx_TRS = mgr.lookup("regx_TRS", lng);
-    regx_TRSS=mgr.lookup("regx_TRSS",lng);
+    regx_TRSS = mgr.lookup("regx_TRSS", lng);
     regx_UTM = mgr.lookup("regx_UTM", lng);
     regx_Q = mgr.lookup("regx_Q", lng);
     regx_PBF = mgr.lookup("regx_PBF", lng);
@@ -182,6 +181,24 @@ public class Parser {
     regx_FS_MASK = mgr.lookup("regx_FS_MASK", lng);
   }
 
+  final public boolean isHeading(String s) {
+    return mgr.lookupConcept(s, lng) == "heading";
+  }
+
+  /*
+   * final boolean isBetweenKeyword(String s) { return false; }
+   * 
+   * final boolean isJunctonKeyword(String s) { return false; }
+   * 
+   * final boolean isNearKeyword(String s) { return false; }
+   * 
+   * final boolean isPartialKeyword(String s) { return false; }
+   */
+  final public boolean isUnit(String s) {
+    return mgr.lookupConcept(s, lng) == "unit";
+
+  }
+
   final public ParsingState parseClause(String s, Parser p) {
 
     ParsingState ps = new StateBegin(new ClauseData(s), p);
@@ -207,103 +224,98 @@ public class Parser {
 
   final public String[] preprocess(String queryString) {
     String qs = queryString.trim().replaceAll("\\sal\\s|^Al\\s", " ").replace(
-        "&", " " + keyword_AND + " ").trim().replaceAll("\\[", 
-        		"").trim().replaceAll("\\]","").trim().replaceAll(" at ", ", ");
+        "&", " " + keyword_AND + " ").trim().replaceAll("\\[", "").trim()
+        .replaceAll("\\]", "").trim().replaceAll(" at ", ", ");
     String s = "";
-    
-    //Make sure all numbers and letters are separated from each other
-    if(qs.matches(".*\\d[\\D\\w].*")){
-    	String[] t = qs.split("");
-    	qs = "";
-        for(int i = 1; i < t.length - 1; i++){
-        		
-        		//Remove any periods after letters, since they are unneccessary
-        		if(t[i].matches("[a-zA-Z]") && t[i+1].matches("\\.")){
-//           			t[i+1] = t[i];
-        			t[i+1] = " ";
-            	   	qs = qs + t[i] + " ";
-            	   	continue;
-        		}
-            	//put a space between letter and number, such as 1A -> A 1
-        		else if(isNum(t[i]) && t[i+1].matches("[a-zA-Z]")){
-            	   	qs = qs + t[i] + " ";
-            	   	}
-            	//put a space between letter and number, such as A1 -> A 1
-            	else if(isNum(t[i+1]) && t[i].matches("[a-zA-Z]")){
-            	    	qs = qs + t[i] + " ";
-            	    	}
-            	else{
-            	    	qs = qs + t[i];
-            	}
-        	}
-        qs = qs + t[t.length-1];
+
+    // Make sure all numbers and letters are separated from each other
+    if (qs.matches(".*\\d[\\D\\w].*")) {
+      String[] t = qs.split("");
+      qs = "";
+      for (int i = 1; i < t.length - 1; i++) {
+
+        // Remove any periods after letters, since they are unneccessary
+        if (t[i].matches("[a-zA-Z]") && t[i + 1].matches("\\.")) {
+          // t[i+1] = t[i];
+          t[i + 1] = " ";
+          qs = qs + t[i] + " ";
+          continue;
+        }
+        // put a space between letter and number, such as 1A -> A 1
+        else if (isNum(t[i]) && t[i + 1].matches("[a-zA-Z]")) {
+          qs = qs + t[i] + " ";
+        }
+        // put a space between letter and number, such as A1 -> A 1
+        else if (isNum(t[i + 1]) && t[i].matches("[a-zA-Z]")) {
+          qs = qs + t[i] + " ";
+        } else {
+          qs = qs + t[i];
+        }
+      }
+      qs = qs + t[t.length - 1];
     }
-   
+
     String[] words = qs.split(" ");
 
-    //Combining numbers and what not... lets add a unit check above this
+    // Combining numbers and what not... lets add a unit check above this
     for (int i = 0; i < words.length - 1; i++) {
-    	
+      if (words[i].equals("")) {
+        continue;
+      }
 
-    	if(words[i].equals("")){
-    		continue;
-    	}
-    	
-    	if(isNum(words[i])){
-    		if(words[i].matches(".*,\\d\\d$") || words[i].matches(".*\\.\\d\\d\\d.*")){
-    			words[i] = words[i].replaceAll("\\.", "");
-    			words[i] = words[i].replaceAll(",", ".");
-    		}
-    		else{
-    			words[i] = words[i].replaceAll(",", "");
-    		}
-    	}
-    	
-    	/*if (isNum(words[i])) {
-    	  
-    	  if(lng.equals(SupportedLanguages.english)){
-    		  if(words[i].contains(","))
-    			  words[i] = words[i].replaceAll(",", "");
-    	  }
-    	  else{
-    		  if(words[i].contains(".")){
-    			  words[i] = words[i].replaceAll("\\.", "");
-    		  }
-    		  if(words[i].contains(",")){
-    			  words[i] = words[i].replaceAll(",", ".");
-    		  }
-    	  }
-      }*/
-      
+      // TODO: JRW - Test all locType interps with the following code block
+      // turned off
+      // if(isNum(words[i])){
+      // // Why? This is destroying DecimalLatitude coming through (ex. 36.34563
+      // -> 3634563).
+      // if(words[i].matches(".*,\\d\\d$") ||
+      // words[i].matches(".*\\.\\d\\d\\d.*")){
+      // words[i] = words[i].replaceAll("\\.", "");
+      // words[i] = words[i].replaceAll(",", ".");
+      // }
+      // else{
+      // words[i] = words[i].replaceAll(",", "");
+      // }
+      // }
+
+      /*
+       * if (isNum(words[i])) {
+       * 
+       * if(lng.equals(SupportedLanguages.english)){ if(words[i].contains(","))
+       * words[i] = words[i].replaceAll(",", ""); } else{
+       * if(words[i].contains(".")){ words[i] = words[i].replaceAll("\\.", ""); }
+       * if(words[i].contains(",")){ words[i] = words[i].replaceAll(",", "."); } } }
+       */
+
       s = words[i] + words[i + 1];
       if (isNum(s)) {
-    	  words[i] = "";
-    	  words[i + 1] = s;
-    	  //i++;
+        words[i] = "";
+        words[i + 1] = s;
+        // i++;
       }
 
     }
     qs = buildString(0, words, " ");
-    
-    
-    //CHECK FOR THE NEAR MASKS AND REBUILD IF APPROPRIATE
-    //Specifically this is checking for "<Feature>, <near>"
-    //Designed also so that: "<Feature1>, <Feature2>, <near>" parses as "<Feature1>, <near> <Feature2>"
-    if(qs.matches(".*,"+regx_NEAR_MASK)){
-    	String tokens[] = qs.split(",");
-    	qs = "";
-    	if(tokens.length>1){
-    		for(int i = 0; i < tokens.length; i++){
-    			if(i + 1 < tokens.length && tokens[i+1].matches(regx_NEAR_MASK)){
-    				tokens[i] = " " + tokens[i+1].trim() + " " + tokens[i].trim();
-    				qs = qs + tokens[i] + ",";
-    				i++;
-    				continue;
-    			}
-    			qs = qs + tokens[i] + ",";
-    		}
-    	}
-    	qs = qs.substring(0,qs.length()-1);
+
+    // CHECK FOR THE NEAR MASKS AND REBUILD IF APPROPRIATE
+    // Specifically this is checking for "<Feature>, <near>"
+    // Designed also so that: "<Feature1>, <Feature2>, <near>" parses as
+    // "<Feature1>, <near> <Feature2>"
+    if (qs.matches(".*," + regx_NEAR_MASK)) {
+      String tokens[] = qs.split(",");
+      qs = "";
+      if (tokens.length > 1) {
+        for (int i = 0; i < tokens.length; i++) {
+          if (i + 1 < tokens.length && tokens[i + 1].matches(regx_NEAR_MASK)) {
+            tokens[i] = " " + tokens[i + 1].trim() + " " + tokens[i].trim();
+            qs = qs + tokens[i] + ",";
+            i++;
+            continue;
+          }
+          qs = qs + tokens[i] + ",";
+        }
+      }
+      qs = qs.substring(0, qs.length() - 1);
     }
 
     /*
@@ -315,14 +327,15 @@ public class Parser {
      * 
      * qs=buildString(0,phases,", ");
      */
-     return BGMUtil.recoverClauses(qs.trim().replaceAll("[;,:]",", ").replaceAll("  "," ").split("[;,:]\\s"), this);
-//    return BGMUtil.recoverClauses(qs.trim().split("[;,:]\\s"), this);
+    return BGMUtil.recoverClauses(qs.trim().replaceAll("[;,:]", ", ")
+        .replaceAll("  ", " ").split("[;,:]\\s"), this);
+    // return BGMUtil.recoverClauses(qs.trim().split("[;,:]\\s"), this);
 
   }
 
   public final void process(LocalityRec rc) {
 
-	  //separate the clauses from the locality
+    // separate the clauses from the locality
     rc.clauseSet = preprocess(rc.localityString);
     rc.results = new LocalityInfo[rc.clauseSet.length];
     int count = 0;
@@ -391,17 +404,13 @@ public class Parser {
     return cd.posH1 > 0;
   }
 
-  final public boolean isHeading(String s) {
-    return mgr.lookupConcept(s, lng) == "heading";
-  }
-
   final boolean isNum(String s) {
-	  if(s==null){
-		  return false;
-	  }
-	  if(s.length()==0){
-		  return false;
-	  }
+    if (s == null) {
+      return false;
+    }
+    if (s.length() == 0) {
+      return false;
+    }
     if (s.charAt(0) == ',' | s.charAt(s.length() - 1) == ',')
       return false;
     s = s.replaceAll(",", "").replace("/", "");
@@ -411,20 +420,6 @@ public class Parser {
     } catch (NumberFormatException nfe) {
       return false;
     }
-  }
-
-  /*
-   * final boolean isBetweenKeyword(String s) { return false; }
-   * 
-   * final boolean isJunctonKeyword(String s) { return false; }
-   * 
-   * final boolean isNearKeyword(String s) { return false; }
-   * 
-   * final boolean isPartialKeyword(String s) { return false; }
-   */
-  final public boolean isUnit(String s) {
-    return mgr.lookupConcept(s, lng) == "unit";
-
   }
 
 }
