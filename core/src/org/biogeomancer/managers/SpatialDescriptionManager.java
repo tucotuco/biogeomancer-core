@@ -997,7 +997,8 @@ public class SpatialDescriptionManager extends BGManager {
                   // This is a temporary fix to overcome exceedingly complex
                   // geometries.
                   encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
-                  // encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
+                  // encodedG = new String(gaz.lookupConvexHull(gadm,
+                  // featureid));
                 } else {
                   encodedG = new String(gaz.lookupFootprint(gadm, featureid));
                 }
@@ -1012,8 +1013,9 @@ public class SpatialDescriptionManager extends BGManager {
                 if (gaz.lookupFootprintGeometryCount(worldplaces, featureid) > geometrythreshhold) {
                   // This is a temporary fix to overcome exceedingly complex
                   // geometries.
-                  encodedG = new String(gaz.lookupConvexHull(worldplaces,
-                      featureid));
+                  encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
+                  // encodedG = new String(gaz.lookupConvexHull(worldplaces,
+                  // featureid));
                 } else {
                   encodedG = new String(gaz.lookupFootprint(worldplaces,
                       featureid));
@@ -1110,7 +1112,8 @@ public class SpatialDescriptionManager extends BGManager {
                   if (gaz.lookupFootprintGeometryCount(gadm, featureid) > geometrythreshhold) {
                     // This is a temporary fix to overcome
                     // exceedingly complex geometries.
-                    encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
+                    encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
+                    // encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
                   } else {
                     encodedG = new String(gaz.lookupFootprint(gadm, featureid));
                   }
@@ -1124,10 +1127,11 @@ public class SpatialDescriptionManager extends BGManager {
                   encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
                 } else {
                   if (gaz.lookupFootprintGeometryCount(worldplaces, featureid) > geometrythreshhold) {
-                    encodedG = new String(gaz.lookupConvexHull(worldplaces,
-                        featureid));
                     // This is a temporary fix to overcome
                     // exceedingly complex geometries.
+                    encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
+                    // encodedG = new String(gaz.lookupConvexHull(worldplaces,
+                    // featureid));
                   } else {
                     encodedG = new String(gaz.lookupFootprint(worldplaces,
                         featureid));
