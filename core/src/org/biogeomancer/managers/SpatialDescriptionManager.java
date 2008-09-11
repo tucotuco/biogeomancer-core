@@ -996,7 +996,8 @@ public class SpatialDescriptionManager extends BGManager {
                 if (gaz.lookupFootprintGeometryCount(gadm, featureid) > geometrythreshhold) {
                   // This is a temporary fix to overcome exceedingly complex
                   // geometries.
-                  encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
+                  encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
+                  // encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
                 } else {
                   encodedG = new String(gaz.lookupFootprint(gadm, featureid));
                 }
