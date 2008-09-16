@@ -8,7 +8,7 @@
 	<property file="ant.properties" />
 
 	<!-- Properties -->
-	<property name="jar.version" value="1.1.1" />
+	<property name="jar.version" value="1.1.5" />
 	<property name="jar.filename" value="biogeomancer-core-${jar.version}.jar" />
 
 	<!-- set classpath -->
@@ -79,7 +79,7 @@
 				<include name="docs/**" />
 			</fileset>
 			<fileset dir="lib">
-				<include name="amh/**" />
+				<include name="amnh/**" />
 				<include name="bg/**" />
 				<include name="biogeomancer/**" />
 				<include name="colorado/**" />
