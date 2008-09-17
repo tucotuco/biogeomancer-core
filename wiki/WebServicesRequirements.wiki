@@ -21,7 +21,7 @@ The web service interface accepts HTTP GET requests using the following case ins
 || locality, loc, l || Darwin Core Locality concept ||  ||
 || verbatimlatitude, latitude, vlat, lat || Geospatial Extension VerbatimLatitude concept || ||
 || verbatimlongitude, longitude, vlong, vlng, long, lng || Geospatial Extension VerbatimLongitude concept || ||
-|| interpreter, int, i || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane'||  ||
+|| interpreter, int, i || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane')||  ||
 
 
 Example:
