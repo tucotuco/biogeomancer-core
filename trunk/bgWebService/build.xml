@@ -118,7 +118,7 @@
 	-->
 	<target name="tomcat-install" description="Install application to tomcat servlet container">
 		<echo message="${tomcat.url}${app.path} file:${basedir}/dist/${war.filename} user:${tomcat.user} pass:${tomcat.pass}" />
-		<deploy url="${tomcat.url}" username="manager" password="tomcat" path="${app.path}" war="file://${basedir}/dist/${war.filename}" />
+		<deploy url="${tomcat.url}" username="${tomcat.user}" password="${tomcat.pass}" path="${app.path}" war="file://${basedir}/dist/${war.filename}" />
 	</target>
 
 	<!--
@@ -127,7 +127,7 @@
 	  	* Reloads application path.
 	-->
 	<target name="tomcat-reload" description="Reload application on servlet container">
-		<reload url="${tomcat.url}" username="manager" password="tomcat" path="${app.path}" />
+		<reload url="${tomcat.url}" username="${tomcat.user}" password="${tomcat.pass}" path="${app.path}" />
 	</target>
 
 	<!--
@@ -136,7 +136,7 @@
 	  	* Removes application from Tomcat.
 	-->
 	<target name="tomcat-remove" description="Remove application on servlet container">
-		<undeploy url="${tomcat.url}" username="manager" password="tomcat" path="${app.path}" />
+		<undeploy url="${tomcat.url}" username="${tomcat.user}" password="${tomcat.pass}" path="${app.path}" />
 	</target>
 
 	<!--	
