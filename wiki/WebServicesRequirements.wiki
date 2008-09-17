@@ -10,32 +10,30 @@ A georeferencing web service that accepts a DwC record and returns that record a
 The web service interface accepts HTTP GET requests using the following case insensitive URL parameters:
 
 || *Parameter*  || *Description* || *Required* ||
-|| c, continent || The Continent DwC concept  || ||
-|| cy, country  || The Country DwC concept || ||
-|| co, county || The County DwC concept || ||
-|| hg, highergeography || The HigherGeography DwC concept || ||
-|| is, island || The Island DwC concept  || ||
-|| ig, islandgroup || The IslandGroup DwC concept|||| 
-|| l, locality || The Locality DwC concept ||  ||
-|| sp, stateprovince || The StateProvince DwC concept || ||
-|| vt, verbatimlatitude || The VerbatimLatitude DwC concept || ||
-|| vg, verbatimlongitude || The VerbatimLongitude DwC concept || ||
-|| wb, waterbody || The WaterBody DwC concept  || ||
-|| i, interpreter || The BioGeomancer locality interpreter ||  ||
+|| highergeography, hg || Darwin Core HigherGeography concept || ||
+|| continent, cont || Darwin Core Continent concept  || ||
+|| waterbody, wb, w || Darwin Core WaterBody concept  || ||
+|| islandgroup, ig || Darwin Core IslandGroup concept|||| 
+|| island, is || Darwin Core Island concept  || ||
+|| country, cy, gadm0  || Darwin Core Country concept || ||
+|| stateprovince, sp, s, gadm1 || Darwin Core StateProvince concept || ||
+|| county, co, gadm2 || Darwin Core County concept || ||
+|| locality, loc, l || Darwin Core Locality concept ||  ||
+|| verbatimlatitude, latitude, vlat, lat || Geospatial Extension VerbatimLatitude concept || ||
+|| verbatimlongitude, longitude, vlong, vlng, long, lng || Geospatial Extension VerbatimLongitude concept || ||
+|| interpreter, int, i || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane'||  ||
 
 
 Example:
-`http://bg.berkeley.edu/georeference?locality=Stuttgart&country=Germany&interpreter=Yale`
+`http://bg.berkeley.edu/georeference?locality=Stuttgart&country=Germany&interpreter=yale`
 
 == Web Service Output ==
 The web service output format will be XML (UTF-8) with a `dwc` namespace for DwC elements. All URL request parameters will appear in the output. For example:
 
-_TODO: add diagnostics element_
-
 {{{  
 <?xml version="1.0" encoding="utf-8"?>
 <biogeomancer xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
-  <interpreter>Yale</interpreter>
+  <interpreter>yale</interpreter>
   <dwc:Locality>Stuttgart</dwc:Locality>
   <dwc:HigherGeography>Germany</dwc:HigherGeography>
   <georeference>
@@ -52,18 +50,18 @@ _TODO: add diagnostics element_
 Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit. The following DwC elements are accepted:
 
 || *Element*  || *Description* || *Required* ||
-|| continent || The Continent DwC concept  || ||
-|| country  || The Country DwC concept || ||
-|| county || The County DwC concept || ||
-|| highergeography || The HigherGeography DwC concept || ||
-|| island || The Island DwC concept  || ||
-|| islandgroup || The IslandGroup DwC concept|||| 
-|| locality || The Locality DwC concept ||  ||
-|| stateprovince || The StateProvince DwC concept || ||
-|| verbatimlatitude || The VerbatimLatitude DwC concept || ||
-|| verbatimlongitude || The VerbatimLongitude DwC concept || ||
-|| waterbody || The WaterBody DwC concept  || ||
-|| interpreter || The BioGeomancer locality interpreter ||  ||
+|| highergeography || Darwin Core HigherGeography concept || ||
+|| continent || Darwin Core Continent concept  || ||
+|| waterbody || Darwin Core WaterBody concept  || ||
+|| islandgroup || Darwin Core IslandGroup concept|||| 
+|| island || Darwin Core Island concept  || ||
+|| country  || Darwin Core Country concept || ||
+|| stateprovince || Darwin Core StateProvince concept || ||
+|| county || Darwin Core County concept || ||
+|| locality || Darwin Core Locality concept ||  ||
+|| verbatimlatitude || Darwin Core VerbatimLatitude concept || ||
+|| verbatimlongitude || Darwin Core VerbatimLongitude concept || ||
+|| interpreter || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane')||  ||
 
 Example batch request XML:
 
