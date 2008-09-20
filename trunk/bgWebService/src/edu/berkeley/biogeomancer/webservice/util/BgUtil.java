@@ -8,8 +8,6 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import javax.servlet.http.HttpServletResponse;
-
 import org.apache.log4j.Logger;
 import org.biogeomancer.managers.GeorefManager;
 import org.biogeomancer.managers.GeorefPreferences;
@@ -19,131 +17,154 @@ import org.biogeomancer.records.Rec;
 import org.biogeomancer.records.RecSet;
 import org.biogeomancer.records.RecSet.RecSetException;
 
-
 /**
  * Utility class for wrapping BioGeomancer Core API.
  */
 public class BgUtil {
 
-  /**
-   * Georeferences the list of recs using BioGeomancer Core API.
-   * 
-   * @param recs the list of Rec objects to georeference
-   * @return the georeferences
-   */
-  public static List<Georef> georeference(String FileName, String interpreter) {
-    // TODO: tri
-	// take FileName argument and interperter name
-	// get RecSet from the file and return Georef List
-	  // has not tested yet
-	try 
-	{
-		RecSet referenceSet = new RecSet(FileName, "\t");
-		//Iterator<Rec> recIter = referenceSet.recs.iterator();
-		List<Georef> recsList = new ArrayList<Georef>();
-		for (Iterator<Rec> recIter = referenceSet.recs.iterator(); recIter.hasNext();)
-		{
-			Rec currentRec = recIter.next();
-			GeorefManager gm;
-			 try 
-			{
-				 gm = new GeorefManager();
-			     gm.georeference(currentRec, new GeorefPreferences(interpreter));
-			     recsList.addAll(currentRec.georefs);
-			 } catch (GeorefManagerException e)
-			 {
-				 //TODO: Logging error to an error log
-			     e.printStackTrace();
-			 }
-			
-		}
-		return recsList;
-	} catch (RecSetException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-		return null;
-	}
+  private static Logger log = Logger.getLogger(BgUtil.class);
+
+  public static void buildSingleXmlText(Rec r, String interpreter,
+      boolean showheader, PrintWriter out) {
+    List<Georef> georefs = georeference(r, interpreter);
+    out.println("<interpreter>" + interpreter + "</interpreter>");
+    if (r.get("id") != null)
+      out.println("<id>" + r.get("id") + "</id>");
+    if (showheader) {
+      if (r.get("highergeography") != null)
+        out.println("<dwcore:HigherGeography>" + r.get("highergeography")
+            + "</dwcore:HigherGeography>");
+      if (r.get("continent") != null) {
+        out.println("<dwcore:Continent>" + r.get("continent")
+            + "</dwcore:Continent>");
+      }
+      if (r.get("waterBody") != null) {
+        out.println("<dwcore:WaterBody>" + r.get("waterbody")
+            + "</dwcore:WaterBody>");
+      }
+      if (r.get("islandGroup") != null) {
+        out.println("<dwcore:IslandGroup>" + r.get("islandgroup")
+            + "</dwcore:IslandGroup>");
+      }
+      if (r.get("island") != null) {
+        out.println("<dwcore:Island>" + r.get("island") + "</dwcore:Island>");
+      }
+      if (r.get("country") != null) {
+        out
+            .println("<dwcore:Country>" + r.get("country")
+                + "</dwcore:Country>");
+      }
+      if (r.get("stateProvince") != null) {
+        out.println("<dwcore:StateProvince>" + r.get("stateprovince")
+            + "</dwcore:StateProvince>");
+      }
+      if (r.get("county") != null) {
+        out.println("<dwcore:County>" + r.get("county") + "</dwcore:County>");
+      }
+      if (r.get("locality") != null) {
+        out.println("<dwcore:Locality>" + r.get("locality")
+            + "</dwcore:Locality>");
+      }
+      if (r.get("verbatimLatitude") != null) {
+        out.println("<dwgeo:VerbatimLatitude>" + r.get("verbatimlaitude")
+            + "</dwgeo:VerbatimLatitude>");
+      }
+      if (r.get("verbatimLongitude") != null) {
+        out.println("<dwcore:VerbatimLongitude>" + r.get("verbatimlongitude")
+            + "</dwgeo:VerbatimLongitude>");
+      }
+    }
+    for (Georef g : georefs) {
+      out.println("<georeference>");
+      out.println("<interpretedLocality>" + g.iLocality
+          + "</interpretedLocality>");
+      out.println("<dwgeo:DecimalLatitude>" + g.pointRadius.y
+          + "</dwgeo:DecimalLatitude>");
+      out.println("<dwgeo:DecimalLongitude>" + g.pointRadius.x
+          + "</dwgeo:DecimalLongitude>");
+      out.println("<dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>");
+      out.println("<dwgeo:CoordinateUncertaintyInMeters>"
+          + g.pointRadius.extent + "</dwgeo:CoordinateUncertaintyInMeters>");
+      out.println("</georeference>");
+    }
   }
 
-  /**
-   * Returns a list of Georef objects generated using BioGeomancer Core API. If
-   * there is an error or if no georeferences were generated, returns null.
-   * 
-   * @param locality the locality to georeference
-   * @param higherGeography the higher geography to georeference
-   * @param interpreter the BioGeomancer locality intepreter to use
-   * @return List<Georef> the generated georeferences
-   */
-  public static List<Georef> georeference(String locality,
-      String higherGeography, String interpreter) {
-
-    // Default interpreter is Yale.
-    if (interpreter == null || interpreter.equals("")) {
+  public static List<Georef> georeference(Rec r, String interpreter) {
+    // Default interpreter is "yale"
+    if (interpreter == null)
       interpreter = "yale";
+    else {
+      if (interpreter.toLowerCase().equals("uiuc") == false
+          && interpreter.toLowerCase().equals("tulane") == false) {
+        interpreter = "yale";
+      }
     }
 
-    final Rec rec = new Rec();
-    rec.put("locality", locality);
-    rec.put("highergeography", higherGeography);
     GeorefManager gm;
     try {
       gm = new GeorefManager();
-      gm.georeference(rec, new GeorefPreferences(interpreter));
-      return rec.georefs;
+      gm.georeference(r, new GeorefPreferences(interpreter));
+      return r.georefs;
     } catch (GeorefManagerException e) {
       e.printStackTrace();
       return null;
     }
   }
+
   /**
+   * Georeferences the list of recs using BioGeomancer Core API.
    * 
-   * @param String locality
-   * @param String higherGeography
-   * @param String interpreter
-   * @param String out
-   * create a list of Georefs from locality, higherGeography, and interpreter
-   * output xml tag and value for these georeferences in format:
-   * <dwc:Locality>LocalityName</dwc:Locality>
-   * <dwc:HigherGeography>HigherGeographyName</dwc:HigherGeography>
-   * <georeference>
-   *  <dwc:DecimalLatitude>value</dwc:DecimalLatitude>
-   *  <dwc:DecimalLongitude>value</dwc:DecimalLongitude>
-   *  <dwc:CoordinateUncertaintyInMeters>value</dwc:CoordinateUncertaintyInMeters>
-   * </georeference>
-   * more georeferences here if there are more
+   * @param recs
+   *          the list of Rec objects to georeference
+   * @return the georeferences
    */
-  public static void buildSingleXmlText(String locality, String higherGeography, String interpreter, PrintWriter out)
-  {
-	  log.info("Locality: " + locality + " HigherGeography: " + higherGeography + " Interpreter: " + interpreter);
-	  out.println("<dwc:Locality>" + locality + "</dwc:Locality>");
-	  out.println("<dwc:HigherGeography>" + higherGeography + "</dwc:HigherGeography>");
-	  List<Georef> georefs = georeference(locality, higherGeography, interpreter);
-	  for (Georef g : georefs) {
-		  out.println("<georeference>");
-		  out.println("<dwc:DecimalLatitude>" + g.pointRadius.y + "</dwc:DecimalLatitude>");
-		  out.println("<dwc:DecimalLongitude>" + g.pointRadius.x + "</dwc:DecimalLongitude>");
-		  out.println("<dwc:CoordinateUncertaintyInMeters>" + g.pointRadius.extent + "</dwc:CoordinateUncertaintyInMeters>");
-		  out.println("</georeference>");
-	  }
+  public static List<Georef> georeference(String FileName, String interpreter) {
+    // TODO: tri
+    // take FileName argument and interperter name
+    // get RecSet from the file and return Georef List
+    // has not been tested yet
+    try {
+      RecSet referenceSet = new RecSet(FileName, "\t");
+      // Iterator<Rec> recIter = referenceSet.recs.iterator();
+      List<Georef> recsList = new ArrayList<Georef>();
+      for (Iterator<Rec> recIter = referenceSet.recs.iterator(); recIter
+          .hasNext();) {
+        Rec currentRec = recIter.next();
+        GeorefManager gm;
+        try {
+          gm = new GeorefManager();
+          System.out.println(currentRec.toString());
+          gm.georeference(currentRec, new GeorefPreferences(interpreter));
+          recsList.addAll(currentRec.georefs);
+        } catch (GeorefManagerException e) {
+          // TODO: Logging error to an error log
+          e.printStackTrace();
+        }
+
+      }
+      return recsList;
+    } catch (RecSetException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+      return null;
+    }
   }
+
   /**
    * 
    * @param fileName
    * @param data
-   * write string of data to a file
+   *          write string of data to a file
    */
-  public static void recordToFile(String fileName, String data)
-  {
-	  try {
-		  BufferedWriter buff = new BufferedWriter(new FileWriter(fileName));
-		  buff.write(data);
-		  buff.close();
-	  } catch (IOException e) {
-		  // TODO Auto-generated catch block
-		  e.printStackTrace();
-	  }
+  public static void recordToFile(String fileName, String data) {
+    try {
+      BufferedWriter buff = new BufferedWriter(new FileWriter(fileName));
+      buff.write(data);
+      buff.close();
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
 
-	  
   }
-  private static Logger log = Logger.getLogger(BgUtil.class);
 }
