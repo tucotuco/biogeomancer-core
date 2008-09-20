@@ -69,8 +69,6 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     boolean showheader = false;
 
     // Alternate parameter names
-    if (id == null)
-      id = request.getParameter("id");
     if (higherGeography == null)
       higherGeography = request.getParameter("hg");
     if (higherGeography == null)
@@ -125,7 +123,7 @@ public class SingleGeoreferenceWebService extends HttpServlet {
       interpreter = request.getParameter("i");
     if (interpreter == null)
       interpreter = "yale";
-    if (headerFlag.equalsIgnoreCase("true"))
+    if (headerFlag != null && headerFlag.equalsIgnoreCase("true"))
       showheader = true;
 
     Rec r = new Rec();
