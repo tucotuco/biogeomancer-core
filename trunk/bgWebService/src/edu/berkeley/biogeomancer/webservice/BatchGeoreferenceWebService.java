@@ -55,14 +55,15 @@ public class BatchGeoreferenceWebService extends HttpServlet {
     PrintWriter out = response.getWriter();
 
     out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-    out.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/tapir/1.0\">");
+    out
+        .println("<biogeomancer xmlns:dwcore=\"http://rs.tdwg.org/dwc/dwcore\" xmlns:dwgeo=\"http://rs.tdwg.org/dwc/geospatial\">");
 
-    parseXml(reader, out, true);
+    parseXml(reader, out);
     out.println("</biogeomancer>");
     out.close();
   }
 
-  private void parseXml(Reader read, PrintWriter out, boolean showheader) {
+  private void parseXml(Reader read, PrintWriter out) {
     SAXReader reader = new SAXReader();
     try {
       Document xmlDoc = reader.read(read);
@@ -70,37 +71,75 @@ public class BatchGeoreferenceWebService extends HttpServlet {
       List<Node> recordNodes = cnd.getNodes("record");
       Element requestElement = recordNodes.get(0).getParent();
 
+      String higherGeography = null;
+      String continent = null;
+      String waterBody = null;
+      String islandGroup = null;
+      String island = null;
+      String country = null;
+      String stateProvince = null;
+      String county = null;
+      String locality = null;
+      String verbatimLatitude = null;
+      String verbatimLongitude = null;
       String interpreter = requestElement.attributeValue("interpreter");
-      out.println("<records interpreter=\"" + interpreter + "\">");
+      String header = requestElement.attributeValue("header");
+      boolean showheader = false;
+      if (header != null && header.equalsIgnoreCase("true"))
+        showheader = true;
+
+      out.println("<records>");
       for (Node recordNode : recordNodes) {
+        higherGeography = null;
+        continent = null;
+        waterBody = null;
+        islandGroup = null;
+        island = null;
+        country = null;
+        stateProvince = null;
+        county = null;
+        locality = null;
+        verbatimLatitude = null;
+        verbatimLongitude = null;
         out.println("<record>");
         Node higherGeogNode = recordNode
             .selectSingleNode("dwcore:HigherGeography");
-        String higherGeography = higherGeogNode.getStringValue();
+        if (higherGeogNode != null)
+          higherGeography = higherGeogNode.getStringValue();
         Node continentNode = recordNode.selectSingleNode("dwcore:Continent");
-        String continent = continentNode.getStringValue();
+        if (continentNode != null)
+          continent = continentNode.getStringValue();
         Node waterBodyNode = recordNode.selectSingleNode("dwcore:WaterBody");
-        String waterBody = waterBodyNode.getStringValue();
+        if (waterBodyNode != null)
+          waterBody = waterBodyNode.getStringValue();
         Node islandGroupNode = recordNode
             .selectSingleNode("dwcore:IslandGroup");
-        String islandGroup = islandGroupNode.getStringValue();
+        if (islandGroupNode != null)
+          islandGroup = islandGroupNode.getStringValue();
         Node islandNode = recordNode.selectSingleNode("dwcore:Island");
-        String island = islandNode.getStringValue();
+        if (islandNode != null)
+          island = islandNode.getStringValue();
         Node countryNode = recordNode.selectSingleNode("dwcore:Country");
-        String country = countryNode.getStringValue();
+        if (countryNode != null)
+          country = countryNode.getStringValue();
         Node stateProvinceNode = recordNode
             .selectSingleNode("dwcore:StateProvince");
-        String stateProvince = stateProvinceNode.getStringValue();
+        if (stateProvinceNode != null)
+          stateProvince = stateProvinceNode.getStringValue();
         Node countyNode = recordNode.selectSingleNode("dwcore:County");
-        String county = countyNode.getStringValue();
+        if (countyNode != null)
+          county = countyNode.getStringValue();
         Node localityNode = recordNode.selectSingleNode("dwcore:Locality");
-        String locality = localityNode.getStringValue();
+        if (localityNode != null)
+          locality = localityNode.getStringValue();
         Node verbatimLatitudeNode = recordNode
             .selectSingleNode("dwgeo:VerbatimLatitude");
-        String verbatimLatitude = verbatimLatitudeNode.getStringValue();
+        if (verbatimLatitudeNode != null)
+          verbatimLatitude = verbatimLatitudeNode.getStringValue();
         Node verbatimLongitudeNode = recordNode
             .selectSingleNode("dwgeo:VerbatimLongitude");
-        String verbatimLongitude = verbatimLongitudeNode.getStringValue();
+        if (verbatimLongitudeNode != null)
+          verbatimLongitude = verbatimLongitudeNode.getStringValue();
 
         Rec r = new Rec();
         if (r != null) {
