@@ -18,8 +18,8 @@ import edu.berkeley.biogeomancer.webservice.util.BgUtil;
 public class BgClient implements BioGeomancerClient {
   public static String data = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
       + "<biogeomancer xmlns=\"http://bg.berkeley.edu\" xmlns:dwcore=\"http://rs.tdwg.org/dwc/dwcore\" xmlns:dwgeo=\"http://rs.tdwg.org/dwc/dwgeo\">"
-      + "<request type=\"batch\" interpreter=\"yale\">" + "<record>"
-      + "<dwcore:Locality>Berkeley</dwcore:Locality>"
+      + "<request type=\"batch\" interpreter=\"yale\" header=\"true\">"
+      + "<record>" + "<dwcore:Locality>Berkeley</dwcore:Locality>"
       + "<dwcore:StateProvince>California</dwcore:StateProvince>" + "</record>"
       + "<record>" + "<dwcore:Locality>Stuttgart</dwcore:Locality>"
       + "<dwcore:Country>Germany</dwcore:Country>" + "</record>" + "<record>"
@@ -30,8 +30,8 @@ public class BgClient implements BioGeomancerClient {
   public static void main(String[] argv) throws MalformedURLException,
       IOException {
     BgClient bgClient = new BgClient();
-    // String serviceUrl = "http://localhost:8080/ws-test/batch";
-    String serviceUrl = "http://bg.berkeley.edu:8080/ws-test/batch";
+    String serviceUrl = "http://localhost:8080/ws-test/batch";
+    // String serviceUrl = "http://bg.berkeley.edu:8080/ws-test/batch";
 
     URL connectUrl = new URL(serviceUrl);
     bgClient.setServiceUrl(connectUrl);
