@@ -9,37 +9,40 @@ A georeferencing web service that accepts a DwC record and returns that record a
 == Web Service Interface ==
 The web service interface accepts HTTP GET requests using the following case insensitive URL parameters:
 
-|| *Parameter*  || *Description* || *Required* ||
-|| highergeography, hg || Darwin Core HigherGeography concept || ||
-|| continent, cont || Darwin Core Continent concept  || ||
-|| waterbody, wb, w || Darwin Core WaterBody concept  || ||
-|| islandgroup, ig || Darwin Core IslandGroup concept|||| 
-|| island, is || Darwin Core Island concept  || ||
-|| country, cy, gadm0  || Darwin Core Country concept || ||
-|| stateprovince, sp, s, gadm1 || Darwin Core StateProvince concept || ||
-|| county, co, gadm2 || Darwin Core County concept || ||
-|| locality, loc, l || Darwin Core Locality concept ||  ||
-|| verbatimlatitude, latitude, vlat, lat || Geospatial Extension VerbatimLatitude concept || ||
-|| verbatimlongitude, longitude, vlong, vlng, long, lng || Geospatial Extension VerbatimLongitude concept || ||
-|| interpreter, int, i || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane')||  ||
+|| *Parameter*  || *Description* ||
+|| highergeography, hg || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/HigherGeography HigherGeography] concept ||
+|| continent, cont || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Continent Continent] concept  ||
+|| waterbody, wb, w || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/WaterBody WaterBody] concept  ||
+|| islandgroup, ig || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/IslandGroup IslandGroup] concept||
+|| island, is || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Island Island] concept  ||
+|| country, cy, gadm0  || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Country Country] concept ||
+|| stateprovince, sp, s, gadm1 || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/StateProvince StateProvince] concept ||
+|| county, co, gadm2 || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/County County] concept ||
+|| locality, loc, l || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Locality Locality] concept ||
+|| verbatimlatitude, latitude, vlat, lat || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLatitude VerbatimLatitude] concept ||
+|| verbatimlongitude, longitude, vlong, vlng, long, lng || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLongitude VerbatimLongitude] concept ||
+|| interpreter, int, i || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane'; default is 'yale')||
+|| header || BioGeomancer flag to show locality input in output header ('true', 'false'; default is 'false')||
 
 
 Example:
-`http://bg.berkeley.edu/georeference?locality=Stuttgart&country=Germany&interpreter=yale`
+`http://bg.berkeley.edu/ws/single?locality=Stuttgart&country=Germany&interpreter=yale&header=true`
 
 == Web Service Output ==
-The web service output format will be XML (UTF-8) with a `dwc` namespace for DwC elements. All URL request parameters will appear in the output. For example:
+The web service output format will be XML (UTF-8) with `dwcore` as the namespace for Darwin Core elementsand "dwgeo" as the namespace for Geospatial Extension elements. All URL request parameters will appear in the output if the header parameter is set to 'true'. For example:
 
 {{{  
 <?xml version="1.0" encoding="utf-8"?>
-<biogeomancer xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+<biogeomancer xmlns:dwcore="http://rs.tdwg.org/dwc/dwcore/ xmlns:dwgeo="http://rs.tdwg.org/dwc/geospatial/">
   <interpreter>yale</interpreter>
-  <dwc:Locality>Stuttgart</dwc:Locality>
-  <dwc:HigherGeography>Germany</dwc:HigherGeography>
+  <dwcore:Country>Germany</dwcore:Country>
+  <dwcore:Locality>Stuttgart</dwcore:Locality>
   <georeference>
-    <dwc:DecimalLatitude>37.8715897</dwc:DecimalLatitude>
-    <dwc:DecimalLongitude>-122.272747</dwc:DecimalLongitude>
-    <dwc:CoordinateUncertaintyInMeters>5062.0</dwc:CoordinateUncertaintyInMeters>
+    <interpretedLocality>Germany (gadm2:58:countries); Stuttgart (GADM:16422:countries, 2nd order divisions)</interpretedLocality>
+    <dwgeo:DecimalLatitude>49.1430493</dwgeo:DecimalLatitude>
+    <dwgeo:DecimalLongitude>9.6254345</dwgeo:DecimalLongitude>
+    <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
+    <dwgeo:CoordinateUncertaintyInMeters>93264.0</dwgeo:CoordinateUncertaintyInMeters>
   </georeference>
 </biogeomancer>
 }}}  
@@ -49,78 +52,80 @@ The web service output format will be XML (UTF-8) with a `dwc` namespace for DwC
 == Web Service Interface ==
 Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit. The following DwC elements are accepted:
 
-|| *Element*  || *Description* || *Required* ||
-|| highergeography || Darwin Core HigherGeography concept || ||
-|| continent || Darwin Core Continent concept  || ||
-|| waterbody || Darwin Core WaterBody concept  || ||
-|| islandgroup || Darwin Core IslandGroup concept|||| 
-|| island || Darwin Core Island concept  || ||
-|| country  || Darwin Core Country concept || ||
-|| stateprovince || Darwin Core StateProvince concept || ||
-|| county || Darwin Core County concept || ||
-|| locality || Darwin Core Locality concept ||  ||
-|| verbatimlatitude || Darwin Core VerbatimLatitude concept || ||
-|| verbatimlongitude || Darwin Core VerbatimLongitude concept || ||
-|| interpreter || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane')||  ||
+|| *Element*  || *Description* ||
+|| HigherGeography || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/HigherGeography HigherGeography] concept ||
+|| Continent || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Continent Continent] concept  ||
+|| WaterBody || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/WaterBody WaterBody] concept  ||
+|| IslandGroup || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/IslandGroup IslandGroup] concept||
+|| Island || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Island Island] concept  ||
+|| Country  || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Country Country] concept ||
+|| StateProvince || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/StateProvince StateProvince] concept ||
+|| County || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/County County] concept ||
+|| Locality || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Locality Locality] concept ||
+|| VerbatimLatitude || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLatitude VerbatimLatitude] concept ||
+|| VerbatimLongitude || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLongitude VerbatimLongitude] concept ||
+|| interpreter || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane'; default is 'yale')||
+|| header || BioGeomancer flag to show locality input in output header ('true', 'false'; default is 'false')||
 
 Example batch request XML:
 
 {{{
 <?xml version="1.0" encoding="utf-8"?>
-<biogeomancer xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
-  <request type="batch" interpreter="Yale">
+<biogeomancer xmlns:dwcore="http://rs.tdwg.org/dwc/dwcore/" xmlns:dwgeo="http://rs.tdwg.org/dwc/geospatial/">
+  <request type="batch" interpreter="yale" header="true">
     <record>
-      <dwc:Locality>Berkeley</dwc:Locality>
-      <dwc:HigherGeography>California</dwc:HigherGeography>
+      <dwcore:Locality>Berkeley</dwcore:Locality>
+      <dwcore:StateProvince>California</dwcore:StateProvince>
     </record>
     <record>
-      <dwc:Locality>Stuttgart</dwc:Locality>
-      <dwc:HigherGeography>Germany</dwc:HigherGeography>
+      <dwcore:Locality>Stuttgart</dwcore:Locality>
+      <dwcore:Country>Germany</dwcore:Country>
     </record>
     <record>
-      <dwc:Locality>St. Petersburg</dwc:Locality>
-      <dwc:HigherGeography>Russia</dwc:HigherGeography>
+      <dwcore:Locality>St. Petersburg</dwcore:Locality>
+      <dwcore:HigherGeography>Russia</dwcore:HigherGeography>
     </record>
   </request>
 </biogeomancer>              
 }}}
 
 == Web Service Output ==
-Batch georeferencing output will be XML (UTF-8) with a dwc namespace using the DarwinCore schema:
+Batch georeferencing output will be XML (UTF-8) with a dwcore and dwgeo namespaces reflecting concepts in the Darwin Core and Geospatial Extension schemas:
 
 {{{
 <?xml version="1.0" encoding="utf-8"?>
-<biogeomancer xmlns:dwc="http://rs.tdwg.org/tapir/1.0">
+<biogeomancer xmlns:dwcore="http://rs.tdwg.org/dwc/dwcore" xmlns:dwgeo="http://rs.tdwg.org/dwc/geospatial/">
 <records interpreter="yale">
 <record>
-  <dwc:Locality>Berkeley</dwc:Locality>
-  <dwc:HigherGeography>California</dwc:HigherGeography>
+  <dwcore:Locality>Berkeley</dwcore:Locality>
+  <dwcore:StateProvince>California</dwcore:StateProvince>
   <georeference>
-    <dwc:DecimalLatitude>39.4650896</dwc:DecimalLatitude>
-    <dwc:DecimalLongitude>-78.0275126</dwc:DecimalLongitude>
-    <dwc:CoordinateUncertaintyInMeters>22675.0</dwc:CoordinateUncertaintyInMeters>
+    <dwgeo:DecimalLatitude>39.4650896</dwgeo:DecimalLatitude>
+    <dwgeo:DecimalLongitude>-78.0275126</dwgeo:DecimalLongitude>
+    <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
+    <dwgeo:CoordinateUncertaintyInMeters>22675.0</dwgeo:CoordinateUncertaintyInMeters>
   </georeference>
   <georeference>
-    <dwc:DecimalLatitude>33.1993704</dwc:DecimalLatitude>
-    <dwc:DecimalLongitude>-79.9517488</dwc:DecimalLongitude>
-    <dwc:CoordinateUncertaintyInMeters>47092.0</dwc:CoordinateUncertaintyInMeters>
+    <dwgeo:DecimalLatitude>33.1993704</dwgeo:DecimalLatitude>
+    <dwgeo:DecimalLongitude>-79.9517488</dwgeo:DecimalLongitude>
+    <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
+    <dwgeo:CoordinateUncertaintyInMeters>47092.0</dwgeo:CoordinateUncertaintyInMeters>
   </georeference>
   <georeference>
-    <dwc:DecimalLatitude>38.7544956</dwc:DecimalLatitude>
-    <dwc:DecimalLongitude>-90.3312263</dwc:DecimalLongitude>
-    <dwc:CoordinateUncertaintyInMeters>5038.0</dwc:CoordinateUncertaintyInMeters>
+    <dwgeo:DecimalLatitude>38.7544956</dwgeo:DecimalLatitude>
+    <dwgeo:DecimalLongitude>-90.3312263</dwgeo:DecimalLongitude>
+    <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
+    <dwc:CoordinateUncertaintyInMeters>5038.0</dwgeo:CoordinateUncertaintyInMeters>
   </georeference>
 </record>
 <record>
-  <dwc:Locality>Stuttgart</dwc:Locality>
-  <dwc:HigherGeography>Germany</dwc:HigherGeography>
+  <dwcore:Locality>Stuttgart</dwcore:Locality>
+  <dwcore:Country>Germany</dwcore:Country>
 </record>
 <record>
-  <dwc:Locality>St. Petersburg</dwc:Locality>
-  <dwc:HigherGeography>Russia</dwc:HigherGeography>
+  <dwcore:Locality>St. Petersburg</dwcore:Locality>
+  <dwcore:HigherGeography>Russia</dwcore:HigherGeography>
 </record>
 </records>
 </biogeomancer>              
 }}}
-
- 
