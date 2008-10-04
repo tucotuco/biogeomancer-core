@@ -1113,7 +1113,8 @@ public class SpatialDescriptionManager extends BGManager {
                     // This is a temporary fix to overcome
                     // exceedingly complex geometries.
                     encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
-                    // encodedG = new String(gaz.lookupConvexHull(gadm, featureid));
+                    // encodedG = new String(gaz.lookupConvexHull(gadm,
+                    // featureid));
                   } else {
                     encodedG = new String(gaz.lookupFootprint(gadm, featureid));
                   }
@@ -1182,8 +1183,11 @@ public class SpatialDescriptionManager extends BGManager {
                 // subdivision
                 if (loctype.equalsIgnoreCase("FS")
                     || loctype.equalsIgnoreCase("PS")) {
-                  geom = getGeomSubdivision(geom, r.clauses.get(i).locspecs
-                      .get(0).isubdivision);
+
+                  geom = getGeomSubdivision(newGeoref.geometry, r.clauses
+                      .get(i).locspecs.get(0).isubdivision);
+                  // geom = getGeomSubdivision(geom, r.clauses.get(i).locspecs
+                  // .get(0).isubdivision);
                   newGeoref = new Georef(geom, DatumManager.getInstance()
                       .getDatum("WGS84"));
                   newGeoref.iLocality = new String(g1.iLocality);
@@ -1366,6 +1370,14 @@ public class SpatialDescriptionManager extends BGManager {
     // Translate subdivision string to English before calling subdivide
     if (subdivision == null || subdivision.length() == 0)
       return geom;
+    String translatedSubdivision = GeorefDictionaryManager.getInstance()
+        .lookup(subdivision, SupportedLanguages.english, Concepts.headings,
+            true);
+
+    // subdivision not found in the dictionary
+    if (translatedSubdivision == null)
+      return geom;
+
     Coordinate[] coordinates = geom.getEnvelope().getCoordinates();
     int nc = coordinates.length;
     double maxx = -180.0;
@@ -1391,10 +1403,8 @@ public class SpatialDescriptionManager extends BGManager {
     double ly = miny;
     // Now we have the bounding coordinates for the geometry
     // Find the geometry for the subdivision.
-    if (GeorefDictionaryManager.getInstance().lookup(subdivision,
-        SupportedLanguages.english, Concepts.headings, true).equalsIgnoreCase(
-        "NW")
-        // || subdivision.equalsIgnoreCase("NW")
+    if (translatedSubdivision.equalsIgnoreCase("NW")
+    // || subdivision.equalsIgnoreCase("NW")
         || subdivision.equalsIgnoreCase("NW 1/4")) {
       xincrement = (maxx - minx) / 2;
       yincrement = (maxy - miny) / 2;

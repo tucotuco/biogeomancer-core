@@ -922,16 +922,18 @@ public class LocSpec {
   public void interpretSubdivision(SupportedLanguages lang) {
     if (vsubdivision == null)
       return;
-    isubdivision = new String(vsubdivision);
+    isubdivision = new String(vsubdivision.toLowerCase().trim());
     String partstring = GeorefDictionaryManager.getInstance().lookup(
         "regx_SUB_MASK", lang);
-    isubdivision = isubdivision.toUpperCase().replaceAll(partstring, "");
+    isubdivision = isubdivision.toUpperCase().replaceAll(partstring, "").trim();
 
     String headingstring = GeorefDictionaryManager.getInstance().lookup(
         isubdivision, lang, Concepts.headings, true);
     if (headingstring != null) { // Heading found in GeorefDictionary.
       isubdivision = new String(headingstring);
       return;
+    } else {
+      isubdivision = isubdivision.toLowerCase();
     }
 
   }
