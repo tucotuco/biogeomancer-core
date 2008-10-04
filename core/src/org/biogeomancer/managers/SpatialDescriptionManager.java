@@ -955,7 +955,7 @@ public class SpatialDescriptionManager extends BGManager {
     boolean foundFirstValid = false;
     String loctype;
     int featureid;
-    int geometrythreshhold = 1500;
+    int geometrythreshhold = 1300;
     for (int m = 0; m < combos; m++) { // For every combo of Clause Georefs
       g1 = intersection = null;
       for (int i = 0; i < clausecount; i++) { // For every Clause in the Rec
@@ -993,6 +993,8 @@ public class SpatialDescriptionManager extends BGManager {
                 // features for features crossing longitude 180.
                 encodedG = makeEncodedGeometry(g1.featureinfos.get(0));
               } else {
+                int geomsize = gaz
+                    .lookupFootprintGeometryCount(gadm, featureid);
                 if (gaz.lookupFootprintGeometryCount(gadm, featureid) > geometrythreshhold) {
                   // This is a temporary fix to overcome exceedingly complex
                   // geometries.
