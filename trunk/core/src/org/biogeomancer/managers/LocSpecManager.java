@@ -206,7 +206,7 @@ public class LocSpecManager extends BGManager {
     if (headingstring != null) { // Heading found in GeorefDictionary.
       locspec.iheading = headingstring;
     } else {// Heading not found in dictionary, but it could still be a
-            // numerical heading.
+      // numerical heading.
       locspec.state = LocSpecState.LOCSPEC_ERROR_HEADING_NOT_FOUND;
       // log.error("Verbatim heading ("+locspec.vheading+") not found in the
       // GeorefDictionary.");
@@ -226,10 +226,10 @@ public class LocSpecManager extends BGManager {
         if (d.doubleValue() < 0.0 || d.doubleValue() > 360.0) {
           problems = true;
           locspec.state = LocSpecState.LOCSPEC_ERROR_HEADING_MALFORMED_NUMERICAL; // Negative
-                                                                                  // offsets
-                                                                                  // are
-                                                                                  // bad
-                                                                                  // form.
+          // offsets
+          // are
+          // bad
+          // form.
           log.info("Verbatim heading (" + locspec.vheading
               + ") is not between 0 and 360 degrees.");
         }
@@ -262,11 +262,11 @@ public class LocSpecManager extends BGManager {
           + ") not found in GeorefDictionary.");
     } else {
       if (!headingewstring.equals("E") && !headingewstring.equals("W")) {// HeadingEW
-                                                                          // is
-                                                                          // neither
-                                                                          // East
-                                                                          // nor
-                                                                          // West.
+        // is
+        // neither
+        // East
+        // nor
+        // West.
         problems = true;
         locspec.iheadingew = null;
         locspec.state = LocSpecState.LOCSPEC_ERROR_HEADINGEW_NOT_EW;
@@ -302,11 +302,11 @@ public class LocSpecManager extends BGManager {
           + ") not found in GeorefDictionary.");
     } else {
       if (!headingnsstring.equals("N") && !headingnsstring.equals("S")) {// HeadingNS
-                                                                          // is
-                                                                          // neither
-                                                                          // North
-                                                                          // nor
-                                                                          // South.
+        // is
+        // neither
+        // North
+        // nor
+        // South.
         problems = true;
         locspec.iheadingns = null;
         locspec.state = LocSpecState.LOCSPEC_ERROR_HEADINGNS_NOT_NS;
@@ -364,9 +364,9 @@ public class LocSpecManager extends BGManager {
       }
       if (d != null) {
         if (d.doubleValue() < -90 || d.doubleValue() > 90) { // not in the
-                                                              // valid range for
-                                                              // a decimal
-                                                              // latitude
+          // valid range for
+          // a decimal
+          // latitude
           problems = true;
           locspec.state = LocSpecState.LOCSPEC_ERROR_LAT_OUT_OF_RANGE;
           log.error("Verbatim latitude (" + locspec.vlat
@@ -383,9 +383,9 @@ public class LocSpecManager extends BGManager {
       }
       if (d != null) {
         if (d.doubleValue() < -180 || d.doubleValue() > 180) { // not in the
-                                                                // valid range
-                                                                // for a decimal
-                                                                // longitude
+          // valid range
+          // for a decimal
+          // longitude
           problems = true;
           locspec.state = LocSpecState.LOCSPEC_ERROR_LNG_OUT_OF_RANGE;
           log.error("Verbatim longitude (" + locspec.vlng
@@ -433,9 +433,9 @@ public class LocSpecManager extends BGManager {
       if (d.doubleValue() < 0.0) {
         problems = true;
         locspec.state = LocSpecState.LOCSPEC_ERROR_OFFSET_NEGATIVE; // Negative
-                                                                    // offsets
-                                                                    // are bad
-                                                                    // form.
+        // offsets
+        // are bad
+        // form.
         log.error("Verbatim offset (" + locspec.voffset
             + ") is a negative number.");
       }
@@ -493,9 +493,9 @@ public class LocSpecManager extends BGManager {
       if (d.doubleValue() < 0.0) {
         problems = true;
         locspec.state = LocSpecState.LOCSPEC_ERROR_OFFSET_NEGATIVE; // Negative
-                                                                    // offsetews
-                                                                    // are bad
-                                                                    // form.
+        // offsetews
+        // are bad
+        // form.
         log.error("Verbatim offsetew (" + locspec.voffsetew
             + ") is a negative number.");
       }
@@ -552,9 +552,9 @@ public class LocSpecManager extends BGManager {
       if (d.doubleValue() < 0.0) {
         problems = true;
         locspec.state = LocSpecState.LOCSPEC_ERROR_OFFSET_NEGATIVE; // Negative
-                                                                    // offsetnss
-                                                                    // are bad
-                                                                    // form.
+        // offsetnss
+        // are bad
+        // form.
         log.error("Verbatim offsetns (" + locspec.voffsetns
             + ") is a negative number.");
       }
@@ -590,11 +590,11 @@ public class LocSpecManager extends BGManager {
       locspec.state = LocSpecState.LOCSPEC_ERROR_SUBDIVISION_MISSING;
       log.error("Verbatim subdivision missing.");
     }
-    locspec.isubdivision = locspec.vsubdivision; // pass it through untouched
-                                                  // for now. ShapeManager will
-                                                  // have to deal with it.
+    locspec.isubdivision = locspec.vsubdivision.toLowerCase().trim();
+    // pass it through untouched for now. ShapeManager will
+    // have to deal with it.
     if (problems == false) { // subdivision is interpretable
-      locspec.isubdivision = locspec.vsubdivision;
+      locspec.isubdivision = locspec.vsubdivision.toLowerCase().trim();
       locspec.state = LocSpecState.LOCSPEC_COMPLETED;
       // log.info("Subdivision interpretation completed successfully.");
     }
@@ -676,10 +676,10 @@ public class LocSpecManager extends BGManager {
       // latitude band letter
       String validlatbandletters = new String("CDEFGHJKLMNPQRSTUVWX");
       if (validlatbandletters.indexOf(latitudebandletter) == -1) { // not a
-                                                                    // valid
-                                                                    // latitude
-                                                                    // band
-                                                                    // letter
+        // valid
+        // latitude
+        // band
+        // letter
         problems = true;
         locspec.state = LocSpecState.LOCSPEC_ERROR_UTMZONE_MISSING_BAND_LETTER;
         log.error("Verbatim utmzone (" + locspec.vutmzone
@@ -695,8 +695,8 @@ public class LocSpecManager extends BGManager {
         }
         if (izone != null) {
           if (izone.intValue() < 1 || izone.intValue() > 60) { // not in the
-                                                                // valid range
-                                                                // for a utmzone
+            // valid range
+            // for a utmzone
             problems = true;
             locspec.state = LocSpecState.LOCSPEC_ERROR_UTMZONE_OUT_OF_RANGE;
             log.error("Verbatim utmzone (" + locspec.vutmzone
@@ -721,11 +721,11 @@ public class LocSpecManager extends BGManager {
       }
       if (iutme != null) {
         if (iutme.intValue() < 160000 || iutme.intValue() > 834000) { // not in
-                                                                      // the
-                                                                      // valid
-                                                                      // range
-                                                                      // for a
-                                                                      // utme
+          // the
+          // valid
+          // range
+          // for a
+          // utme
           problems = true;
           locspec.state = LocSpecState.LOCSPEC_ERROR_UTME_OUT_OF_RANGE;
           log.error("Verbatim utme (" + locspec.vutme
@@ -748,9 +748,9 @@ public class LocSpecManager extends BGManager {
       }
       if (iutmn != null) {
         if (iutmn.intValue() < 0 || iutmn.intValue() > 10000000) { // not in
-                                                                    // the valid
-                                                                    // range for
-                                                                    // a utmn
+          // the valid
+          // range for
+          // a utmn
           problems = true;
           locspec.state = LocSpecState.LOCSPEC_ERROR_UTMN_OUT_OF_RANGE;
           log.error("Verbatim utmn (" + locspec.vutmn
