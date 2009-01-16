@@ -50,7 +50,7 @@ The web service output format will be XML (UTF-8) with `dwcore` as the namespace
 
 = Batch Georeference Requirements =
 == Web Service Interface ==
-Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit. The following DwC elements are accepted:
+Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit. In addition to an optional field "id" (case sensitive), the following DwC elements are accepted and interpreted as input:
 
 || *Element*  || *Description* ||
 || HigherGeography || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/HigherGeography HigherGeography] concept ||
@@ -74,6 +74,7 @@ Example batch request XML:
 <biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwcore="http://rs.tdwg.org/dwc/dwcore" xmlns:dwgeo="http://rs.tdwg.org/dwc/dwgeo">
 <request type="batch" interpreter="yale" header="true">
   <record>
+   <dwcore:id>1</dwcore:id>
    <dwcore:Locality>Berkeley</dwcore:Locality>
    <dwcore:StateProvince>California</dwcore:StateProvince>
   </record>
@@ -98,6 +99,7 @@ Batch georeferencing output will be XML (UTF-8) with a dwcore and dwgeo namespac
   <records>
    <record>
     <interpreter>yale</interpreter>
+    <dwcore:id>1<dwcore:id>
     <dwcore:StateProvince>California</dwcore:StateProvince>
     <dwcore:Locality>Berkeley</dwcore:Locality>
     <georeference>
