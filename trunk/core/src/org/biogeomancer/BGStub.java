@@ -17,16 +17,16 @@
 package org.biogeomancer;
 
 import java.io.FileInputStream;
-import java.util.Properties;
 import java.net.URL;
+import java.util.Properties;
 
 import org.biogeomancer.managers.GeorefManager;
 import org.biogeomancer.managers.GeorefPreferences;
-import org.biogeomancer.validation.ValidationManager;
 import org.biogeomancer.records.Clause;
 import org.biogeomancer.records.Georef;
 import org.biogeomancer.records.Rec;
 import org.biogeomancer.records.RecSet;
+import org.biogeomancer.validation.ValidationManager;
 
 public class BGStub {
   public static boolean isUrl(String resource) {
@@ -56,7 +56,7 @@ public class BGStub {
       String enableGeorefStr = props.getProperty("GeorefEngine.enabled");
       if (enableGeorefStr == null
           || (enableGeorefStr != null && Boolean.parseBoolean(enableGeorefStr))) {
-        GeorefManager georefmanager = new GeorefManager(recset);
+        GeorefManager georefmanager = new GeorefManager(recset, true);
         GeorefPreferences prefs = new GeorefPreferences();
         prefs.locinterp = props.getProperty("interpreter");
         georefmanager.newGeoreference(prefs);

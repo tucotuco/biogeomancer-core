@@ -101,6 +101,14 @@ public class Clause
       iLocality = new String(uLocality + " (not interpreted)");
       return iLocality;
     }
+    if (locType.equalsIgnoreCase("LL")) {
+      iLocality = new String(locspecs.get(0).ilat + " " + locspecs.get(0).ilng);
+      if (locspecs.get(0).iuncertainty != null)
+        iLocality.concat(" " + locspecs.get(0).iuncertainty + " m");
+      if (locspecs.get(0).idatum != null)
+        iLocality.concat(" " + locspecs.get(0).idatum + " m");
+      return iLocality;
+    }
     if (locType.equalsIgnoreCase("NN")) {
       iLocality = new String("locality not recorded");
       return iLocality;
@@ -466,10 +474,15 @@ public class Clause
           s = s.concat("<elevationunits>"
               + this.locspecs.get(0).velevationunits + "</elevationunits>");
         } else if (locType.toUpperCase().equals("LL")) {
-          s = s
-              .concat("<latitude>" + this.locspecs.get(0).vlat + "</latitude>");
-          s = s.concat("<longitude>" + this.locspecs.get(0).vlng
-              + "</longitude>");
+          s = s.concat("<decimalLatitude>" + this.locspecs.get(0).vlat
+              + "</decimalLatitude>");
+          s = s.concat("<decimalLongitude>" + this.locspecs.get(0).vlng
+              + "</decimalLongitude>");
+          s = s.concat("<coordinateUncertaintyInMeters>"
+              + this.locspecs.get(0).vuncertainty
+              + "</coordinateUncertaintyInMeters>");
+          s = s.concat("<geodeticDatum>" + this.locspecs.get(0).vdatum
+              + "</geodeticDatum>");
         } else if (locType.toUpperCase().equals("FOH")) {
           s = s.concat("<feature>" + this.locspecs.get(0).featurename
               + "</feature>");

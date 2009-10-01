@@ -88,12 +88,14 @@ public class GeorefManager extends BGManager {
     final int COUNT_LOCTYPE = 12; // interpreter ("yale", "uiuc", "tulane"),
     // fieldname
     final int TO_MARKUP = 13; // no args
-    final int NEW_GEOREF = 14; // interpreter ("yale", "uiuc", "tulane")
+    final int NEW_GEOREF = 14; // interpreter ("yale", "uiuc", "tulane"), lang
+    // (english, french, spanish, portuguese)
     final int SINGLE_GEOREF = 15; // interpreter ("yale", "uiuc", "tulane")
     final int INTERP_NEWYALE = 16; // fieldname or "all", language
     final int INTERP_FORFEATURENAMES = 17; // interpreter
     final int CREATE_USERFEATURES = 18; // interpreter
     final int REMOVE_USERFEATURES = 19; // feature_id (-1 for all features)
+    final int TEST_LL_GEOREF = 20; // arg1=interpreter (use yale)
     if (args.length > 0) {
       Integer z = new Integer(args[0]);
       test = z.intValue();
@@ -106,7 +108,10 @@ public class GeorefManager extends BGManager {
     }
 
     // test the georef manager
-    GeorefManager gm = new GeorefManager();
+    boolean withdb = true;
+    if (test == INTERP_NEWYALE || test == TEST_LL_GEOREF)
+      withdb = false;
+    GeorefManager gm = new GeorefManager(withdb);
     RecSet rs = null;
 
     // Grab test data from bg.config and create RecSet from it.
@@ -216,6 +221,18 @@ public class GeorefManager extends BGManager {
         System.out.println("Elapsed time: " + (endtime - starttime) + " ms");
       }
       break;
+    case TEST_LL_GEOREF:
+      System.out.println("***LL_GEOREF test***");
+      gp.setLanguage(arg2);
+      starttime = System.currentTimeMillis();
+      gm.newGeoreference(gp);
+      endtime = System.currentTimeMillis();
+      for (Rec r : gm.recset.recs) {
+        // System.out.println(r.toString());
+        System.out.println(r.getSummary("  "));
+        System.out.println("Elapsed time: " + (endtime - starttime) + " ms");
+      }
+      break;
     case SINGLE_GEOREF:
       System.out.println("***SINGLE GEOREFERENCE test***");
       for (Rec r : gm.recset.recs) {
@@ -262,15 +279,17 @@ public class GeorefManager extends BGManager {
 
   private BGI yaleLocInterp;
 
-  public GeorefManager() throws GeorefManager.GeorefManagerException {
-    init();
+  public GeorefManager(boolean withdb)
+      throws GeorefManager.GeorefManagerException {
+    init(withdb);
   }
 
-  public GeorefManager(RecSet recset) // Remember to call shutdown() when
+  public GeorefManager(RecSet recset, boolean withdb) // Remember to call
+      // shutdown() when
       // finished with a GeorefManager.
       throws GeorefManager.GeorefManagerException {
     this.recset = recset;
-    init();
+    init(withdb);
   }
 
   public void diffInputOutput() {
@@ -419,6 +438,7 @@ public class GeorefManager extends BGManager {
       return false;
     try {
       if (prefs.locinterp == null || prefs.locinterp.equalsIgnoreCase("yale")) {
+        // this.yaleLocInterp.hasGeoref(rec, prefs.language);
         this.yaleLocInterp.doParsing(rec, "highergeography", true);
         this.yaleLocInterp.doParsing(rec, "continent", true);
         this.yaleLocInterp.doParsing(rec, "waterbody", true);
@@ -436,6 +456,13 @@ public class GeorefManager extends BGManager {
             prefs.language);
         this.yaleLocInterp.doParsing(rec, "verbatimelevation", gdm,
             prefs.language);
+        this.yaleLocInterp.doParsing(rec, "decimallatitude", gdm,
+            prefs.language);
+        this.yaleLocInterp.doParsing(rec, "decimallongitude", gdm,
+            prefs.language);
+        this.yaleLocInterp.doParsing(rec, "coordinateuncertaintyinmeters", gdm,
+            prefs.language);
+        this.yaleLocInterp.doParsing(rec, "geodeticdatum", gdm, prefs.language);
 
       } else if (prefs.locinterp.equalsIgnoreCase("uiuc")) {
         this.uiucLocInterp.doParsing(rec, "Locality");
@@ -467,7 +494,8 @@ public class GeorefManager extends BGManager {
     }
 
     if (geoPredoneCheck(rec)) {
-      if (populateGeoref(rec)) {
+      // if (populateGeoref(rec)) {
+      if (populateGeoref2(rec, prefs)) {
         return true;
       }
     }
@@ -746,6 +774,20 @@ public class GeorefManager extends BGManager {
     // -1);
   }
 
+  public boolean locContainsGeorefCheck(Rec rec) {
+    if (rec.containsKey("locality") && rec.clauses.size() >= 2) {
+      for (int i = 0; i < rec.clauses.size() - 1; i++) {
+        if (rec.clauses.get(i).locType.equalsIgnoreCase("unk")
+            && rec.clauses.get(i + 1).locType.equalsIgnoreCase("unk")
+        /*
+         * && isNum(rec.clauses.get(i).uLocality
+         */)
+          ;
+      }
+    }
+    return false;
+  }
+
   public void locTypeCounts(String arg1, String interpfield) {
     String[] loctypes = { "addr", "adm", "bf", "bp", "e", "f", "fh", "fo",
         "foh", "foo", "fpoh", "fs", "j", "jo", "jh", "joh", "joo", "jpoh",
@@ -800,8 +842,8 @@ public class GeorefManager extends BGManager {
    * (prefs.locinterp.equalsIgnoreCase("uiuc")) { try {
    * this.uiucLocInterp.doParsing(this.recset); } catch (BGIHmm.BGIHmmException
    * e) { e.printStackTrace(); throw this.new
-   * GeorefManagerException(e.toString(), e); } for (Rec rec : this.recset.recs) {
-   * if(geoPredoneCheck(rec)){ if(populateGeoref(rec)){ return true; } }
+   * GeorefManagerException(e.toString(), e); } for (Rec rec : this.recset.recs)
+   * { if(geoPredoneCheck(rec)){ if(populateGeoref(rec)){ return true; } }
    * 
    * spatialDescriptionManager.doSpatialDescription(rec); } } else if
    * (prefs.locinterp.equalsIgnoreCase("yale")) { try {
@@ -813,8 +855,8 @@ public class GeorefManager extends BGManager {
    * (prefs.locinterp.equalsIgnoreCase("tulane")) { try {
    * this.TULocInterp.doParsing(this.recset, "Locality", "HigherGeography",
    * "Country", "State", "County"); } catch (Exception e) {
-   * System.out.println("Error in GeorefManager.georeference()"); } for (Rec rec :
-   * this.recset.recs) { rec.toString(); } } return true; }
+   * System.out.println("Error in GeorefManager.georeference()"); } for (Rec rec
+   * : this.recset.recs) { rec.toString(); } } return true; }
    */
   public boolean newGeoreference(GeorefPreferences prefs)
       throws GeorefManager.GeorefManagerException {
@@ -829,15 +871,22 @@ public class GeorefManager extends BGManager {
       throws GeorefManager.GeorefManagerException, BGIException {
     GeorefDictionaryManager gdm = GeorefDictionaryManager.getInstance();
     SupportedLanguages interplang = SupportedLanguages.english;
-    if (language.equalsIgnoreCase("español")
-        || language.equalsIgnoreCase("spanish")) {
-      interplang = SupportedLanguages.spanish;
-    } else if (language.equalsIgnoreCase("português")
-        || language.equalsIgnoreCase("portuguese")) {
-      interplang = SupportedLanguages.portuguese;
-    } else if (language.equalsIgnoreCase("français")
-        || language.equalsIgnoreCase("french")) {
-      interplang = SupportedLanguages.french;
+    if (language == null || language.length() == 0
+        || !language.equalsIgnoreCase("english")
+        || !language.equalsIgnoreCase("en")) {
+      if (language.equalsIgnoreCase("español")
+          || language.equalsIgnoreCase("spanish")
+          || language.equalsIgnoreCase("es")) {
+        interplang = SupportedLanguages.spanish;
+      } else if (language.equalsIgnoreCase("português")
+          || language.equalsIgnoreCase("portuguese")
+          || language.equalsIgnoreCase("pt")) {
+        interplang = SupportedLanguages.portuguese;
+      } else if (language.equalsIgnoreCase("français")
+          || language.equalsIgnoreCase("french")
+          || language.equalsIgnoreCase("fr")) {
+        interplang = SupportedLanguages.french;
+      }
     }
 
     if (this.recset == null)
@@ -878,7 +927,7 @@ public class GeorefManager extends BGManager {
       datum = DatumManager.getInstance().getDatum(rec.get("geodeticdatum"));
     } else {
       // Assume the datum is WGS84 if not provided
-      datum = DatumManager.getInstance().getDatum("WGS84");
+      datum = DatumManager.getInstance().getDatum("unknown");
     }
     double dlat = 0;
     double dlng = 0;
@@ -908,12 +957,21 @@ public class GeorefManager extends BGManager {
     for (Clause c : rec.clauses) {
       uLocality = uLocality + c.uLocality + "; ";
     }
-    iLocality = uLocality + lat + "; " + lng + "; " + extent + " m";
+    iLocality = uLocality + lat + "; " + lng + "; " + extent;
     g.iLocality = iLocality;
     g.uLocality = uLocality;
     rec.georefs.add(g);
 
     return true;
+  }
+
+  public boolean populateGeoref2(Rec rec, GeorefPreferences prefs) {
+    try {
+      return this.yaleLocInterp.hasGeoref(rec, prefs.language);
+    } catch (BGIException e) {
+      e.printStackTrace();
+      return false;
+    }
   }
 
   public void removeUserFeature(int featureid) {
@@ -1026,7 +1084,7 @@ public class GeorefManager extends BGManager {
     // System.out.print(this.recset.toXML());
   }
 
-  private void init() throws GeorefManagerException {
+  private void init(boolean withdb) throws GeorefManagerException {
     try {
       // log.info("GeorefManager started");
       yaleLocInterp = new BGI();
@@ -1038,7 +1096,8 @@ public class GeorefManager extends BGManager {
 
       // Comment out the spatialDescriptionManager to test interpreters without
       // connecting to the gazetteer.
-      spatialDescriptionManager = new SpatialDescriptionManager();
+      if (withdb)
+        spatialDescriptionManager = new SpatialDescriptionManager();
       defaultPrefs.setLanguage("english");
       // log.info("after SpatialDescriptionManager()");
     } catch (Throwable t) {
@@ -1070,8 +1129,8 @@ public class GeorefManager extends BGManager {
  * elapsed time: " + (interpendtime - interpstarttime) + "(ms)"); } } catch
  * (BGIHmm.BGIHmmException e) { e.printStackTrace(); throw this.new
  * GeorefManagerException(e.toString(), e); } catch (BGI.BGIException e) {
- * e.printStackTrace(); throw this.new GeorefManagerException(e.toString(), e); }
- * catch (Exception e) { System.out.println("Error in
+ * e.printStackTrace(); throw this.new GeorefManagerException(e.toString(), e);
+ * } catch (Exception e) { System.out.println("Error in
  * GeorefManager.georeference()"); } long sdstarttime =
  * System.currentTimeMillis(); for (Rec rec : this.recset.recs) { // print out
  * each record log.info("Doing Spatial Description for rec ID =

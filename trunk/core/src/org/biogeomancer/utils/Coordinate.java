@@ -17,6 +17,7 @@
 package org.biogeomancer.utils;
 
 import java.awt.geom.Point2D;
+
 import org.biogeomancer.managers.DatumManager;
 
 public class Coordinate extends Point2D.Double {
@@ -99,8 +100,9 @@ public class Coordinate extends Point2D.Double {
   public DatumManager.Datum datum;
 
   public double precision; // a value in decimal degrees to express precision
-                            // (e.g., 0.5 means nearest 30 minutes or half
-                            // degree). 0 means exact to within 0.01 seconds.
+
+  // (e.g., 0.5 means nearest 30 minutes or half
+  // degree). 0 means exact to within 0.01 seconds.
 
   public Coordinate(double lng, double lat) { // constructor
     super(lng, lat);
@@ -127,6 +129,16 @@ public class Coordinate extends Point2D.Double {
     TruncateCoordinates();
   }
 
+  public Coordinate(double lng, double lat, String datumstring, double precision) { // constructor
+    super(lng, lat);
+    this.datum = DatumManager.getInstance().getDatum(datumstring);
+    if (precision <= 0)
+      this.precision = calculateCoordinatePrecision();
+    else
+      this.precision = precision;
+    TruncateCoordinates();
+  }
+
   public double calculateCoordinatePrecision() {
     // Use the content of the coordinates to deduce an overall precision
     // Test to see if the fractional part of the coordinate value can be
@@ -138,9 +150,9 @@ public class Coordinate extends Point2D.Double {
     double latcoorduncertainty = 0;
     double lngcoorduncertainty = 0;
     double intpart = Math.floor(Math.abs(y)); // The integer part of the
-                                              // absolute value of the latitude.
+    // absolute value of the latitude.
     double fracpart = Math.abs(y) - intpart; // The fractional part of the
-                                              // absolute value of the latitude.
+    // absolute value of the latitude.
     if (fracpart == 0) {
       latcoorduncertainty = 1;
     } else {
@@ -149,15 +161,15 @@ public class Coordinate extends Point2D.Double {
         double x = (fracpart * d) / Math.rint(fracpart * d);
         if (x > 0.99999 && x < 1.00001) {
           latcoorduncertainty = 1.0 / denominators[i]; // A matching fraction
-                                                        // was found.
+          // was found.
           i = denominators.length;
         }
       }
     }
     intpart = Math.floor(Math.abs(x)); // The integer part of the absolute
-                                        // value of the longitude.
+    // value of the longitude.
     fracpart = Math.abs(x) - intpart; // The fractional part of the absolute
-                                      // value of the longitude.
+    // value of the longitude.
     if (fracpart == 0) {
       lngcoorduncertainty = 1;
     } else {
@@ -166,7 +178,7 @@ public class Coordinate extends Point2D.Double {
         double x = (fracpart * d) / Math.rint(fracpart * d);
         if (x > 0.99999 && x < 1.00001) {
           lngcoorduncertainty = 1.0 / denominators[i]; // A matching fraction
-                                                        // was found.
+          // was found.
           i = denominators.length;
         }
       }
@@ -182,7 +194,7 @@ public class Coordinate extends Point2D.Double {
   }
 
   public double getDatumError() { // return the uncertainty (in meters) of the
-                                  // coordinate if the datum is not known
+    // coordinate if the datum is not known
     /*
      * TODO: This should be an analysis of the maximum distance between datums
      * normally in use at the given coordinates.
@@ -206,20 +218,20 @@ public class Coordinate extends Point2D.Double {
         error = 1000.0;
       }
     } // otherwise the datum is known and there is no uncertainty from this
-      // source
+    // source
     return error;
   }
 
-	// This calculation is not rigorously correct, especially over large distances 
-	// in non-cardinal directions. Use with caution.
-	public double getDistanceInMetersToCoordinate(Coordinate c){
-		double d = 0;
-		d = Math.pow(Math.pow(this.getLatDistanceInMetersToCoordinate(c),2.0)+
-		Math.pow(this.getLngDistanceInMetersToCoordinate(c),2.0), 0.5);
-		return d;
-	}
+  // This calculation is not rigorously correct, especially over large distances
+  // in non-cardinal directions. Use with caution.
+  public double getDistanceInMetersToCoordinate(Coordinate c) {
+    double d = 0;
+    d = Math.pow(Math.pow(this.getLatDistanceInMetersToCoordinate(c), 2.0)
+        + Math.pow(this.getLngDistanceInMetersToCoordinate(c), 2.0), 0.5);
+    return d;
+  }
 
-	public double getLatDistanceInMetersToCoordinate(Coordinate c) {
+  public double getLatDistanceInMetersToCoordinate(Coordinate c) {
     double d = 0;
     // TODO: reproject if the same datum isn't used
     d = this.getLatMetersPerDegree() * (this.y - c.y);
@@ -227,9 +239,9 @@ public class Coordinate extends Point2D.Double {
   }
 
   public double getLatLngMetersPerDegree() { // return the maximum distance in
-                                              // meters from this point to a
-                                              // point one degree away in
-                                              // Latitude and Longitude
+    // meters from this point to a
+    // point one degree away in
+    // Latitude and Longitude
     double latmpd = getLatMetersPerDegree();
     double lngmpd = getLngMetersPerDegree();
     double error = Math.sqrt(Math.pow(latmpd, 2.0) + Math.pow(lngmpd, 2.0));
@@ -242,8 +254,8 @@ public class Coordinate extends Point2D.Double {
   }
 
   public double getLatMetersPerDegree() { // return the number of meters in one
-                                          // degree of Latitude at this
-                                          // coordinate
+    // degree of Latitude at this
+    // coordinate
     // The distance between point A at a latitude equal to decimallatitude and
     // point B
     // at a latitude one degree removed from point A, but at the same longitude,
@@ -254,9 +266,9 @@ public class Coordinate extends Point2D.Double {
     // point A.
     // The source for the following values is NIMA 8350.2, 4 Jul 1977
     double a = this.datum.getSemiMajorAxis(); // a = semimajor axis of the datum
-                                              // ellipsoid
+    // ellipsoid
     double f = this.datum.getFlattening(); // f = flattening of the datum
-                                            // ellipsoid
+    // ellipsoid
     double e_squared = 2.0 * f - Math.pow(f, 2.0); // e^2 = 2f - f^2
 
     // M - radius of curvature in the prime meridian, (tangent to ellipsoid at
@@ -266,8 +278,8 @@ public class Coordinate extends Point2D.Double {
         * (1.0 - e_squared)
         / Math.pow(1.0 - e_squared
             * Math.pow(Math.sin(this.y * Math.PI / 180.0), 2.0), 1.5); // M(lat)
-                                                                        // =
-                                                                        // a(1-e^2)/(1-e^2*sin^2(lat))^1.5
+    // =
+    // a(1-e^2)/(1-e^2*sin^2(lat))^1.5
     double latmpd = Math.PI * M / 180.0;
     return latmpd;
   }
@@ -292,7 +304,7 @@ public class Coordinate extends Point2D.Double {
     if (tox < minx)
       minx = tox;
     if (maxx > 90 && minx < -90) { // coordinates on opposite sides of
-                                    // longitude = 180
+      // longitude = 180
       if (fromx < tox)
         fromx += 360;
       else
@@ -303,8 +315,8 @@ public class Coordinate extends Point2D.Double {
   }
 
   public double getLngMetersPerDegree() { // return the number of meters in one
-                                          // degree of Longitude at this
-                                          // coordinate
+    // degree of Longitude at this
+    // coordinate
     // The distance between point A at a latitude equal to decimallatitude and
     // point B
     // at the same latitude, but one degree removed from point A in longitude,
@@ -314,9 +326,9 @@ public class Coordinate extends Point2D.Double {
     // radius equal to the distance from point A to the polar axis and
     // orthogonal to it.
     double a = this.datum.getSemiMajorAxis(); // a = semimajor axis of the datum
-                                              // ellipsoid
+    // ellipsoid
     double f = this.datum.getFlattening(); // f = flattening of the datum
-                                            // ellipsoid
+    // ellipsoid
     double e_squared = 2.0 * f - Math.pow(f, 2.0); // e^2 = 2f - f^2
 
     // N - radius of curvature in the prime vertical, (tangent to ellipsoid at
@@ -324,15 +336,15 @@ public class Coordinate extends Point2D.Double {
     double N = a
         / Math.sqrt(1.0 - e_squared
             * (Math.pow(Math.sin(this.y * Math.PI / 180.0), 2.0))); // N(lat) =
-                                                                    // a/(1-e^2*sin^2(lat))^0.5
+    // a/(1-e^2*sin^2(lat))^0.5
 
     // longitude is irrelevant for the calculations to follow so simplify by
     // using longitude = 0, so Y = 0
     // X is the orthogonal distance to the polar axis.
     double X = N * Math.cos(this.y * Math.PI / 180.0) * 1.0; // X =
-                                                              // Ncos(lat)cos(long).
-                                                              // long = 0, so
-                                                              // cos(long) = 1.0
+    // Ncos(lat)cos(long).
+    // long = 0, so
+    // cos(long) = 1.0
     double lngmpd = Math.PI * X / 180.0;
     return lngmpd;
   }
@@ -366,11 +378,11 @@ public class Coordinate extends Point2D.Double {
       // *** Use geotools to do a datum transformation
       /*
        * Ellipsoid e =
-       * Ellipsoid.createFlattenedSphere(this.datum.getEllipsoidCode(),this.datum.getSemiMajorAxis(),
-       * 1.0/this.datum.getFlattening(), Unit.METRE); GeodeticDatum gd = new
-       * GeodeticDatum(); GeographicCRS gcrs = new
-       * GeographicCRS(this.datum.getName(), gd ); DirectPosition2D dp2d = new
-       * DirectPosition2D(this.x, this.y); Geometry g = new Geometry(dp2d);
+       * Ellipsoid.createFlattenedSphere(this.datum.getEllipsoidCode
+       * (),this.datum.getSemiMajorAxis(), 1.0/this.datum.getFlattening(),
+       * Unit.METRE); GeodeticDatum gd = new GeodeticDatum(); GeographicCRS gcrs
+       * = new GeographicCRS(this.datum.getName(), gd ); DirectPosition2D dp2d =
+       * new DirectPosition2D(this.x, this.y); Geometry g = new Geometry(dp2d);
        * GeometryFactory gf = new GeometryFactory((CoordinateSequenceFactory)
        * PrecisionModel.FIXED); gf.createPoint(Coordinate);
        */

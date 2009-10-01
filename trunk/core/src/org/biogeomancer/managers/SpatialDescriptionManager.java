@@ -771,7 +771,29 @@ public class SpatialDescriptionManager extends BGManager {
 
   public void makeClauseGeorefs(Rec r, boolean showSource, boolean showType) {
     for (Clause clause : r.clauses) {
-      if (clause.locspecs.get(0).featureinfos != null) {
+      // if Clause locType is LatLong (LL)
+      if (clause.locType.equalsIgnoreCase("LL")) {
+        LocSpec ls = clause.locspecs.get(0);
+        if (ls != null && ls.isCoordinate()) {
+          PointRadius pr = sm.getPointRadius(clause.locType, ls, null, null);
+          // Point-radius was successfully created, now add it to the
+          // clause's georefs list.
+          if (pr != null) {
+            Georef g = new Georef(pr);
+            g.confidence = 0;
+            if (g.iLocality == null || g.iLocality.trim().length() == 0) {
+              g.iLocality = clause.makeInterpretedLocality(null, null,
+                  showSource, showType);
+            } else {
+              g.iLocality = g.iLocality.concat(clause.makeInterpretedLocality(
+                  null, null, showSource, showType));
+            }
+            g.uLocality = clause.uLocality;
+            clause.state = ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
+            clause.georefs.add(g);
+          }
+        }
+      } else { // first locSpec in the Clause has a featureinfo list
         // for every featureinfo in LocSpec1
         for (int i = 0; i < clause.locspecs.get(0).featureinfos.size(); i++) {
           FeatureInfo featureinfo1 = clause.locspecs.get(0).featureinfos.get(i);

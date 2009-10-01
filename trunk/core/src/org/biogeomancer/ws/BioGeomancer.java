@@ -64,7 +64,7 @@ public class BioGeomancer {
       // georeference the recset
       GeorefPreferences prefs = new GeorefPreferences();
       prefs.locinterp = interpreter;
-      GeorefManager georefManager = new GeorefManager(recset);
+      GeorefManager georefManager = new GeorefManager(recset, true);
       georefManager.newGeoreference(prefs);
       if (recset != null)
         return outputResults(recset);

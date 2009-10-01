@@ -16,6 +16,7 @@
 
 package edu.tulane;
 
+import org.biogeomancer.managers.DatumManager;
 import org.biogeomancer.records.Rec;
 import org.biogeomancer.records.RecSet;
 
@@ -70,7 +71,7 @@ public class bg_geolocate {
             String interpreted_string = r2[i].getParsePattern();
 
             org.biogeomancer.records.Georef g = new org.biogeomancer.records.Georef(
-                lon, lat, 0);
+                lon, lat, 0, DatumManager.getInstance().getDatum("wgs84"));
             g.iLocality = interpreted_string;
             r.georefs.add(g);
           }
@@ -93,7 +94,7 @@ public class bg_geolocate {
             float lon = (float) r2[i].getWGS84Coordinate().getLongitude();
             String interpreted_string = r2[i].getParsePattern();
             org.biogeomancer.records.Georef g = new org.biogeomancer.records.Georef(
-                lon, lat, 0);
+                lon, lat, 0, DatumManager.getInstance().getDatum("wgs84"));
             g.iLocality = interpreted_string;
             r.georefs.add(g);
           }

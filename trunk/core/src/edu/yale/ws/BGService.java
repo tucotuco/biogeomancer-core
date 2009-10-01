@@ -128,7 +128,7 @@ public class BGService {
     try {
       RecSet rs = new RecSet(inFile.getCanonicalPath(), "\t");
 
-      GeorefManager gm = new GeorefManager(rs);
+      GeorefManager gm = new GeorefManager(rs, true);
       gm.newGeoreference(new GeorefPreferences(interpreter));
 
       Writer out = new BufferedWriter(new OutputStreamWriter(
