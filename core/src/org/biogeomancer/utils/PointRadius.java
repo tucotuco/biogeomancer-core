@@ -60,6 +60,13 @@ public class PointRadius extends Coordinate { // point radius inner class
     TruncateExtent();
   }
 
+  public PointRadius(double lng, double lat, double extent,
+      DatumManager.Datum datum) {
+    super(lng, lat, datum);
+    this.extent = extent;
+    TruncateExtent();
+  }
+
   private PointRadius(double lng, double lat) {
     super(lng, lat);
     this.extent = 0.0;

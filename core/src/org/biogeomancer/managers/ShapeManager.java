@@ -30,8 +30,9 @@ import org.biogeomancer.utils.PointRadius;
 /**
  * @author tuco
  * 
- * This should be a singleton that is called upon to make shapes (Point-Radius
- * or polygon) from a LocType, a LocSpec, and up to two FeatureInfos.
+ *         This should be a singleton that is called upon to make shapes
+ *         (Point-Radius or polygon) from a LocType, a LocSpec, and up to two
+ *         FeatureInfos.
  */
 public class ShapeManager extends BGManager {
   public static final String PROPS_FILE = "ShapeManager.properties";
@@ -111,7 +112,7 @@ public class ShapeManager extends BGManager {
                 + lspec1.toString());
       } else
         // TODO: Figure out over-logging problem before turning this on for
-        // testing
+        // testing.
         // sm.log.info(pr.toString());
         System.out.println(pr.toString());
     } catch (Exception e) {
@@ -144,16 +145,45 @@ public class ShapeManager extends BGManager {
     double uncertainty = 0.0;
 
     // TODO: Interpret these loctypes:
-    // ADDR, E, FPOH, J, JO, JH, JOH, JOO, JPOH, LL, NJ, NPOM, POM, Q, UTM
+    // ADDR, E, FPOH, J, JO, JH, JOH, JOO, JPOH, NJ, NPOM, POM, Q, UTM
     // These locTypes interpreted:
-    // BF, BP, F, P, FS, PS, ADM, FOH, POH, NN, UNK, FOO, FH, PH, NF, NP, FO,
-    // PO, TRS, TRSS
-    if (loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("P")
+    // LL, BF, BP, F, P, FS, PS, ADM, FOH, POH, NN, UNK, FOO, FH, PH, NF, NP,
+    // FO, PO, TRS, TRSS
+
+    if (loctype.equalsIgnoreCase("LL") || loctype.equalsIgnoreCase("LL")) {
+      // --- LocType "LL" ---
+      // LatLong locality type. Example: "43.23345 -121.3243423"
+      // These LocTypes require no FeatureInfo.
+      //
+      // The sources of uncertainty for this locality type are:
+      // datum
+      // coordinate precision
+      // 1) Sum all uncertainties (datum, extent, mapscale,
+      // coordinate precision) to get the overall uncertainty.
+      if (locspec.isCoordinate() == false)
+        return null;
+
+      Coordinate c1 = new Coordinate(locspec.getDecimalLongitude(), locspec
+          .getDecimalLatitude(), locspec.idatum, 0);
+
+      // Uncertainty from unknown datum
+      double datumerror = c1.getDatumError();
+      // If datum is unknown, change it now to WGS84, uncertainty already
+      // accounts for this.
+      if (c1.datum == null || c1.datum.getCode() == "unknown") {
+        c1.datum = DatumManager.getInstance().getDatum("WGS84");
+      }
+      // Uncertainty due to the Original Coordinate Precision
+      double coordprecisionerror = c1.getLatLngPrecisionInMeters();
+
+      uncertainty = datumerror + coordprecisionerror;
+      pr = new PointRadius(c1, uncertainty);
+    } else if (loctype.equalsIgnoreCase("F") || loctype.equalsIgnoreCase("P")
         || loctype.equalsIgnoreCase("PS") || loctype.equalsIgnoreCase("FS")
         || loctype.toUpperCase().contains("ADM")) {
       // --- LocType "F" ---
       // --- LocType "P" ---
-      // --- LocType "FS" the point-radius will be or the whole feature ---
+      // --- LocType "FS" the point-radius will be for the whole feature ---
       // --- LocType "PS" the point-radius will be for the whole feature ---
       // --- LocType "ADM" ---
       // Feature/Path/Admin locality type. Example: "Bakersfield"
@@ -658,7 +688,7 @@ public class ShapeManager extends BGManager {
       // extent
       // map scale
       // coordinate precision
-      // 1) Sum all uncertainties (datum, extent, distance precision, mapscale,
+      // 1) Sum all uncertainties (datum, extent, distance precision, map scale,
       // coordinate precision) to get the overall uncertainty.
 
       // Create variables to work with temporarily
@@ -667,7 +697,7 @@ public class ShapeManager extends BGManager {
 
       // Uncertainty from unknown datum
       double datumerror = c1.getDatumError();
-      // If datum is unknown, change it now to WGS84, uncertainity already
+      // If datum is unknown, change it now to WGS84, uncertainty already
       // accounts for this.
       if (c1.datum.getCode() == "unknown")
         c1.datum = DatumManager.getInstance().getDatum("WGS84");

@@ -18,9 +18,12 @@ package edu.yale.GBI;
 
 import java.util.Hashtable;
 
+import org.biogeomancer.managers.DatumManager;
 import org.biogeomancer.managers.GeorefDictionaryManager;
+import org.biogeomancer.managers.LocSpecManager;
 import org.biogeomancer.records.Clause;
 import org.biogeomancer.records.ClauseState;
+import org.biogeomancer.records.Georef;
 import org.biogeomancer.records.LocSpec;
 import org.biogeomancer.records.LocSpecState;
 import org.biogeomancer.records.Rec;
@@ -49,10 +52,9 @@ public class BGI {
   static Hashtable<String, String> units;
 
   static Hashtable<String, String> headings;
-  
-  public String language;
 
   static Hashtable<String, String> path;
+
   static {
     units = new Hashtable<String, String>();
     units.put("M", "M");
@@ -115,6 +117,7 @@ public class BGI {
     path.put("ROUTE", "ROUTE");
     path.put("TRAIL", "TRAIL");
   }
+  public String language;
 
   public void doParsing(Rec r, String fieldName) throws BGI.BGIException {
     if (fieldName == null) {
@@ -130,18 +133,18 @@ public class BGI {
     }
     try {
       LocalityRec rc = new LocalityRec();
-      rc.localityString = verbatimLocality.trim().replaceAll("\"", "");      
+      rc.localityString = verbatimLocality.trim().replaceAll("\"", "");
 
-      //set the language of the parser
+      // set the language of the parser
       Parser.getInstance(GeorefDictionaryManager.getInstance(),
-    		  SupportedLanguages.english).process(rc);
+          SupportedLanguages.english).process(rc);
 
       for (int i = 0; i < rc.results.length; i++) {
         Clause cl = new Clause();
         r.clauses.add(cl);
         cl.locType = rc.results[i].locType;
         cl.sourceField = new String(fieldName);
-        cl.uLocality = rc.clauseSet[i]; 
+        cl.uLocality = rc.clauseSet[i];
         if (cl.locType.length() > 0 && cl.locType.equals("nn"))
           cl.state = ClauseState.CLAUSE_PARSE_ERROR;
         else
@@ -261,6 +264,56 @@ public class BGI {
       // are enumerated on the BG web site.
       return;
     }
+    // Treat incoming coordinates as a special case.
+    if (fieldName.equalsIgnoreCase("decimallatitude")
+        || fieldName.equalsIgnoreCase("decimallongitude")
+        || fieldName.equalsIgnoreCase("verbatimlatitude")
+        || fieldName.equalsIgnoreCase("verbatimlongitude")
+        || fieldName.equalsIgnoreCase("coordinateuncertaintyinmeters")
+        || fieldName.equalsIgnoreCase("geodeticdatum")) {
+      Clause c = r.hasLatLongClause();
+      if (c == null) {
+        c = new Clause();
+        LocSpec ls = new LocSpec();
+        c.locspecs.add(ls);
+        c.state = ClauseState.CLAUSE_CREATED;
+        c.locType = "ll";
+        c.interpretedInLanguage = lang;
+        r.clauses.add(c);
+      }
+      if (fieldName.equalsIgnoreCase("decimallatitude")
+          || fieldName.equalsIgnoreCase("verbatimlatitude")) {
+        if (c.uLocality == null) {
+          c.uLocality = ("lat: " + verbatimLocality).trim();
+          c.sourceField = fieldName;
+        } else {
+          c.uLocality = ("lat: " + verbatimLocality).trim() + " " + c.uLocality;
+          c.sourceField = fieldName + ", " + c.sourceField;
+        }
+        c.locspecs.get(0).vlat = verbatimLocality;
+      } else if (fieldName.equalsIgnoreCase("decimallongitude")
+          || fieldName.equalsIgnoreCase("verbatimlongitude")) {
+        c.uLocality.concat(" long: " + verbatimLocality).trim();
+        c.sourceField = fieldName + ", " + c.sourceField;
+        c.locspecs.get(0).vlng = verbatimLocality;
+      } else if (fieldName.equalsIgnoreCase("geodeticDatum")) {
+        c.uLocality.concat(" datum: " + verbatimLocality).trim();
+        c.sourceField = fieldName + ", " + c.sourceField;
+        c.locspecs.get(0).vdatum = verbatimLocality;
+      } else if (fieldName.equalsIgnoreCase("coordinateuncertaintyinmeters")) {
+        c.uLocality.concat(" uncertainty: " + verbatimLocality).trim();
+        c.locspecs.get(0).vuncertainty = verbatimLocality;
+        c.sourceField = fieldName + ", " + c.sourceField;
+      }
+      try {
+        LocSpecManager.getInstance().interpretLatLng(c.locspecs.get(0));
+      } catch (Exception e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      return;
+    }
+
     try {
       LocalityRec rc = new LocalityRec();
       rc.localityString = verbatimLocality.trim().replaceAll("\"", "");
@@ -345,6 +398,7 @@ public class BGI {
 
   public void doParsing(RecSet rs) throws BGI.BGIException {
     for (int i = 0; i < rs.recs.size(); i++) {
+      hasGeoref(rs.recs.get(i), null); // Make a LL clause if it's feasible
       doParsing(rs.recs.get(i), "highergeography", true);
       doParsing(rs.recs.get(i), "continent", true);
       doParsing(rs.recs.get(i), "waterbody", true);
@@ -360,6 +414,7 @@ public class BGI {
   public void doParsing(RecSet rs, GeorefDictionaryManager gdm,
       SupportedLanguages lang) throws BGI.BGIException {
     for (int i = 0; i < rs.recs.size(); i++) {
+      hasGeoref(rs.recs.get(i), lang); // Make a LL clause if it's feasible
       doParsing(rs.recs.get(i), "highergeography", true);
       doParsing(rs.recs.get(i), "continent", true);
       doParsing(rs.recs.get(i), "waterbody", true);
@@ -370,5 +425,107 @@ public class BGI {
       doParsing(rs.recs.get(i), "county", true);
       doParsing(rs.recs.get(i), "locality", gdm, lang);
     }
+  }
+
+  public boolean hasGeoref(Rec r, SupportedLanguages lang)
+      throws BGI.BGIException {
+    if (r.get("decimallatitude") == null)
+      return false;
+    if (r.get("decimallongitude") == null)
+      return false;
+    if (r.get("coordinateuncertaintyinmeters") == null)
+      return false;
+    if (r.get("geodeticdatum") == null)
+      return false;
+    if (DatumManager.getInstance().getDatum(r.get("geodeticdatum")).getCode()
+        .equalsIgnoreCase("unknown"))
+      return false;
+
+    double lat, lon, uncertainty;
+    if (lang == SupportedLanguages.english) {
+      if (isDouble(r.get("decimallatitude"))) {
+        lat = Double.valueOf(r.get("decimallatitude"));
+      } else
+        return false;
+      if (isDouble(r.get("decimallongitude"))) {
+        lon = Double.valueOf(r.get("decimallongitude"));
+      } else
+        return false;
+      if (isDouble(r.get("coordinateuncertaintyinmeters"))) {
+        uncertainty = Double.valueOf(r.get("coordinateuncertaintyinmeters"));
+      } else
+        return false;
+    } else { // not english, check for comma as decimal indicator
+      if (isDouble(r.get("decimallatitude"))) {
+        lat = Double.valueOf(r.get("decimallatitude"));
+      } else if (isDouble(r.get("decimallatitude").replace(',', '.'))) {
+        lat = Double.valueOf(r.get("decimallatitude").replace(',', '.'));
+      } else
+        return false;
+      if (isDouble(r.get("decimallongitude"))) {
+        lon = Double.valueOf(r.get("decimallongitude"));
+      } else if (isDouble(r.get("decimallongitude").replace(',', '.'))) {
+        lon = Double.valueOf(r.get("decimallongitude").replace(',', '.'));
+      } else
+        return false;
+      if (isDouble(r.get("coordinateuncertaintyinmeters"))) {
+        uncertainty = Double.valueOf(r.get("coordinateuncertaintyinmeters"));
+      } else if (isDouble(r.get("coordinateuncertaintyinmeters").replace(',',
+          '.'))) {
+        uncertainty = Double.valueOf(r.get("coordinateuncertaintyinmeters")
+            .replace(',', '.'));
+      } else
+        return false;
+    }
+    // There are values for the required fields
+    // Note: Check LocSpec.interpretLatLong()
+    Clause cl = new Clause();
+    LocSpec ls = new LocSpec();
+    Georef g = new Georef(lat, lon, uncertainty, DatumManager.getInstance()
+        .getDatum(r.get("geodeticdatum")));
+    g.confidence = 1;
+    g.iLocality = String.valueOf(lat) + " " + String.valueOf(lon) + " "
+        + String.valueOf(uncertainty) + " "
+        + DatumManager.getInstance().getDatum(r.get("geodeticdatum")).getCode();
+    g.uLocality = r.get("decimallatitude") + " " + r.get("decimallongitude")
+        + " " + r.get("coordinateuncertaintyinmeters") + " "
+        + r.get("geodeticdatum");
+    cl.georefs.add(g);
+    r.georefs.add(g);
+    ls.vdatum = r.get("geodeticdatum");
+    ls.vlat = r.get("decimallatitude");
+    ls.vlng = r.get("decimallongitude");
+    ls.vuncertainty = r.get("coordinateuncertaintyinmeters");
+    ls.ilat = String.valueOf(lat);
+    ls.ilng = String.valueOf(lon);
+    ls.iuncertainty = String.valueOf(uncertainty);
+    ls.idatum = DatumManager.getInstance().getDatum(r.get("geodeticdatum"))
+        .getCode();
+    cl.locspecs.add(ls);
+
+    cl.iLocality = String.valueOf(lat) + " " + String.valueOf(lon) + " "
+        + String.valueOf(uncertainty) + " "
+        + DatumManager.getInstance().getDatum(r.get("geodeticdatum")).getCode();
+    cl.interpretedInLanguage = lang;
+    cl.locType = "LL";
+    cl.sourceField = "DecimalLatitude, DecimalLongitude, CoordinateUncertaintyInMeters, GeodeticDatum";
+    cl.state = ClauseState.CLAUSE_PARSED;
+    cl.uLocality = r.get("decimallatitude") + " " + r.get("decimallongitude")
+        + " " + r.get("coordinateuncertaintyinmeters") + " "
+        + r.get("geodeticdatum");
+    r.clauses.add(cl);
+    return true;
+  }
+
+  public boolean isDouble(String s) {
+    if (s == null)
+      return false;
+    Double d = null;
+    try { // Try to make a double out of the value of s.
+      d = new Double(s);
+    } catch (Exception e) { // It isn't a valid double value.
+      return false;
+    }
+    return true;
   }
 }

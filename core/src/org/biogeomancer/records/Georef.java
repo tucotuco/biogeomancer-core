@@ -247,9 +247,20 @@ public class Georef {
   // delimiter.
   public String uLocality; // The verbatim uninterpreted part of a locality,
 
-  public Georef(double x, double y, double r) {
+  // public Georef(double x, double y, double r) {
+  // }
+
+  // Need a constructor that takes a Datum in case one is known. If it is
+  // known
+  // and not WGS84, a transformation to WGS4 has to be done.
+  public Georef(double x, double y, double r, DatumManager.Datum d) {
+    if (!d.getCode().equalsIgnoreCase("unknown")
+        && !d.getCode().equalsIgnoreCase("wgs84")) {
+      // transform to WGS84 to get new x, y, and r (transform may add
+      // uncertainty)
+    }
     startup();
-    this.pointRadius = makePointRadius(x, y, r);
+    this.pointRadius = makePointRadius(x, y, r, d);
     this.geometry = makeGeometry(this.pointRadius, this.pointRadiusNodes);
     if (this.pointRadius != null) {
       this.pointRadiusSpatialFit = 1.0;
@@ -598,6 +609,12 @@ public class Georef {
 
   public PointRadius makePointRadius(double x, double y, double r) {
     PointRadius npr = new PointRadius(x, y, r);
+    return npr;
+  }
+
+  public PointRadius makePointRadius(double x, double y, double r,
+      DatumManager.Datum d) {
+    PointRadius npr = new PointRadius(x, y, r, d);
     return npr;
   }
 

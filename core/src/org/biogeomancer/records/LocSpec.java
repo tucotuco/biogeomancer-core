@@ -126,6 +126,7 @@ public class LocSpec {
   public String itownship; // a PLSS Township parsed from the Clause
   public String itownshipdir; // the direction, north or south, of a PLSS
   // from the Clause
+  public String iuncertainty; // interpreted CoordinateUncertaintyInMeters
   public String iutme; // a Universal Tranverse Mercator Easting
   // parsed from the Clause
   public String iutmn; // a Universal Tranverse Mercator Northing
@@ -174,6 +175,8 @@ public class LocSpec {
   public String vtownshipdir; // the direction, north or south, of a PLSS
   // from the Clause (or provided in a UTM
   // attribute)
+  public String vuncertainty; // CoordinateUncertaintyInMeters provided in
+  // original record
   public String vutme; // a Universal Tranverse Mercator Easting
   // parsed from the Clause (or provided in a
   // UTM attribute)
@@ -302,6 +305,34 @@ public class LocSpec {
       // s=s.concat(""+fi.featureID);
     }
     return s;
+  }
+
+  public double getDecimalLatitude() {
+    Double dlat = null;
+    try { // Try to make a double out of the ilat value.
+      dlat = new Double(ilat);
+      if (dlat.doubleValue() < -90.0)
+        return -99;
+      if (dlat.doubleValue() > 90.0)
+        return 99;
+    } catch (Exception e) {
+      return 100;
+    }
+    return dlat;
+  }
+
+  public double getDecimalLongitude() {
+    Double dlng = null;
+    try { // Try to make a double out of the ilng value.
+      dlng = new Double(ilng);
+      if (dlng.doubleValue() < -180.0)
+        return -190;
+      if (dlng.doubleValue() > 180.0)
+        return 190;
+    } catch (Exception e) {
+      return 200;
+    }
+    return dlng;
   }
 
   public double getElevationUncertaintyInMeters() {
@@ -786,6 +817,11 @@ public class LocSpec {
     iheadingns = new String(vheadingns);
   }
 
+  // public Coordinate getCoordinate(){
+  // check validity of ilat as Latitude, ilng as Longitude and build Coordinate
+  // with idatum
+  // }
+
   /*
    * public LocSpecState interpretDatum(LocSpec locspec) { boolean problems =
    * false; if( locspec == null ) return null; if( locspec.vdatum == null ) {
@@ -893,11 +929,6 @@ public class LocSpec {
         voffsetunit, lang);
     ioffsetunit = new String(u);
   }
-
-  // public Coordinate getCoordinate(){
-  // check validity of ilat as Latitude, ilng as Longitude and build Coordinate
-  // with idatum
-  // }
 
   public void interpretOffsetEW(SupportedLanguages lang) {
     ioffsetew = ioffsetewunit = null;
@@ -1111,8 +1142,8 @@ public class LocSpec {
    * if(iheading == null && vheading != null ) iheading = new String(vheading);
    * if(iheadingew == null && vheadingew != null ) iheadingew = new
    * String(vheadingew); if(iheadingns == null && vheadingns != null )
-   * iheadingns = new String(vheadingns); if(ilat == null && vlat != null ) ilat =
-   * new String(vlat); if(ilng == null && vlng != null ) ilng = new
+   * iheadingns = new String(vheadingns); if(ilat == null && vlat != null ) ilat
+   * = new String(vlat); if(ilng == null && vlng != null ) ilng = new
    * String(vlng); if(ioffset == null && voffset != null ) ioffset = new
    * String(voffset); if(ioffsetunit == null && voffsetunit != null )
    * ioffsetunit = new String(voffsetunit); if(ioffsetew == null && voffsetew !=
@@ -1122,14 +1153,14 @@ public class LocSpec {
    * String(voffsetns); if(ioffsetnsunit == null && voffsetnsunit != null )
    * ioffsetnsunit = new String(voffsetnsunit); if(irange == null && vrange !=
    * null ) irange = new String(vrange); if(irangedir == null && vrangedir !=
-   * null ) irangedir = new String(vrangedir); if(isection == null && vsection !=
-   * null ) isection = new String(vsection); if(isubdivision == null &&
+   * null ) irangedir = new String(vrangedir); if(isection == null && vsection
+   * != null ) isection = new String(vsection); if(isubdivision == null &&
    * vsubdivision != null ) isubdivision = new String(vsubdivision);
    * if(itownship == null && vtownship != null ) itownship = new
    * String(vtownship); if(itownshipdir == null && vtownshipdir != null )
-   * itownshipdir = new String(vtownshipdir); if(iutme == null && vutme != null )
-   * iutme = new String(vutme); if(iutmn == null && vutmn != null ) iutmn = new
-   * String(vutmn); if(iutmzone == null && vutmzone != null ) iutmzone = new
+   * itownshipdir = new String(vtownshipdir); if(iutme == null && vutme != null
+   * ) iutme = new String(vutme); if(iutmn == null && vutmn != null ) iutmn =
+   * new String(vutmn); if(iutmzone == null && vutmzone != null ) iutmzone = new
    * String(vutmzone); }
    */
   public void interpretVerbatimAttributes(SupportedLanguages lang) {
@@ -1149,7 +1180,25 @@ public class LocSpec {
   }
 
   public boolean isCoordinate() {
-    return true; // for now...
+    if (ilat == null || ilat.length() == 0 || vlat == null
+        || vlat.length() == 0)
+      return false;
+    Double dlat = null, dlng = null;
+    try { // Try to make a double out of the ilat and ilng values.
+      dlat = new Double(ilat);
+      if (dlat.doubleValue() < -90.0)
+        return false;
+      if (dlat.doubleValue() > 90.0)
+        return false;
+      dlng = new Double(ilng);
+      if (dlng.doubleValue() < -180.0)
+        return false;
+      if (dlng.doubleValue() > 180.0)
+        return false;
+    } catch (Exception e) {
+      return false;
+    }
+    return true;
   }
 
   public boolean isElevation() {
@@ -1430,6 +1479,13 @@ public class LocSpec {
       } else
         s = s.concat(" --> " + ilng + "\n");
     }
+    if (vuncertainty != null && vuncertainty.trim().length() > 0) {
+      s = s.concat("vuncertainty: " + vuncertainty);
+      if (iuncertainty == null) {
+        s = s.concat(" --> {uninterpreted}\n");
+      } else
+        s = s.concat(" --> " + iuncertainty + "\n");
+    }
     if (vdatum != null && vdatum.trim().length() > 0) {
       s = s.concat("vdatum: " + vdatum);
       if (idatum == null) {
@@ -1597,6 +1653,12 @@ public class LocSpec {
       s = s.concat("<VLONGITUDE>" + vlng + "</VLONITUDE>\n");
       if (ilng != null && ilng.length() > 0) {
         s = s.concat("<ILONGITUDE>" + ilng + "</ILONGITUDE>\n");
+      }
+    }
+    if (vuncertainty != null && vuncertainty.length() > 0) {
+      s = s.concat("<VUNCERTAINTY>" + vuncertainty + "</VUNCERTAINTY>\n");
+      if (iuncertainty != null && iuncertainty.length() > 0) {
+        s = s.concat("<IUNCERTAINTY>" + iuncertainty + "</IUNCERTAINTY>\n");
       }
     }
     if (vdatum != null && vdatum.length() > 0) {
