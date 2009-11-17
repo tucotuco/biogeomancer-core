@@ -1,0 +1,12 @@
+<!-- 
+BioGeomancer.wsdd is the BioGeomancer Web Service Deployment Descriptor (WSDD).
+This file defines the web services to deploy using the AXIS web service engine. 
+-->
+ 
+<deployment xmlns="http://xml.apache.org/axis/wsdd/"
+            xmlns:java="http://xml.apache.org/axis/wsdd/providers/java">
+   <service name="BioGeomancer" provider="java:RPC">
+      <parameter name="className" value="org.biogeomancer.ws.BioGeomancer"/>
+      <parameter name="allowedMethods" value="*"/>
+  </service>
+</deployment>

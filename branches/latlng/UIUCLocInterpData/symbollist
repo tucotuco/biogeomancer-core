@@ -1,0 +1,254 @@
+Symbols:
+=========
+
+characters:
+   dictnum: 
+	0 heading
+	1 unit
+	2 path
+	3 feature (the words in feature list)
+	4 trs ('t', 'r', 's', 'township', 'sec', etc)
+	5 junction
+	6 proximity
+	7 sub
+	8 "between"
+	9 'd'
+        10 prep
+	11 conj ("and" and "&")
+   other words:
+   nlen = 1:
+	12
+   nlen >= 2:
+	13 firstuppercase 
+	14 other words (all uppercase, all lowercase)
+number:
+	15 (include e.g.: 2.1)	
+delimeter:
+	16 ,
+	17 ;
+	18 :
+	19 .
+	20 '
+	21 "
+	22 other delimeters 
+
+
+States:  
+========
+0 <addr_os>
+1 <addr_hd>
+2 <addr_ft>
+3 <addr_ed>
+4 <addr_cd>
+5 <addr_other>
+
+6 <bf_bt>
+7 <bf_ft>
+8 <bf_con>
+9 <bf_pp>
+10 <bf_ed>
+11 <bf_cd>
+12 <bf_other>
+
+13 <e_os>
+14 <e_un>
+15 <e_ed>
+16 <e_cd>
+17 <e_other>
+
+18 <f_f>
+19 <f_ed>
+20 <f_cd>
+21 <f_other>
+
+22 <fh_hd>
+23 <fh_pp>
+24 <fh_ft>
+25 <fh_ed>
+26 <fh_cd>
+27 <fh_other>
+
+28 <fo_os>
+29 <fo_un>
+30 <fo_pp>
+31 <fo_ft>
+32 <fo_ed>
+33 <fo_cd>
+34 <fo_other>
+
+35 <foo_os1>
+36 <foo_un1>
+37 <foo_hd1>
+38 <foo_os2>
+39 <foo_un2>
+40 <foo_hd2>
+41 <foo_pp>
+42 <foo_con>
+43 <foo_ed>
+44 <foo_cd>
+45 <foo_other>
+
+46 <foh_os>
+47 <foh_un>
+48 <foh_hd>
+49 <foh_pp>
+50 <foh_con>
+51 <foh_ft>
+52 <foh_ed>
+53 <foh_cd>
+54 <foh_other>
+
+55 <ffh_ft1>
+56 <ffh_ft2>
+57 <ffh_hd>
+58 <ffh_pp>
+59 <ffh_con>
+60 <ffh_ed>
+61 <ffh_cd>
+62 <ffh_other>
+
+63 <ffo_os>
+64 <ffo_un>
+65 <ffo_pp>
+66 <ffo_ft1>
+67 <ffo_ft2>
+68 <ffo_pp>
+69 <ffo_con>
+70 <ffo_ed>
+71 <ffo_cd>
+72 <ffo_other>
+
+73 <ffoh_os>
+74 <ffoh_un>
+75 <ffoh_hd>
+76 <ffoh_ft1>
+77 <ffoh_pp>
+78 <ffoh_ft2>
+79 <ffoh_con>
+80 <ffoh_ed>
+81 <ffoh_cd>
+82 <ffoh_other>
+
+83 <fs_sub>
+84 <sf_subw>
+85 <fs_pp>
+86 <fs_ft>
+87 <fs_con>
+88 <fs_ed>
+89 <fs_cd>
+90 <fs_other>
+
+91 <j_junc>
+92 <j_pp>
+93 <j_ft>
+94 <j_con>
+95 <j_pp>
+96 <j_ed>
+97 <j_cd>
+98 <j_other>
+
+99 <joh_os>
+100 <joh_un>
+101 <joh_pp>
+102 <joh_hd>
+103 <joh_pt>
+104 <joh_con>
+105 <joh_ed>
+106 <joh_cd>
+107 <joh_other>
+
+108 <jfoh_os>
+109 <jfoh_un>
+110 <jfoh_hd>
+111 <jfoh_junc>
+112 <jfoh_ft>
+113 <jfoh_ed>
+114 <jfoh_cd>
+115 <jfoh_other>
+
+116 <ll_dg1>
+117 <ll_dd1>
+118 <ll_ce1>
+119 <ll_cc1>
+120 <ll_hh1>
+121 <ll_dg2>
+122 <ll_dd2>
+123 <ll_ce2>
+124 <ll_cc2>
+125 <ll_hh2>
+126 <ll_ed>
+127 <ll_cd>
+128 <ll_other>
+
+129 <nf_ft>
+130 <nf_nr>
+131 <nf_pp>
+132 <nf_con>
+133 <nf_ed>
+134 <nf_cd>
+135 <nf_other>
+
+136 <nj_junc>
+137 <nj_pp>
+138 <nj_con>
+139 <nj_ft>
+140 <nj_ed>
+141 <nj_cd>
+142 <nj_other>
+
+143 <nn>
+
+144 <nfom_nr>
+145 <nfom_mk>
+146 <nfom_os>
+147 <nfom_ft>
+148 <nfom_ed>
+149 <nfom_cd>
+150 <nfom_other>
+
+151 <fom_mk>
+152 <fom_os>
+153 <fom_ft>
+154 <fom_ed>
+155 <fom_cd>
+156 <fom_other>
+
+157 <trs_th>
+158 <trs_tm>
+159 <trs_tt>
+160 <trs_rh>
+161 <trs_rm>
+162 <trs_rt>
+163 <trs_sh>
+164 <trs_st>
+165 <trs_ed>
+166 <trs_cd>
+167 <trs_other>
+
+168 <trss_th>
+169 <trss_tm>
+170 <trss_tt>
+171 <trss_rh>
+172 <trss_rm>
+173 <trss_rt>
+174 <trss_sh>
+175 <trss_st>
+176 <trss_ed>
+177 <trss_sub>
+178 <trss_subw>
+179 <trss_pp>
+180 <trss_con>
+181 <trss_cd>
+182 <trss_other>
+183 <trss_sec>
+184 <trss_secw>
+
+185 <utm_h>
+186 <utm_os>
+187 <utm_xos>
+188 <utm_x>
+189 <utm_yos>
+190 <utm_y>
+191 <utm_ed>
+192 <utm_cd>
+193 <utm_other>
