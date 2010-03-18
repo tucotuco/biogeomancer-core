@@ -46,7 +46,7 @@ public class BGMUtil {
         clauses[i] = nmlClause(clauses[i]);
       }
       if (clauses.length > 1)
-        clauses = recoverClauses(clauses,p);
+        clauses = recoverClauses(clauses, p);
       r.clauseSet = clauses;
       LocalityInfo[] li = new LocalityInfo[clauses.length];
       if (s.length() > 0)
@@ -110,12 +110,12 @@ public class BGMUtil {
         clauses[i] = "NULL";
         clauseCount--;
         i++;
-      } else if (isNUH(clauses[i],parser) == 0) {
+      } else if (isNUH(clauses[i], parser) == 0) {
         if (i == clauses.length - 1) {
           clauses[i - 1] += " " + clauses[i];
           clauses[i] = "NULL";
           clauseCount--;
-        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1],parser) == 0) {
+        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1], parser) == 0) {
           if (i == 0) {
             clauses[i] += " " + clauses[i + 1];
             clauses[i] += " " + clauses[i + 2];
@@ -131,7 +131,7 @@ public class BGMUtil {
             clauses[i + 1] = "NULL";
             clauseCount--;
           }
-        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1],parser) == 1) {
+        } else if (i < clauses.length - 1 && isNUH(clauses[i + 1], parser) == 1) {
           clauses[i] += " " + clauses[i + 1];
           clauses[i + 1] = "NULL";
           clauseCount--;
@@ -172,6 +172,137 @@ public class BGMUtil {
     return nmClauses;
   }
 
+  // internal use to tell p form f
+  static String callback(String fname, LocalityRec r) {
+
+    String[] ps = fname.replaceAll("\\d+", "").split("\\s+");
+
+    if (inTable(BGI.path, ps[0]) || inTable(BGI.path, ps[ps.length - 1]))
+      return "p";
+
+    if (!fname.replaceAll("\\'|\\.|-", "").matches(".*\\p{Punct}.*")
+        && !fname.matches(".*\\d.*") && fname.matches("[A-Z]+.*"))
+      return "f";
+
+    return null;
+  }
+
+  // un only retn 0, unh retn 1
+  static int containsNU(String s) {
+
+    String[] tokens = s.split("\\s+");
+
+    for (int i = 0; i < tokens.length - 1; i++)
+      if (isNum(tokens[i]))
+        if (inTable(BGI.units, tokens[i + 1])) {
+          if (tokens.length > i + 2 && inTable(BGI.headings, tokens[i + 2]))
+            return 1;
+          return 0;
+        }
+    return -1;
+  }
+
+  // retn u, n, h,(of)
+  static String[] getNU(String s) {
+    String[] NU = null;
+
+    String[] tokens = s.split("\\s+");
+
+    for (int i = 0; i < tokens.length - 1; i++)
+      if (isNum(tokens[i]))
+        if (inTable(BGI.units, tokens[i + 1])) {
+          NU = new String[4];
+          NU[0] = tokens[i];
+          NU[1] = tokens[i + 1];
+          if (tokens.length > i + 2 && inTable(BGI.headings, tokens[i + 2]))
+            NU[2] = tokens[i + 2];
+          else
+            NU[2] = "";
+          if (tokens.length > i + 3
+              && (tokens[i + 3].equalsIgnoreCase("of") || tokens[i + 3]
+                  .equalsIgnoreCase("and")))
+            NU[3] = tokens[i + 3];
+          else
+            NU[3] = "";
+          i = tokens.length;
+        }
+    return NU;
+  }
+
+  // check if a key is exits in a hashtable
+  static boolean inTable(Hashtable t, String s) {
+    return t.containsKey(s.replaceAll("\\s|\\p{Punct}", "").toUpperCase());
+  }
+
+  /**
+   * isNUH()
+   * 
+   * Return 0 if string is combined of number unit and heading(of), 1 if string
+   * contain not only nuh
+   * 
+   * @param s
+   *          input string
+   */
+  static int isNUH(String s, Parser parser) {
+    s = s.replace(",", " ");
+
+    if (s.matches(".*\\d+[a-zA-Z]+.*")) {
+      String[] token = s.split("\\s+");
+      s = "";
+      for (int k = 0; k < token.length; k++) {
+        if (token[k].trim().matches(".*\\d+[a-zA-Z]+.*")) {
+          String n = token[k].replaceAll("\\d?\\.?\\,?\\d+", "").trim();
+          if (parser.isUnit(n))
+            token[k] = token[k].replace(n, "") + " " + n;
+        }
+        s += token[k] + " ";
+      }
+      s.trim();
+    }
+
+    String[] tokens = s.split("\\s+");
+    if (tokens.length < 3)
+      return -1;
+    if (isNum(tokens[0]) && parser.isUnit(tokens[1])
+        && parser.isHeading(tokens[2])) {
+      if (parser.isHeading(tokens[tokens.length - 1]))
+        return 0;
+      else if (tokens[tokens.length - 1].equalsIgnoreCase("of"))
+        return 0;
+      return 1;
+    }
+    return -1;
+  }
+
+  // if string can convert to a number
+  static boolean isNum(String s) {
+    s = s.replaceAll(",", "").replaceAll("/", "").replace("+", "");
+    try {
+      Double.parseDouble(s);
+      return true;
+    } catch (NumberFormatException nfe) {
+      return false;
+    }
+
+  }
+
+  /**
+   * nmlClause()
+   * 
+   * Eliminates "\\s+" and converts "&" to "and".
+   * 
+   * @param s
+   *          the input string.
+   */
+  static String nmlClause(String s) {
+    String[] sa = s.trim().split(" ");
+    if (sa.length > 1 && isNum(sa[0]) && isNum(sa[1]) && sa[1].contains("/"))
+      s = s.trim().replaceFirst(" ", "+");
+    return s.replaceAll("[\\[\\(].*[\\]\\)]", " ").replace(" OF", " of")
+        .replace("OF ", "of ").replaceAll("&", " and ").trim().replaceAll(
+            "\\s+", " ").replace("air mi", "mi").replace("*", "");
+  }
+
   // special formats
   private static boolean c1(LocalityInfo lInfo, String clause, LocalityRec r) {
 
@@ -193,9 +324,9 @@ public class BGMUtil {
       if (tokens.length == 1) {
         String[] es = nClause.split("\\d+");
         lInfo.unit = es[es.length - 1];
-        lInfo.evelation = nClause.replace(lInfo.unit, "");
+        lInfo.elevation = nClause.replace(lInfo.unit, "");
       } else {
-        lInfo.evelation = tokens[0];
+        lInfo.elevation = tokens[0];
         lInfo.unit = tokens[1];
       }
       return true;
@@ -598,7 +729,7 @@ public class BGMUtil {
     // n*
     if (tokens[0].matches("vic.|vicinity|near|area|above|below|off"
         .toUpperCase())
-        || tokens[0].matches("vic.|vicinity|near|area|above|below|off") 
+        || tokens[0].matches("vic.|vicinity|near|area|above|below|off")
         || tokens[tokens.length - 1].toLowerCase()
             .matches("vic.|vicinity|area")) {
       // nj
@@ -745,138 +876,6 @@ public class BGMUtil {
 
     return li;
 
-  }
-
-  // internal use to tell p form f
-  static String callback(String fname, LocalityRec r) {
-
-    String[] ps = fname.replaceAll("\\d+", "").split("\\s+");
-
-    if (inTable(BGI.path, ps[0]) || inTable(BGI.path, ps[ps.length - 1]))
-      return "p";
-
-    if (!fname.replaceAll("\\'|\\.|-", "").matches(".*\\p{Punct}.*")
-        && !fname.matches(".*\\d.*") && fname.matches("[A-Z]+.*"))
-      return "f";
-
-    return null;
-  }
-
-  // un only retn 0, unh retn 1
-  static int containsNU(String s) {
-
-    String[] tokens = s.split("\\s+");
-
-    for (int i = 0; i < tokens.length - 1; i++)
-      if (isNum(tokens[i]))
-        if (inTable(BGI.units, tokens[i + 1])) {
-          if (tokens.length > i + 2 && inTable(BGI.headings, tokens[i + 2]))
-            return 1;
-          return 0;
-        }
-    return -1;
-  }
-
-  // retn u, n, h,(of)
-  static String[] getNU(String s) {
-    String[] NU = null;
-
-    String[] tokens = s.split("\\s+");
-
-    for (int i = 0; i < tokens.length - 1; i++)
-      if (isNum(tokens[i]))
-        if (inTable(BGI.units, tokens[i + 1])) {
-          NU = new String[4];
-          NU[0] = tokens[i];
-          NU[1] = tokens[i + 1];
-          if (tokens.length > i + 2 && inTable(BGI.headings, tokens[i + 2]))
-            NU[2] = tokens[i + 2];
-          else
-            NU[2] = "";
-          if (tokens.length > i + 3
-              && (tokens[i + 3].equalsIgnoreCase("of") || tokens[i + 3]
-                  .equalsIgnoreCase("and")))
-            NU[3] = tokens[i + 3];
-          else
-            NU[3] = "";
-          i = tokens.length;
-        }
-    return NU;
-  }
-
-  // check if a key is exits in a hashtable
-  static boolean inTable(Hashtable t, String s) {
-    return t.containsKey(s.replaceAll("\\s|\\p{Punct}", "").toUpperCase());
-  }
-
-  /**
-   * isNUH()
-   * 
-   * Return 0 if string is combined of number unit and heading(of), 1 if string
-   * contain not only nuh
-   * 
-   * @param s
-   *          input string
-   */
-  static int isNUH(String s, Parser parser) {
-    s = s.replace(",", " ");
-    
-
-    if (s.matches(".*\\d+[a-zA-Z]+.*")) {
-        String[] token = s.split("\\s+");
-        s = "";
-        for (int k = 0; k < token.length; k++) {
-          if (token[k].trim().matches(".*\\d+[a-zA-Z]+.*")) {
-            String n = token[k].replaceAll("\\d?\\.?\\,?\\d+", "").trim();
-            if (parser.isUnit(n))
-              token[k] = token[k].replace(n, "") + " " + n;
-          }
-          s += token[k] + " ";
-        }
-        s.trim();
-    }
-        
-    String[] tokens = s.split("\\s+");
-    if (tokens.length < 3)
-      return -1;
-    if (isNum(tokens[0]) && parser.isUnit(tokens[1])
-        && parser.isHeading(tokens[2])) {
-      if (parser.isHeading(tokens[tokens.length - 1]))
-        return 0;
-      else if (tokens[tokens.length - 1].equalsIgnoreCase("of"))
-        return 0;
-      return 1;
-    }
-    return -1;
-  }
-
-  // if string can convert to a number
-  static boolean isNum(String s) {
-    s = s.replaceAll(",", "").replaceAll("/", "").replace("+", "");
-    try {
-      Double.parseDouble(s);
-      return true;
-    } catch (NumberFormatException nfe) {
-      return false;
-    }
-
-  }
-
-  /**
-   * nmlClause()
-   * 
-   * Eliminates "\\s+" and converts "&" to "and".
-   * 
-   * @param s
-   *          the input string.
-   */
-  static String nmlClause(String s) {
-    String[] sa = s.trim().split(" ");
-    if (sa.length > 1 && isNum(sa[0]) && isNum(sa[1]) && sa[1].contains("/"))
-      s = s.trim().replaceFirst(" ", "+");
-    return s.replaceAll("[\\[\\(].*[\\]\\)]", " ").replace(" OF", " of")
-        .replace("OF ", "of ").replaceAll("&", " and ").trim().replaceAll(
-            "\\s+", " ").replace("air mi", "mi").replace("*", "");
   }
 
 }

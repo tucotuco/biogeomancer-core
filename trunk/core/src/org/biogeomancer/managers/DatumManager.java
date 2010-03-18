@@ -33,11 +33,13 @@ public class DatumManager extends BGManager {
     String code;
     String name;
     String ellipsecode;
+    String type;
     DatumManager.Ellipsoid ellipsoid;
 
     public Datum() {
       this.code = new String("unknown");
       this.name = new String("not recorded");
+      this.type = "WGS84";
       this.ellipsecode = new String("WE");
       this.ellipsoid = new Ellipsoid("WE", "World Geodetic System 1984",
           6378137.0, 1.0 / 298.257223563);
@@ -56,6 +58,13 @@ public class DatumManager extends BGManager {
       } else {
         this.ellipsoid = ellipsoids.get(ellipsecode);
       }
+      if (this.ellipsecode.equalsIgnoreCase("WE")) {
+        this.type = "WGS84";
+      }
+    }
+
+    public double get_esquared() {
+      return ellipsoid.flattening * (2 - ellipsoid.flattening);
     }
 
     public String getCode() {
@@ -76,6 +85,10 @@ public class DatumManager extends BGManager {
 
     public double getSemiMajorAxis() {
       return ellipsoid.semiMajorAxis;
+    }
+
+    public String getType() {
+      return this.type;
     }
 
     public String toString() {
@@ -156,26 +169,27 @@ public class DatumManager extends BGManager {
   }
 
   public HashMap<String, DatumManager.Datum> datums = new HashMap<String, DatumManager.Datum>(); // key
-                                                                                                  // =
-                                                                                                  // datumname,
-                                                                                                  // value
-                                                                                                  // =
-                                                                                                  // datum
-                                                                                                  // object
+  // =
+  // datumname,
+  // value
+  // =
+  // datum
+  // object
   public HashMap<String, DatumManager.Ellipsoid> ellipsoids = new HashMap<String, DatumManager.Ellipsoid>(); // key
-                                                                                                              // =
-                                                                                                              // ellipsoidname,
-                                                                                                              // value
-                                                                                                              // =
-                                                                                                              // ellipsoid
-                                                                                                              // object
+
+  // =
+  // ellipsoidname,
+  // value
+  // =
+  // ellipsoid
+  // object
 
   private DatumManager() { // constructor
     if (props == null) {
       log
           .error("Unable to load DatumManager.properties file. Only the default datum (WGS84) will be known to the system.");
       datums.put("WGS84", new Datum()); // always have a default datum
-                                        // definition
+      // definition
       ellipsoids.put("WE", new Ellipsoid());
       return;
     }
@@ -185,7 +199,7 @@ public class DatumManager extends BGManager {
     String ep = props.getProperty("ellipsoid.properties");
     if (ep == null) {
       ellipsoids.put("WE", new Ellipsoid()); // always have a default ellipsoid
-                                              // definition
+      // definition
       log
           .error("Could not find the ellipsoidfile property in DatumManager.properties. Only the default ellipsoid (WGS84) will be known to the system.");
     } else {
@@ -194,7 +208,7 @@ public class DatumManager extends BGManager {
     String dp = props.getProperty("datum.properties");
     if (dp == null) {
       datums.put("WGS84", new Datum()); // always have a default datum
-                                        // definition
+      // definition
       log
           .error("Could not find the datumfile property in DatumManager.properties. Only the default datum (WGS84) will be known to the system.");
     } else {
@@ -235,7 +249,7 @@ public class DatumManager extends BGManager {
     int EFLAT = 2; // ellipsoid flattening constant
     int EAXIS = 3; // ellipsoid semimajor axis constant
     for (Object code : datumcodes) { // build datum objects, add them to datums
-                                      // map
+      // map
       String dcode = new String((String) code);
       datumvals = delineator.split(datumProps.getProperty(dcode));
       String ecode = new String(datumvals[ECODE]).trim();
@@ -274,7 +288,7 @@ public class DatumManager extends BGManager {
     int EAXIS = 1; // ellipsoid semimajor axis constant
     int EFLAT = 2; // ellipsoid flattening constant
     for (Object code : ellipsoidcodes) { // build ellipsoid objects, add them
-                                          // to ellipsoids map
+      // to ellipsoids map
       String ecode = new String((String) code);
       ellipsoidvals = delineator.split(ellipProps.getProperty(ecode));
       DatumManager.Ellipsoid e = this.new Ellipsoid(ecode,

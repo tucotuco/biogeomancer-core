@@ -100,10 +100,10 @@ public class Georef {
        * GeometryFactory gf = new GeometryFactory(); WKTReader wktreader = new
        * WKTReader(gf); // Geometry bbg = wktreader.read("POLYGON ((-179 1, 179
        * 1, 179 -1, -179 -1, -179 1))"); // Georef bbgg = new Georef(bbg); //
-       * System.out.println("Georef from BB Geometry:\n"+bbgg.toString()+"\n"); // //
-       * Geometry bbg = wktreader.read("POLYGON ((180 1, 179 1, 179 -1, 180 -1,
-       * 180 1))"); // Geometry cg = wktreader.read("POLYGON ((-178 2, 178 2,
-       * 178 -2, -178 -2, -178 2))"); // Geometry diff =
+       * System.out.println("Georef from BB Geometry:\n"+bbgg.toString()+"\n");
+       * // // Geometry bbg = wktreader.read("POLYGON ((180 1, 179 1, 179 -1,
+       * 180 -1, 180 1))"); // Geometry cg = wktreader.read("POLYGON ((-178 2,
+       * 178 2, 178 -2, -178 -2, -178 2))"); // Geometry diff =
        * gf.createGeometry(bbg.difference(cg)); // Georef diffg = new
        * Georef(diff); // System.out.println("Georef Geometry
        * difference:\n"+diffg.toString()+"\n"); // Coordinate c =
@@ -709,7 +709,7 @@ public class Georef {
   }
 
   public PointRadius makePointRadius(PointRadius pr) {
-    PointRadius npr = (PointRadius) pr.clone();
+    PointRadius npr = PointRadius.from(pr);
     return npr;
   }
 

@@ -771,6 +771,8 @@ public class SpatialDescriptionManager extends BGManager {
 
   public void makeClauseGeorefs(Rec r, boolean showSource, boolean showType) {
     for (Clause clause : r.clauses) {
+      if (clause.locType.equalsIgnoreCase("UNK"))
+        continue;
       // if Clause locType is LatLong (LL)
       if (clause.locType.equalsIgnoreCase("LL")) {
         LocSpec ls = clause.locspecs.get(0);
@@ -782,36 +784,75 @@ public class SpatialDescriptionManager extends BGManager {
             Georef g = new Georef(pr);
             g.confidence = 0;
             if (g.iLocality == null || g.iLocality.trim().length() == 0) {
-              g.iLocality = clause.makeInterpretedLocality(null, null,
-                  showSource, showType);
+              g.iLocality = ls.ilat + " " + ls.ilng + " WGS84, uncertainty: "
+                  + Math.ceil(pr.extent) + "m";
+              // g.iLocality = clause.makeInterpretedLocality(null, null,
+              // showSource, showType);
             } else {
-              g.iLocality = g.iLocality.concat(clause.makeInterpretedLocality(
-                  null, null, showSource, showType));
+              g.iLocality = g.iLocality + ", " + ls.ilat + " " + ls.ilng
+                  + " WGS84, uncertainty: " + Math.ceil(pr.extent) + "m";
+              // g.iLocality =
+              // g.iLocality.concat(clause.makeInterpretedLocality(
+              // null, null, showSource, showType));
             }
             g.uLocality = clause.uLocality;
             clause.state = ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
             clause.georefs.add(g);
           }
         }
-      } else { // first locSpec in the Clause has a featureinfo list
-        // for every featureinfo in LocSpec1
-        for (int i = 0; i < clause.locspecs.get(0).featureinfos.size(); i++) {
-          FeatureInfo featureinfo1 = clause.locspecs.get(0).featureinfos.get(i);
-          FeatureInfo featureinfo2 = null;
-          PointRadius pr = null;
-          // If there are features for the second locspec
-          if (clause.locspecs.size() > 1
-              && clause.locspecs.get(1).featureinfos.size() > 0) {
-            for (int j = 0; j < clause.locspecs.get(1).featureinfos.size(); j++) {
-              // for every featureinfo in LocSpec2
-              featureinfo2 = clause.locspecs.get(1).featureinfos.get(j);
-              pr = sm.getPointRadius(clause.locType, clause.locspecs.get(0),
-                  featureinfo1, featureinfo2);
+      } else {
+        // first locSpec in the Clause has a featureinfo list
+        if (clause.locspecs.get(0).featureinfos != null) {
+
+          // for every featureinfo in LocSpec1
+          for (int i = 0; i < clause.locspecs.get(0).featureinfos.size(); i++) {
+            FeatureInfo featureinfo1 = clause.locspecs.get(0).featureinfos
+                .get(i);
+            FeatureInfo featureinfo2 = null;
+            PointRadius pr = null;
+            // If there are features for the second locspec
+            if (clause.locspecs.size() > 1
+                && clause.locspecs.get(1).featureinfos.size() > 0) {
+              for (int j = 0; j < clause.locspecs.get(1).featureinfos.size(); j++) {
+                // for every featureinfo in LocSpec2
+                featureinfo2 = clause.locspecs.get(1).featureinfos.get(j);
+                pr = sm.getPointRadius(clause.locType, clause.locspecs.get(0),
+                    featureinfo1, featureinfo2);
+                // Point-radius was successfully created, now add it to the
+                // clause's georefs list.
+                if (pr != null) {
+                  Georef g = new Georef(pr);
+                  g.confidence = 0;
+                  if (g.iLocality == null || g.iLocality.trim().length() == 0) {
+                    g.iLocality = clause.makeInterpretedLocality(featureinfo1,
+                        featureinfo2, showSource, showType);
+                  } else {
+                    g.iLocality = g.iLocality.concat(clause
+                        .makeInterpretedLocality(featureinfo1, featureinfo2,
+                            showSource, showType));
+                  }
+                  g.uLocality = clause.uLocality;
+                  g.addFeatureInfo(featureinfo1);
+                  g.addFeatureInfo(featureinfo2);
+                  clause.state = ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
+                  clause.georefs.add(g);
+                }
+              }
+            } else { // there is no second locspec
+              try {
+                pr = sm.getPointRadius(clause.locType, clause.locspecs.get(0),
+                    featureinfo1, featureinfo2);
+              } catch (Exception e) {
+                e.printStackTrace();
+              }
               // Point-radius was successfully created, now add it to the
-              // clause's georefs list.
+              // clause's
+              // georefs list.
+
               if (pr != null) {
                 Georef g = new Georef(pr);
                 g.confidence = 0;
+                g.uLocality = clause.uLocality;
                 if (g.iLocality == null || g.iLocality.trim().length() == 0) {
                   g.iLocality = clause.makeInterpretedLocality(featureinfo1,
                       featureinfo2, showSource, showType);
@@ -822,38 +863,10 @@ public class SpatialDescriptionManager extends BGManager {
                 }
                 g.uLocality = clause.uLocality;
                 g.addFeatureInfo(featureinfo1);
-                g.addFeatureInfo(featureinfo2);
+                g.state = GeorefState.GEOREF_COMPLETED;
                 clause.state = ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
                 clause.georefs.add(g);
               }
-            }
-          } else { // there is no second locspec
-            try {
-              pr = sm.getPointRadius(clause.locType, clause.locspecs.get(0),
-                  featureinfo1, featureinfo2);
-            } catch (Exception e) {
-              e.printStackTrace();
-            }
-            // Point-radius was successfully created, now add it to the clause's
-            // georefs list.
-
-            if (pr != null) {
-              Georef g = new Georef(pr);
-              g.confidence = 0;
-              g.uLocality = clause.uLocality;
-              if (g.iLocality == null || g.iLocality.trim().length() == 0) {
-                g.iLocality = clause.makeInterpretedLocality(featureinfo1,
-                    featureinfo2, showSource, showType);
-              } else {
-                g.iLocality = g.iLocality.concat(clause
-                    .makeInterpretedLocality(featureinfo1, featureinfo2,
-                        showSource, showType));
-              }
-              g.uLocality = clause.uLocality;
-              g.addFeatureInfo(featureinfo1);
-              g.state = GeorefState.GEOREF_COMPLETED;
-              clause.state = ClauseState.CLAUSE_POINT_RADIUS_COMPLETED;
-              clause.georefs.add(g);
             }
           }
         }

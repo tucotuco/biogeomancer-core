@@ -178,9 +178,9 @@ public class BGI {
         // This results in elevation units even when there is no elevation.
         // It's unclear what happens when the clause is an elevation. JRW
         // 2006-08-27
-        if (rc.results[i].evelation != null
-            && rc.results[i].evelation.length() > 0) {
-          ls.velevation = rc.results[i].evelation;
+        if (rc.results[i].elevation != null
+            && rc.results[i].elevation.length() > 0) {
+          ls.velevation = rc.results[i].elevation;
           if (rc.results[i].unit != null && rc.results[i].unit.length() > 0) {
             ls.velevationunits = rc.results[i].unit;
           }
@@ -293,20 +293,39 @@ public class BGI {
         c.locspecs.get(0).vlat = verbatimLocality;
       } else if (fieldName.equalsIgnoreCase("decimallongitude")
           || fieldName.equalsIgnoreCase("verbatimlongitude")) {
-        c.uLocality.concat(" long: " + verbatimLocality).trim();
-        c.sourceField = fieldName + ", " + c.sourceField;
-        c.locspecs.get(0).vlng = verbatimLocality;
+        if (c.uLocality == null) {
+          c.uLocality = ("long: " + verbatimLocality).trim();
+          c.sourceField = fieldName;
+        } else {
+          c.uLocality = c.uLocality + " long: " + verbatimLocality;
+          c.uLocality.trim();
+          c.sourceField = c.sourceField + ", " + fieldName;
+          c.locspecs.get(0).vlng = verbatimLocality;
+        }
       } else if (fieldName.equalsIgnoreCase("geodeticDatum")) {
-        c.uLocality.concat(" datum: " + verbatimLocality).trim();
-        c.sourceField = fieldName + ", " + c.sourceField;
-        c.locspecs.get(0).vdatum = verbatimLocality;
+        if (c.uLocality == null) {
+          c.uLocality = ("datum: " + verbatimLocality).trim();
+          c.sourceField = fieldName;
+        } else {
+          c.uLocality = c.uLocality + " datum: " + verbatimLocality;
+          c.uLocality.trim();
+          c.sourceField = c.sourceField + ", " + fieldName;
+          c.locspecs.get(0).vdatum = verbatimLocality;
+        }
       } else if (fieldName.equalsIgnoreCase("coordinateuncertaintyinmeters")) {
-        c.uLocality.concat(" uncertainty: " + verbatimLocality).trim();
-        c.locspecs.get(0).vuncertainty = verbatimLocality;
-        c.sourceField = fieldName + ", " + c.sourceField;
+        if (c.uLocality == null) {
+          c.uLocality = ("datum: " + verbatimLocality).trim();
+          c.sourceField = fieldName;
+        } else {
+          c.uLocality = c.uLocality + " uncertainty: " + verbatimLocality;
+          c.uLocality.trim();
+          c.sourceField = c.sourceField + ", " + fieldName;
+          c.locspecs.get(0).vuncertainty = verbatimLocality;
+        }
       }
       try {
         LocSpecManager.getInstance().interpretLatLng(c.locspecs.get(0));
+        LocSpecManager.getInstance().interpretDatum(c.locspecs.get(0));
       } catch (Exception e) {
         // TODO Auto-generated catch block
         e.printStackTrace();
@@ -357,15 +376,15 @@ public class BGI {
         // This results in elevation units even when there is no elevation.
         // It's unclear what happens when the clause is an elevation. JRW
         // 2006-08-27
-        if (rc.results[i].evelation != null
-            && rc.results[i].evelation.length() > 0) {
-          ls.velevation = rc.results[i].evelation;
+        if (rc.results[i].elevation != null
+            && rc.results[i].elevation.length() > 0) {
+          ls.velevation = rc.results[i].elevation;
           if (rc.results[i].unit != null && rc.results[i].unit.length() > 0) {
             ls.velevationunits = rc.results[i].unit;
           }
         }
         // JRW commented out the following line in favor of the code block above
-        // ls.velevation = rc.results[i].evelation + rc.results[i].unit;
+        // ls.velevation = rc.results[i].elevation + rc.results[i].unit;
         ls.vlat = rc.results[i].lat;
         ls.vlng = rc.results[i].lng;
         ls.vutmzone = rc.results[i].utmz;

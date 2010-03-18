@@ -37,7 +37,7 @@ public class LocalityInfo {
   public String headingNS = "";
   public String headingEW = "";
   // String coodinates="";
-  public String evelation = "";
+  public String elevation = "";
   public String unit = "";
   public String unit2 = "";
   public String lat = "";
