@@ -59,9 +59,9 @@ final class StateFinish extends ParsingState {
       if (pd.words.length == 1) {
         String[] es = pd.clause.split("\\d+");
         li.unit = es[es.length - 1];
-        li.evelation = pd.clause.replace(li.unit + " ", "");
+        li.elevation = pd.clause.replace(li.unit + " ", "");
       } else {
-        li.evelation = pd.words[0];
+        li.elevation = pd.words[0];
         li.unit = pd.words[1];
       }
     } else if (localityType == "LL") {

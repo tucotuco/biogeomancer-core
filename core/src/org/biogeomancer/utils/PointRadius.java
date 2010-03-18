@@ -19,6 +19,11 @@ package org.biogeomancer.utils;
 import org.biogeomancer.managers.DatumManager;
 
 public class PointRadius extends Coordinate { // point radius inner class
+  public static PointRadius from(PointRadius other) {
+    return new PointRadius(other.x, other.y, other.datum, other.precision,
+        other.extent);
+  }
+
   public double extent; // maximum uncertainty radius
 
   public PointRadius(Coordinate c) {

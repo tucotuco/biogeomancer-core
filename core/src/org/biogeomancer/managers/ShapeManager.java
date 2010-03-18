@@ -170,7 +170,7 @@ public class ShapeManager extends BGManager {
       double datumerror = c1.getDatumError();
       // If datum is unknown, change it now to WGS84, uncertainty already
       // accounts for this.
-      if (c1.datum == null || c1.datum.getCode() == "unknown") {
+      if (c1.datum == null || c1.datum.getCode().equalsIgnoreCase("unknown")) {
         c1.datum = DatumManager.getInstance().getDatum("WGS84");
       }
       // Uncertainty due to the Original Coordinate Precision

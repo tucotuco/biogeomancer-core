@@ -104,9 +104,9 @@ public class Clause
     if (locType.equalsIgnoreCase("LL")) {
       iLocality = new String(locspecs.get(0).ilat + " " + locspecs.get(0).ilng);
       if (locspecs.get(0).iuncertainty != null)
-        iLocality.concat(" " + locspecs.get(0).iuncertainty + " m");
+        iLocality = iLocality + " " + locspecs.get(0).iuncertainty + " m";
       if (locspecs.get(0).idatum != null)
-        iLocality.concat(" " + locspecs.get(0).idatum + " m");
+        iLocality = iLocality + " " + locspecs.get(0).idatum + " m";
       return iLocality;
     }
     if (locType.equalsIgnoreCase("NN")) {

@@ -19,6 +19,7 @@ package org.biogeomancer.utils;
 import java.awt.geom.Point2D;
 
 import org.biogeomancer.managers.DatumManager;
+import org.biogeomancer.managers.DatumManager.Datum;
 
 public class Coordinate extends Point2D.Double {
   public static void main(String[] argv) {
@@ -189,6 +190,49 @@ public class Coordinate extends Point2D.Double {
     return lngcoorduncertainty;
   }
 
+  public Coordinate clone() {
+    Coordinate c = new Coordinate(this.x, this.y, this.datum, this.precision);
+    return c;
+  }
+
+  public Coordinate geodeticToGeocentric() {
+    // gi->Geocent_a = a;
+    // gi->Geocent_b = b;
+    // gi->Geocent_a2 = a * a;
+    // gi->Geocent_b2 = b * b;
+    // gi->Geocent_e2 = (gi->Geocent_a2 - gi->Geocent_b2) / gi->Geocent_a2;
+    // gi->Geocent_ep2 = (gi->Geocent_a2 - gi->Geocent_b2) / gi->Geocent_b2;
+
+    /*
+     * * Don't blow up if Latitude is just a little out of the value* range as
+     * it may just be a rounding issue. Also removed longitude* test, it should
+     * be wrapped by cos() and sin(). NFW for PROJ.4, Sep/2001.
+     */
+    // if( Latitude < -PI_OVER_2 && Latitude > -1.001 * PI_OVER_2 )
+    // Latitude = -PI_OVER_2;
+    // else if( Latitude > PI_OVER_2 && Latitude < 1.001 * PI_OVER_2 )
+    // Latitude = PI_OVER_2;
+    // else if ((Latitude < -PI_OVER_2) || (Latitude > PI_OVER_2))
+    // { /* Latitude out of range */
+    // Error_Code |= GEOCENT_LAT_ERROR;
+    // }
+
+    // if (!Error_Code)
+    // { /* no errors */
+    // if (Longitude > PI)
+    // Longitude -= (2*PI);
+    // Sin_Lat = sin(Latitude);
+    // Cos_Lat = cos(Latitude);
+    // Sin2_Lat = Sin_Lat * Sin_Lat;
+
+    // Rn = gi->Geocent_a / (sqrt(1.0e0 - gi->Geocent_e2 * Sin2_Lat));
+
+    // *X = (Rn + Height) * Cos_Lat * cos(Longitude);
+    // *Y = (Rn + Height) * Cos_Lat * sin(Longitude);
+    // *Z = ((Rn * (1 - gi->Geocent_e2)) + Height) * Sin_Lat;
+    return new Coordinate(0, 0);
+  }
+
   public DatumManager.Datum getDatum() {
     return this.datum;
   }
@@ -210,7 +254,7 @@ public class Coordinate extends Point2D.Double {
      * of error. The worst case scenario 3.552 km would be extremely rare. The
      * mean difference between any datum and WGS84 is 0.653 km.
      */
-    if (datum == null) {
+    if (datum == null || datum.getCode().equalsIgnoreCase("unknown")) {
       if (this.y >= 13.79 && this.y <= 84.69 && this.x >= -179.48
           && this.x <= -51.48) { // Coordinates are in North American region
         error = 320;
@@ -269,7 +313,7 @@ public class Coordinate extends Point2D.Double {
     // ellipsoid
     double f = this.datum.getFlattening(); // f = flattening of the datum
     // ellipsoid
-    double e_squared = 2.0 * f - Math.pow(f, 2.0); // e^2 = 2f - f^2
+    double e_squared = this.datum.get_esquared(); // e^2 = 2f - f^2
 
     // M - radius of curvature in the prime meridian, (tangent to ellipsoid at
     // latitude)
@@ -329,7 +373,7 @@ public class Coordinate extends Point2D.Double {
     // ellipsoid
     double f = this.datum.getFlattening(); // f = flattening of the datum
     // ellipsoid
-    double e_squared = 2.0 * f - Math.pow(f, 2.0); // e^2 = 2f - f^2
+    double e_squared = this.datum.get_esquared(); // e^2 = 2f - f^2
 
     // N - radius of curvature in the prime vertical, (tangent to ellipsoid at
     // latitude)
@@ -363,30 +407,40 @@ public class Coordinate extends Point2D.Double {
     return true;
   }
 
+  // TODO:
   public String toString() {
     return "lat: " + y + " lng: " + x + " datum: " + datum.getName()
         + " precision: " + precision;
   }
 
-  // TODO:
   public void toWGS84() { // transform this coordinate to WGS84
-    if (this.datum.getName().equalsIgnoreCase("unknown")
-        || this.datum.getName().equalsIgnoreCase("not recorded")) {
-      // if the datum is unknown, do not make a transformation
-      return;
-    } else {
-      // *** Use geotools to do a datum transformation
-      /*
-       * Ellipsoid e =
-       * Ellipsoid.createFlattenedSphere(this.datum.getEllipsoidCode
-       * (),this.datum.getSemiMajorAxis(), 1.0/this.datum.getFlattening(),
-       * Unit.METRE); GeodeticDatum gd = new GeodeticDatum(); GeographicCRS gcrs
-       * = new GeographicCRS(this.datum.getName(), gd ); DirectPosition2D dp2d =
-       * new DirectPosition2D(this.x, this.y); Geometry g = new Geometry(dp2d);
-       * GeometryFactory gf = new GeometryFactory((CoordinateSequenceFactory)
-       * PrecisionModel.FIXED); gf.createPoint(Coordinate);
-       */
+    if (this.datum == null || this.datum.getCode().equalsIgnoreCase("unknown")) {
+      // if the datum is unknown, set it to WGS84. Note: there will be
+      // uncertainty ramifications for this in a point-radius.
+      this.datum = DatumManager.getInstance().getDatum("WGS84");
     }
+    if (this.datum.getCode().equalsIgnoreCase("WGS84"))
+      return;
+    // Use PROJ.4 to do a datum transformation
+    // http://trac.osgeo.org/proj/browser/trunk/proj/src
+    // http://pyproj.googlecode.com/svn/trunk/src/geocent.c
+    // http://trac.osgeo.org/proj/browser/trunk/proj/src/pj_transform.c
+
+    Datum wgs84 = DatumManager.getInstance().getDatum("WGS84");
+    // get parameters for this.datum
+    double source_axis = this.datum.getSemiMajorAxis(); // a
+    double source_f = this.datum.getFlattening(); // f
+    double source_e2 = this.datum.get_esquared(); // e^2
+    double dest_axis = wgs84.getSemiMajorAxis();
+    double dest_f = wgs84.getFlattening();
+    double dest_e2 = wgs84.get_esquared();
+
+    // If this.datum requires a grid shift, then apply the grid shift to the
+    // geodetic coordinates.
+    if (this.datum.getType().equalsIgnoreCase("GRIDSHIFT")) {
+
+    }
+
   }
 
   public void TruncateCoordinates() {
