@@ -15,15 +15,15 @@
  */
 package edu.berkeley.biogeomancer.webservice;
 
+import org.apache.log4j.Logger;
+import org.biogeomancer.records.Rec;
+
 import java.io.PrintWriter;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import org.biogeomancer.records.Rec;
 
 import edu.berkeley.biogeomancer.webservice.util.BgUtil;
 
@@ -41,6 +41,7 @@ public class SingleGeoreferenceWebService extends HttpServlet {
    * Georeferences a single locality using the BioGeomancer Core API. Returns
    * all generated georeferences as XML.
    */
+  @Override
   public void doGet(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, java.io.IOException {
     response.setContentType("text/xml");
@@ -48,8 +49,7 @@ public class SingleGeoreferenceWebService extends HttpServlet {
 
     // Build the XML header.
     out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
-    out
-        .println("<biogeomancer xmlns:dwcore=\"http://rs.tdwg.org/dwc/dwcore/\" xmlns:dwgeo=\"http://rs.tdwg.org/dwc/geospatial/\">");
+    out.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/dwc/terms/\">");
 
     // The fully spelled out parameter names
     String id = request.getParameter("id");
@@ -69,62 +69,90 @@ public class SingleGeoreferenceWebService extends HttpServlet {
     boolean showheader = false;
 
     // Alternate parameter names
-    if (higherGeography == null)
+    if (higherGeography == null) {
       higherGeography = request.getParameter("hg");
-    if (higherGeography == null)
+    }
+    if (higherGeography == null) {
       higherGeography = request.getParameter("g");
-    if (continent == null)
+    }
+    if (continent == null) {
       continent = request.getParameter("cont");
-    if (waterBody == null)
+    }
+    if (waterBody == null) {
       waterBody = request.getParameter("wb");
-    if (waterBody == null)
+    }
+    if (waterBody == null) {
       waterBody = request.getParameter("w");
-    if (islandGroup == null)
+    }
+    if (islandGroup == null) {
       islandGroup = request.getParameter("ig");
-    if (island == null)
+    }
+    if (island == null) {
       island = request.getParameter("is");
-    if (country == null)
+    }
+    if (country == null) {
       country = request.getParameter("cy");
-    if (country == null)
+    }
+    if (country == null) {
       country = request.getParameter("gadm0");
-    if (stateProvince == null)
+    }
+    if (stateProvince == null) {
       stateProvince = request.getParameter("sp");
-    if (stateProvince == null)
+    }
+    if (stateProvince == null) {
       stateProvince = request.getParameter("s");
-    if (stateProvince == null)
+    }
+    if (stateProvince == null) {
       stateProvince = request.getParameter("gadm1");
-    if (county == null)
+    }
+    if (county == null) {
       county = request.getParameter("co");
-    if (county == null)
+    }
+    if (county == null) {
       county = request.getParameter("gadm2");
-    if (locality == null)
+    }
+    if (locality == null) {
       locality = request.getParameter("loc");
-    if (locality == null)
+    }
+    if (locality == null) {
       locality = request.getParameter("l");
-    if (verbatimLatitude == null)
+    }
+    if (verbatimLatitude == null) {
       verbatimLatitude = request.getParameter("latitude");
-    if (verbatimLatitude == null)
+    }
+    if (verbatimLatitude == null) {
       verbatimLatitude = request.getParameter("lat");
-    if (verbatimLatitude == null)
+    }
+    if (verbatimLatitude == null) {
       verbatimLatitude = request.getParameter("vlat");
-    if (verbatimLongitude == null)
+    }
+    if (verbatimLongitude == null) {
       verbatimLongitude = request.getParameter("longitude");
-    if (verbatimLongitude == null)
+    }
+    if (verbatimLongitude == null) {
       verbatimLongitude = request.getParameter("long");
-    if (verbatimLongitude == null)
+    }
+    if (verbatimLongitude == null) {
       verbatimLongitude = request.getParameter("lng");
-    if (verbatimLongitude == null)
+    }
+    if (verbatimLongitude == null) {
       verbatimLongitude = request.getParameter("vlong");
-    if (verbatimLongitude == null)
+    }
+    if (verbatimLongitude == null) {
       verbatimLongitude = request.getParameter("vlng");
-    if (interpreter == null)
+    }
+    if (interpreter == null) {
       interpreter = request.getParameter("int");
-    if (interpreter == null)
+    }
+    if (interpreter == null) {
       interpreter = request.getParameter("i");
-    if (interpreter == null)
+    }
+    if (interpreter == null) {
       interpreter = "yale";
-    if (headerFlag != null && headerFlag.equalsIgnoreCase("true"))
+    }
+    if (headerFlag != null && headerFlag.equalsIgnoreCase("true")) {
       showheader = true;
+    }
 
     Rec r = new Rec();
     if (r != null) {

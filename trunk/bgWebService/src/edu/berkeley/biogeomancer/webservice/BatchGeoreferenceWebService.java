@@ -15,6 +15,14 @@
  */
 package edu.berkeley.biogeomancer.webservice;
 
+import org.apache.log4j.Logger;
+import org.biogeomancer.records.Rec;
+import org.dom4j.Document;
+import org.dom4j.DocumentException;
+import org.dom4j.Element;
+import org.dom4j.Node;
+import org.dom4j.io.SAXReader;
+
 import java.io.BufferedReader;
 import java.io.PrintWriter;
 import java.io.Reader;
@@ -24,14 +32,6 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import org.apache.log4j.Logger;
-import org.biogeomancer.records.Rec;
-import org.dom4j.Document;
-import org.dom4j.DocumentException;
-import org.dom4j.Element;
-import org.dom4j.Node;
-import org.dom4j.io.SAXReader;
 
 import edu.berkeley.biogeomancer.webservice.util.BgUtil;
 import edu.berkeley.biogeomancer.webservice.util.CustomNamespaceDocument;
@@ -46,6 +46,7 @@ public class BatchGeoreferenceWebService extends HttpServlet {
 
   Logger log = Logger.getLogger(BatchGeoreferenceWebService.class);
 
+  @Override
   public void doPost(HttpServletRequest request, HttpServletResponse response)
       throws ServletException, java.io.IOException {
     System.out.println("doPost...");
@@ -54,9 +55,8 @@ public class BatchGeoreferenceWebService extends HttpServlet {
     BufferedReader reader = request.getReader();
     PrintWriter out = response.getWriter();
 
-    out.println("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-    out
-        .println("<biogeomancer xmlns:dwcore=\"http://rs.tdwg.org/dwc/dwcore\" xmlns:dwgeo=\"http://rs.tdwg.org/dwc/geospatial\">");
+    out.println("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
+    out.println("<biogeomancer xmlns:dwc=\"http://rs.tdwg.org/dwc/terms/\">");
 
     parseXml(reader, out);
     out.println("</biogeomancer>");
@@ -85,8 +85,9 @@ public class BatchGeoreferenceWebService extends HttpServlet {
       String interpreter = requestElement.attributeValue("interpreter");
       String header = requestElement.attributeValue("header");
       boolean showheader = false;
-      if (header != null && header.equalsIgnoreCase("true"))
+      if (header != null && header.equalsIgnoreCase("true")) {
         showheader = true;
+      }
 
       out.println("<records>");
       for (Node recordNode : recordNodes) {
@@ -102,44 +103,50 @@ public class BatchGeoreferenceWebService extends HttpServlet {
         verbatimLatitude = null;
         verbatimLongitude = null;
         out.println("<record>");
-        Node higherGeogNode = recordNode
-            .selectSingleNode("dwcore:HigherGeography");
-        if (higherGeogNode != null)
+        Node higherGeogNode = recordNode.selectSingleNode("dwc:higherGeography");
+        if (higherGeogNode != null) {
           higherGeography = higherGeogNode.getStringValue();
-        Node continentNode = recordNode.selectSingleNode("dwcore:Continent");
-        if (continentNode != null)
+        }
+        Node continentNode = recordNode.selectSingleNode("dwc:continent");
+        if (continentNode != null) {
           continent = continentNode.getStringValue();
-        Node waterBodyNode = recordNode.selectSingleNode("dwcore:WaterBody");
-        if (waterBodyNode != null)
+        }
+        Node waterBodyNode = recordNode.selectSingleNode("dwc:waterBody");
+        if (waterBodyNode != null) {
           waterBody = waterBodyNode.getStringValue();
-        Node islandGroupNode = recordNode
-            .selectSingleNode("dwcore:IslandGroup");
-        if (islandGroupNode != null)
+        }
+        Node islandGroupNode = recordNode.selectSingleNode("dwc:islandGroup");
+        if (islandGroupNode != null) {
           islandGroup = islandGroupNode.getStringValue();
-        Node islandNode = recordNode.selectSingleNode("dwcore:Island");
-        if (islandNode != null)
+        }
+        Node islandNode = recordNode.selectSingleNode("dwc:island");
+        if (islandNode != null) {
           island = islandNode.getStringValue();
-        Node countryNode = recordNode.selectSingleNode("dwcore:Country");
-        if (countryNode != null)
+        }
+        Node countryNode = recordNode.selectSingleNode("dwc:country");
+        if (countryNode != null) {
           country = countryNode.getStringValue();
-        Node stateProvinceNode = recordNode
-            .selectSingleNode("dwcore:StateProvince");
-        if (stateProvinceNode != null)
+        }
+        Node stateProvinceNode = recordNode.selectSingleNode("dwc:stateProvince");
+        if (stateProvinceNode != null) {
           stateProvince = stateProvinceNode.getStringValue();
-        Node countyNode = recordNode.selectSingleNode("dwcore:County");
-        if (countyNode != null)
+        }
+        Node countyNode = recordNode.selectSingleNode("dwc:county");
+        if (countyNode != null) {
           county = countyNode.getStringValue();
-        Node localityNode = recordNode.selectSingleNode("dwcore:Locality");
-        if (localityNode != null)
+        }
+        Node localityNode = recordNode.selectSingleNode("dwc:locality");
+        if (localityNode != null) {
           locality = localityNode.getStringValue();
-        Node verbatimLatitudeNode = recordNode
-            .selectSingleNode("dwgeo:VerbatimLatitude");
-        if (verbatimLatitudeNode != null)
+        }
+        Node verbatimLatitudeNode = recordNode.selectSingleNode("dwc:verbatimLatitude");
+        if (verbatimLatitudeNode != null) {
           verbatimLatitude = verbatimLatitudeNode.getStringValue();
-        Node verbatimLongitudeNode = recordNode
-            .selectSingleNode("dwgeo:VerbatimLongitude");
-        if (verbatimLongitudeNode != null)
+        }
+        Node verbatimLongitudeNode = recordNode.selectSingleNode("dwc:verbatimLongitude");
+        if (verbatimLongitudeNode != null) {
           verbatimLongitude = verbatimLongitudeNode.getStringValue();
+        }
 
         Rec r = new Rec();
         if (r != null) {
@@ -153,7 +160,7 @@ public class BatchGeoreferenceWebService extends HttpServlet {
             r.put("waterbody", waterBody);
           }
           if (islandGroup != null) {
-            r.put("islandGroup", islandGroup);
+            r.put("islandgroup", islandGroup);
           }
           if (island != null) {
             r.put("island", island);
