@@ -29,20 +29,20 @@ Example:
 `http://bg.berkeley.edu/ws/single?locality=Stuttgart&country=Germany&interpreter=yale&header=true`
 
 == Web Service Output ==
-The web service output format will be XML (UTF-8) with `dwcore` as the namespace for Darwin Core elementsand "dwgeo" as the namespace for Geospatial Extension elements. All URL request parameters will appear in the output if the header parameter is set to 'true'. For example:
+The web service output format will be XML (UTF-8) with `dwc` as the namespace for Darwin Core elements. All URL request parameters will appear in the output if the header parameter is set to 'true'. For example:
 
 {{{  
 <?xml version="1.0" encoding="utf-8"?>
-<biogeomancer xmlns:dwcore="http://rs.tdwg.org/dwc/dwcore/ xmlns:dwgeo="http://rs.tdwg.org/dwc/geospatial/">
+<biogeomancer xmlns:dwc="http://rs.tdwg.org/dwc/terms/">
   <interpreter>yale</interpreter>
-  <dwcore:Country>Germany</dwcore:Country>
-  <dwcore:Locality>Stuttgart</dwcore:Locality>
+  <dwc:country>Germany</dwc:country>
+  <dwc:locality>Stuttgart</dwc:locality>
   <georeference>
     <interpretedLocality>Germany (gadm2:58:countries); Stuttgart (GADM:16422:countries, 2nd order divisions)</interpretedLocality>
-    <dwgeo:DecimalLatitude>49.1430493</dwgeo:DecimalLatitude>
-    <dwgeo:DecimalLongitude>9.6254345</dwgeo:DecimalLongitude>
-    <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-    <dwgeo:CoordinateUncertaintyInMeters>93264.0</dwgeo:CoordinateUncertaintyInMeters>
+    <dwc:decimalLatitude>49.1430493</dwc:decimalLatitude>
+    <dwc:decimalLongitude>9.6254345</dwc:decimalLongitude>
+    <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+    <dwc:coordinateUncertaintyInMeters>93264.0</dwc:coordinateUncertaintyInMeters>
   </georeference>
 </biogeomancer>
 }}}  
