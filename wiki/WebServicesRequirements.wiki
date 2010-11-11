@@ -9,8 +9,8 @@ A georeferencing web service that accepts a DwC record and returns that record a
 == Web Service Interface ==
 The web service interface accepts HTTP GET requests using the following case insensitive URL parameters:
 
-|| *Parameter*  || *Description* ||
-|| highergeography, hg || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/HigherGeography HigherGeography] concept ||
+|| *Parameter*  || *Reference* ||
+|| highergeography, hg || [http://rs.tdwg.org/dwc/terms/index.htm#higherGeography ||
 || continent, cont || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Continent Continent] concept  ||
 || waterbody, wb, w || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/WaterBody WaterBody] concept  ||
 || islandgroup, ig || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/IslandGroup IslandGroup] concept||
