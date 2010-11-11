@@ -55,20 +55,20 @@ Example batch request XML:
 
 {{{
 <?xml version=\"1.0\" encoding=\"utf-8\"?>"
-<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwcore="http://rs.tdwg.org/dwc/dwcore" xmlns:dwgeo="http://rs.tdwg.org/dwc/dwgeo">
+<biogeomancer xmlns="http://bg.berkeley.edu" xmlns:dwc="http://rs.tdwg.org/dwc/terms">
 <request type="batch" interpreter="yale" header="true">
   <record>
-   <dwcore:id>1</dwcore:id>
-   <dwcore:Locality>Berkeley</dwcore:Locality>
-   <dwcore:StateProvince>California</dwcore:StateProvince>
+   <dwc:localityId>1</dwc:localityId>
+   <dwc:locality>Berkeley</dwc:locality>
+   <dwc:stateProvince>California</dwc:stateProvince>
   </record>
   <record>
-   <dwcore:Locality>Stuttgart</dwcore:Locality>
-   <dwcore:Country>Germany</dwcore:Country>
+   <dwc:locality>Stuttgart</dwc:locality>
+   <dwc:country>Germany</dwc:country>
   </record>
   <record>
-   <dwcore:Locality>3 mi E Lolo</dwcore:Locality>
-   <dwcore:County>Missoula</dwcore:County>
+   <dwc:locality>3 mi E Lolo</dwc:locality>
+   <dwc:county>Missoula</dwc:county>
   </record>
  </request>
 </biogeomancer>
