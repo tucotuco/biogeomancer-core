@@ -12,15 +12,15 @@ The web service interface accepts HTTP GET requests using the following case ins
 || *Parameter*  || *Reference* ||
 || highergeography, hg || http://rs.tdwg.org/dwc/terms/index.htm#higherGeography ||
 || continent, cont || http://rs.tdwg.org/dwc/terms/index.htm#continent  ||
-|| waterbody, wb, w || http://rs.tdwg.org/dwc/terms/index.htm#waterBody] concept  ||
-|| islandgroup, ig || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/IslandGroup IslandGroup] concept||
-|| island, is || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Island Island] concept  ||
-|| country, cy, gadm0  || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Country Country] concept ||
-|| stateprovince, sp, s, gadm1 || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/StateProvince StateProvince] concept ||
-|| county, co, gadm2 || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/County County] concept ||
-|| locality, loc, l || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Locality Locality] concept ||
-|| verbatimlatitude, latitude, vlat, lat || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLatitude VerbatimLatitude] concept ||
-|| verbatimlongitude, longitude, vlong, vlng, long, lng || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLongitude VerbatimLongitude] concept ||
+|| waterbody, wb, w || http://rs.tdwg.org/dwc/terms/index.htm#waterBody  ||
+|| islandgroup, ig || http://rs.tdwg.org/dwc/terms/index.htm#islandGroup ||
+|| island, is || http://rs.tdwg.org/dwc/terms/index.htm#island  ||
+|| country, cy, gadm0  || http://rs.tdwg.org/dwc/terms/index.htm#country ||
+|| stateprovince, sp, s, gadm1 || http://rs.tdwg.org/dwc/terms/index.htm#stateProvince ||
+|| county, co, gadm2 || http://rs.tdwg.org/dwc/terms/index.htm#county ||
+|| locality, loc, l || http://rs.tdwg.org/dwc/terms/index.htm#locality ||
+|| verbatimlatitude, latitude, vlat, lat || http://rs.tdwg.org/dwc/terms/index.htm#verbatimLatitude ||
+|| verbatimlongitude, longitude, vlong, vlng, long, lng || http://rs.tdwg.org/dwc/terms/index.htm#verbatimLongitude ||
 || interpreter, int, i || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane'; default is 'yale')||
 || header || BioGeomancer flag to show locality input in output header ('true', 'false'; default is 'false')||
 
