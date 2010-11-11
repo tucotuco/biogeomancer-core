@@ -24,7 +24,6 @@ The web service interface accepts HTTP GET requests using the following case ins
 || interpreter, int, i || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane'; default is 'yale')||
 || header || BioGeomancer flag to show locality input in output header ('true', 'false'; default is 'false')||
 
-
 Example:
 `http://bg.berkeley.edu/ws/single?locality=Stuttgart&country=Germany&interpreter=yale&header=true`
 
@@ -50,22 +49,7 @@ The web service output format will be XML (UTF-8) with `dwc` as the namespace fo
 
 = Batch Georeference Requirements =
 == Web Service Interface ==
-Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit. In addition to an optional field "id" (case sensitive), the following DwC elements are accepted and interpreted as input:
-
-|| *Element*  || *Description* ||
-|| HigherGeography || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/HigherGeography HigherGeography] concept ||
-|| Continent || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Continent Continent] concept  ||
-|| WaterBody || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/WaterBody WaterBody] concept  ||
-|| IslandGroup || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/IslandGroup IslandGroup] concept||
-|| Island || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Island Island] concept  ||
-|| Country  || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Country Country] concept ||
-|| StateProvince || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/StateProvince StateProvince] concept ||
-|| County || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/County County] concept ||
-|| Locality || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Locality Locality] concept ||
-|| VerbatimLatitude || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLatitude VerbatimLatitude] concept ||
-|| VerbatimLongitude || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/GeospatialExtension Geospatial Extension] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/VerbatimLongitude VerbatimLongitude] concept ||
-|| interpreter || BioGeomancer locality interpreter ('yale', 'uiuc', 'tulane'; default is 'yale')||
-|| header || BioGeomancer flag to show locality input in output header ('true', 'false'; default is 'false')||
+Batch georeferencing will be supported by HTTP POST of an XML batch request with a 5000 record limit. In addition to an optional field "id" (case sensitive), the following DwC elements shown in the table above are accepted and interpreted as input.
 
 Example batch request XML:
 
@@ -95,85 +79,85 @@ Batch georeferencing output will be XML (UTF-8) with a dwcore and dwgeo namespac
 
 {{{
 <?xml version="1.0" encoding="UTF-8"?>
-<biogeomancer xmlns:dwcore="http://rs.tdwg.org/dwc/dwcore" xmlns:dwgeo="http://rs.tdwg.org/dwc/geospatial">
+<biogeomancer xmlns:dwc="http://rs.tdwg.org/dwc/terms">
   <records>
    <record>
     <interpreter>yale</interpreter>
-    <dwcore:id>1<dwcore:id>
-    <dwcore:StateProvince>California</dwcore:StateProvince>
-    <dwcore:Locality>Berkeley</dwcore:Locality>
+    <dwc:id>1<dwc:id>
+    <dwc:stateProvince>California</dwc:stateProvince>
+    <dwc:locality>Berkeley</dwc:locality>
     <georeference>
      <interpretedLocality>California (gadm2:3691:countries, 1st order divisions); Berkeley (GNIS:78808477:populated places)</interpretedLocality>
-     <dwgeo:DecimalLatitude>37.8715897</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>-122.26812</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>5391.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>37.8715897</dwc:decimalLatitude>
+     <dwc:decimalLongitude>-122.26812</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>5391.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
    </record>
    <record>
     <interpreter>yale</interpreter>
-    <dwcore:Country>Germany</dwcore:Country>
-    <dwcore:Locality>Stuttgart</dwcore:Locality>
+    <dwc:country>Germany</dwc:country>
+    <dwc:locality>Stuttgart</dwc:locality>
     <georeference>
      <interpretedLocality>Germany (gadm2:58:countries); Stuttgart (GADM:16422:countries, 2nd order divisions)</interpretedLocality>
-     <dwgeo:DecimalLatitude>49.1430493</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>9.6254345</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>93264.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>49.1430493</dwc:decimalLatitude>
+     <dwc:decimalLongitude>9.6254345</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>93264.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
     <georeference>
      <interpretedLocality>Germany (gadm2:58:countries); Stuttgart (GeoNet Names (NIMA):68012471:agricultural sites)</interpretedLocality>
-     <dwgeo:DecimalLatitude>47.6852721</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>8.9012315</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>4552.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>47.6852721</dwc:decimalLatitude>
+     <dwc:decimalLongitude>8.9012315</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>4552.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
     <georeference>
      <interpretedLocality>Germany (gadm2:58:countries); Stuttgart (GeoNet Names (NIMA):68012472:airport features)</interpretedLocality>
-     <dwgeo:DecimalLatitude>48.6833324</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>9.1999998</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>4242.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>48.6833324</dwc:decimalLatitude>
+     <dwc:decimalLongitude>9.1999998</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>4242.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
     <georeference>
      <interpretedLocality>Germany (gadm2:58:countries); Stuttgart (GeoNet Names (NIMA):68012473:capitol buildings)</interpretedLocality>
-     <dwgeo:DecimalLatitude>48.7666683</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>9.1833339</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>2282.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>48.7666683</dwc:decimalLatitude>
+     <dwc:decimalLongitude>9.1833339</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>2282.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
     <georeference>
      <interpretedLocality>Germany (gadm2:58:countries); Stuttgart (usersdb:8999:user added feature)</interpretedLocality>
-     <dwgeo:DecimalLatitude>48.7666702</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>9.1833296</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>10048.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>48.7666702</dwc:decimalLatitude>
+     <dwc:decimalLongitude>9.1833296</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>10048.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
    </record>
    <record>
     <interpreter>yale</interpreter>
-    <dwcore:County>Missoula</dwcore:County>
-    <dwcore:Locality>3 mi E Lolo</dwcore:Locality>
+    <dwc:county>Missoula</dwc:county>
+    <dwc:locality>3 mi E Lolo</dwc:locality>
     <georeference>
      <interpretedLocality>Missoula (gadm2:34036:countries, 2nd order divisions); 3 mi E of Lolo (GNIS:78928362:manmade features)</interpretedLocality>
-     <dwgeo:DecimalLatitude>46.7588158</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>-114.017748</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>6303.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>46.7588158</dwc:decimalLatitude>
+     <dwc:decimalLongitude>-114.017748</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>6303.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
     <georeference>
      <interpretedLocality>Missoula (gadm2:34036:countries, 2nd order divisions); 3 mi E of Lolo (GNIS:79784822:populated places)</interpretedLocality>
-     <dwgeo:DecimalLatitude>46.7588158</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>-114.017748</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>8061.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>46.7588158</dwc:decimalLatitude>
+     <dwc:decimalLongitude>-114.017748</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>8061.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
     <georeference>
      <interpretedLocality>Missoula (gadm2:34036:countries, 2nd order divisions); 3 mi E of Lolo (CONUS TIGER:8009251:populated places)</interpretedLocality>
-     <dwgeo:DecimalLatitude>46.7742577</dwgeo:DecimalLatitude>
-     <dwgeo:DecimalLongitude>-114.0447684</dwgeo:DecimalLongitude>
-     <dwgeo:GeodeticDatum>WGS84</dwgeo:GeodeticDatum>
-     <dwgeo:CoordinateUncertaintyInMeters>8172.0</dwgeo:CoordinateUncertaintyInMeters>
+     <dwc:decimalLatitude>46.7742577</dwc:decimalLatitude>
+     <dwc:decimalLongitude>-114.0447684</dwc:decimalLongitude>
+     <dwc:geodeticDatum>WGS84</dwc:geodeticDatum>
+     <dwc:coordinateUncertaintyInMeters>8172.0</dwc:coordinateUncertaintyInMeters>
     </georeference>
    </record>
   </records>
