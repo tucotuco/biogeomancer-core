@@ -10,9 +10,9 @@ A georeferencing web service that accepts a DwC record and returns that record a
 The web service interface accepts HTTP GET requests using the following case insensitive URL parameters:
 
 || *Parameter*  || *Reference* ||
-|| highergeography, hg || [http://rs.tdwg.org/dwc/terms/index.htm#higherGeography ||
-|| continent, cont || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Continent Continent] concept  ||
-|| waterbody, wb, w || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/WaterBody WaterBody] concept  ||
+|| highergeography, hg || http://rs.tdwg.org/dwc/terms/index.htm#higherGeography ||
+|| continent, cont || http://rs.tdwg.org/dwc/terms/index.htm#continent  ||
+|| waterbody, wb, w || http://rs.tdwg.org/dwc/terms/index.htm#waterBody] concept  ||
 || islandgroup, ig || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/IslandGroup IslandGroup] concept||
 || island, is || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Island Island] concept  ||
 || country, cy, gadm0  || [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/DarwinCoreDraftStandard Darwin Core] [http://wiki.tdwg.org/twiki/bin/view/DarwinCore/Country Country] concept ||
