@@ -1,5 +1,8 @@
 package edu.berkeley.biogeomancer.webservice.client;
 
+import org.biogeomancer.records.Georef;
+import org.biogeomancer.records.Rec;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,27 +13,24 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
 
-import org.biogeomancer.records.Georef;
-import org.biogeomancer.records.Rec;
-
 import edu.berkeley.biogeomancer.webservice.util.BgUtil;
 
 public class BgClient implements BioGeomancerClient {
   public static String data = "<?xml version=\"1.0\" encoding=\"utf-8\"?>"
-      + "<biogeomancer xmlns=\"http://bg.berkeley.edu\" xmlns:dwcore=\"http://rs.tdwg.org/dwc/dwcore\" xmlns:dwgeo=\"http://rs.tdwg.org/dwc/dwgeo\">"
+      + "<biogeomancer xmlns=\"http://bg.berkeley.edu\" xmlns:dwc=\"http://rs.tdwg.org/dwc/terms\" >"
       + "<request type=\"batch\" interpreter=\"yale\" header=\"true\">"
-      + "<record>" + "<dwcore:Locality>Berkeley</dwcore:Locality>"
-      + "<dwcore:StateProvince>California</dwcore:StateProvince>" + "</record>"
-      + "<record>" + "<dwcore:Locality>Stuttgart</dwcore:Locality>"
-      + "<dwcore:Country>Germany</dwcore:Country>" + "</record>" + "<record>"
-      + "<dwcore:Locality>3 mi E Lolo</dwcore:Locality>"
-      + "<dwcore:County>Missoula</dwcore:County>" + "</record>" + "</request>"
+      + "<record>" + "<dwc:locality>Berkeley</dwc:locality>"
+      + "<dwc:stateProvince>California</dwc:stateProvince>" + "</record>"
+      + "<record>" + "<dwc:locality>Stuttgart</dwc:locality>"
+      + "<dwc:country>Germany</dwc:country>" + "</record>" + "<record>"
+      + "<dwcore:locality>3 mi E Lolo</dwc:locality>"
+      + "<dwc:county>Missoula</dwc:county>" + "</record>" + "</request>"
       + "</biogeomancer>";
 
   public static void main(String[] argv) throws MalformedURLException,
       IOException {
     BgClient bgClient = new BgClient();
-    String serviceUrl = "http://localhost:8080/ws-test/batch";
+    String serviceUrl = "http://localhost:8080/ws/batch";
     // String serviceUrl = "http://bg.berkeley.edu:8080/ws-test/batch";
 
     URL connectUrl = new URL(serviceUrl);
@@ -59,9 +59,8 @@ public class BgClient implements BioGeomancerClient {
   }
 
   /**
-   * @param URL
-   *          service URL connect to URL: set URL Method to POST and write batch
-   *          interface for doPost to read the interface is in String data
+   * @param URL service URL connect to URL: set URL Method to POST and write
+   *          batch interface for doPost to read the interface is in String data
    *          (class static variable) write the xml text to a file, default file
    *          name is autoGenerate.xml store in current working directory
    */
